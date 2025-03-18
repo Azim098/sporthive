@@ -1,0 +1,119 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f8f9fa;
+    color: #333;
+}
+
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to left, #4c1c64, #9b70f7); 
+    color: white;
+    padding: 15px 50px;
+}
+
+.logo img {
+    max-width: 130px; 
+    height: auto;
+}
+
+
+nav ul {
+    list-style: none;
+    display: flex;
+    padding: 0;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 1.2em;
+}
+
+section {
+    padding: 30px;
+    margin: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+}
+
+th {
+    background: #007bff;
+    color: white;
+}
+
+.status {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.status.confirmed {
+    background: #28a745;
+    color: white;
+}
+
+.status.pending {
+    background: #ffc107;
+    color: black;
+}
+
+/* Buttons */
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.remove-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.remove-btn:hover {
+    background: #c82333;
+}
+
+.approve-btn {
+    background: #28a745;
+    color: white;
+}
+
+.approve-btn:hover {
+    background: #218838;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    background: #4c1c64;
+    color: white;
+}

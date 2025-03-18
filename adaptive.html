@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Arena | Sports Hive</title>
+    <link rel="stylesheet" href="adaptive.css">
+    <script defer src="script.js"></script> <!-- JavaScript for High Contrast Mode -->
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <div class="logo">
+            <a href="index.html">
+                <img src="images/logo.png" alt="Sports Hive Logo">
+            </a>
+        </div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="findevents.html">Find Events</a></li>
+            <li><a href="adaptive-arena.html" class="active">Adaptive Arena</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
+            <li><a href="profile.html">Profile</a></li>
+        </ul>
+    </nav>
+
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <h1>Adaptive Arena</h1>
+            <p>Find sports events and resources designed for differently-abled athletes.</p>
+        </div>
+    </header>
+
+    <!-- Adaptive Events Section -->
+    <section id="adaptive-events">
+        <h2>Find Adaptive Events</h2>
+        <div id="search-filters">
+            <div class="filters">
+                <div class="filter-item">
+                    <label for="skill-level">Skill Level:</label>
+                    <select id="skill-level">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="professional">Professional</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="event-time">Event Time:</label>
+                    <select id="event-time">
+                        <option value="morning">Morning</option>
+                        <option value="afternoon">Afternoon</option>
+                        <option value="evening">Evening</option>
+                        <option value="night">Night</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="sports">Sports:</label>
+                    <select id="sports">
+                        <option value="wheelchair">Wheelchair Sprint</option>
+                        <option value="swimming">Para Swimming</option>
+                        <option value="judp">Blind Judo</option>
+                        <option value="handcycling">Handcycling</option>
+                        <option value="longjump">Long Jump (T63 Category)</option>
+                        <option value="powerlifting">Para Powerlifting</option>
+                    </select>
+                </div>
+                <div class="checkbox-wrapper-14">
+                    <input id="s1-14" type="checkbox" class="switch">
+                    <label for="s1-14">Apply Filters</label> 
+                </div>
+                <!--<button class="apply-filters">Apply Filters</button>-->
+            </div>
+        </div>
+        <div class="container">
+            <form>
+                <input type="text" placeholder="Search for adaptive sports events..." class="search-bar" aria-label="Search Adaptive Events">
+                <button type="submit" class="apply-filters">Search</button>
+            </form>
+            <p>Discover accessible sports events tailored for different needs.</p>
+            <div class="events-container">
+                <!-- Event Cards will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Training & Support Section -->
+    <section id="resources">
+        <div class="container">
+            <h2>Training & Support</h2>
+            <p>Access guides, tutorials, and mentorship for adaptive athletes.</p>
+        </div>
+    </section>
+
+    <!-- Accessibility Features Section -->
+    <section id="accessibility-info">
+        <div class="container">
+            <h2>Accessibility Features</h2>
+            <p>Find venues with accessible parking, ramps, and restrooms.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Sports Hive | All Rights Reserved</p>
+    </footer>
+</body>
+</html>

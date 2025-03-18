@@ -1,0 +1,205 @@
+/* Import Sporty Font */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700&display=swap');
+
+/* General Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f0f4f8;  /* Light Blue-White */
+    color: #004d99;  /* Deep Sporty Blue */
+    margin: 0;
+    padding: 0;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #004d99, #0080ff);
+    padding: 15px 30px;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.logo-container img {
+    height: 90px;
+    width: auto;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 18px;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #ffcc00; /* Gold */
+}
+
+/* Log In and Sign Up Buttons */
+.login-btn, .signup-btn {
+    background-color: #ffcc00; /* Gold */
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+
+.login-btn:hover, .signup-btn:hover {
+    background-color: #ff4d4d; /* Sporty Red */
+    color: white;
+}
+
+/* Hero Section */
+.hero {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px;
+    background: linear-gradient(135deg, #ff4d4d, #ff1a1a); /* Sporty Red */
+    color: white;
+    border-radius: 30px;
+    text-align: center;
+}
+
+.hero-content {
+    max-width: 50%;
+}
+
+.hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 50px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.hero p {
+    font-size: 20px;
+    margin: 10px 0;
+}
+
+.hero img {
+    width: 40%;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Call-to-Action Button */
+.cta-btn {
+    display: inline-block;
+    background-color: #ffcc00; /* Gold */
+    color: #000;
+    padding: 14px 28px;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 50px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease-in-out;
+    text-decoration: none; /* Removes underline */
+}
+
+.cta-btn:hover {
+    background-color: #ff4d4d; /* Sporty Red */
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Features Section */
+.features {
+    text-align: center;
+    padding: 60px;
+    background-color: white;
+}
+
+.features h2 {
+    font-size: 36px;
+    color: #004d99; /* Sporty Blue */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.feature-cards {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: nowrap;
+}
+
+.feature {
+    background: linear-gradient(135deg, #004d99, #0080ff); /* Sporty Blue */
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    width: 250px;
+    text-align: center;
+    transition: 0.3s ease;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.feature:hover {
+    transform: scale(1.05);
+}
+
+.feature img {
+    width: 60px;
+}
+
+/* Gallery Section */
+.gallery {
+    text-align: center;
+    padding: 50px;
+    background-color: #f0f4f8; /* Light Blue */
+}
+
+.gallery h2 {
+    font-size: 36px;
+    text-transform: uppercase;
+    color: #004d99; /* Sporty Red */
+    text-align: center; /* Centering the text */
+}
+
+.gallery-grid {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.gallery-grid img {
+    width: 250px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 15px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.gallery-grid img:hover {
+    transform: scale(1.1);
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    background-color: #004d99; /* Sporty Blue */
+    color: white;
+    padding: 20px;
+    font-size: 18px;
+}
+
+.social-links a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+.social-links a:hover {
+    color: #ffcc00; /* Gold */
+}

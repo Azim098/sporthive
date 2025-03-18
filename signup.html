@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup - Sports Hive</title>
+    <link rel="stylesheet" href="signup.css">
+</head>
+<body>
+    <div class="container">
+        <div class="signup-box">
+            <div class="form-container">
+                <h2>Sign Up</h2>
+                <form onsubmit="signUpUser(event)">
+                    <label for="fullname">Full Name</label>
+                    <input type="text" id="fullname" placeholder="Enter your full name" required>
+                    
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Create a password" required>
+                    
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" placeholder="Re-enter password" required>
+                    
+                    <label for="role">Sign up as:</label>
+                    <select id="role" required>
+                        <option value="participant">Participant</option>
+                        <option value="organizer">Event Organizer</option>
+                    </select>
+                    <button type="submit">Sign Up</button>
+                </form>
+                <p>Already have an account? <a href="login.html">Log in</a></p>
+            </div>
+        </div>
+        <div class="image-box">
+            <img src="signup.avif" alt="Fitness Image">
+        </div>
+    </div>
+
+    <!-- Load Supabase SDK First -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <!-- Initialize Supabase in a Separate Script -->
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            window.supabase = supabase.createClient(
+                "https://idydtkpvhedgyoexkiox.supabase.co",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY"
+            );
+        });
+    </script>
+
+    <!-- Signup Script -->
+    <script>
+        async function signUpUser(event) {
+            event.preventDefault();
+            const fullname = document.getElementById("fullname").value.trim();
+            const email = document.getElementById("email").value.toLowerCase();
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
+            const role = document.getElementById("role").value;
+            
+            if (password !== confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            try {
+                const { data: authData, error: authError } = await window.supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                if (authError) {
+                    alert("Signup failed: " + authError.message);
+                    console.error("Auth Signup Error:", authError);
+                    return;
+                }
+
+                console.log("User Signed Up:", authData);
+
+                alert("Signup successful! Check your email for confirmation.");
+
+                // Insert user details into the 'users' table
+                const { error: insertError } = await window.supabase
+                    .from("users")
+                    .insert([{ 
+                        id: authData.user.id, // UUID from Supabase Auth
+                        fullname: fullname, 
+                        email: email, 
+                        role: role
+                    }]);
+
+                if (insertError) {
+                    alert("Error saving user data: " + insertError.message);
+                    console.error("Database Insert Error:", insertError);
+                } else {
+                    alert("User data saved successfully!");
+                    window.location.href = "login.html";
+                }
+            } catch (error) {
+                console.error("Unexpected Error:", error);
+            }
+        }
+    </script>
+</body>
+</html>

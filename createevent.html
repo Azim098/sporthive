@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event</title>
+    <link rel="stylesheet" href="createevent.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="images/logo.png" alt="Sports Hive Logo">
+        </div>
+        <ul>
+            <li><a href="organizer.html">Home</a></li>
+            <li><a href="myevent.html">My Event</a></li>
+            <li><a href="reg.html">Registrations</a></li>
+            <li><a href="oprofile.html">Profile</a></li>
+        </ul>
+    </nav> 
+    <section id="create-event-form">
+        <div class="form-container">
+            <h2>Create Your Sports Event</h2>
+            <form id="event-form">
+                <div class="input-group">
+                    <label for="event-name">Event Name:</label>
+                    <input type="text" id="event-name" name="event-name" placeholder="Enter event name" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="event-date">Date:</label>
+                    <input type="date" id="event-date" name="event-date" required>
+                    <small class="error-message"></small>
+                </div>
+                
+                <div class="input-group">
+                    <label for="event-time">Time:</label>
+                    <input type="time" id="event-time" name="event-time" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="event-location">Location:</label>
+                    <input type="text" id="event-location" name="event-location" placeholder="Enter location" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="event-description">Description:</label>
+                    <textarea id="event-description" name="event-description" rows="4" placeholder="Enter event details..." required></textarea>
+                </div>
+                
+                <button type="submit">Create Event</button>
+                <p id="success-message" class="hidden">Event Created Successfully! ✅</p>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 SportsConnect</p>
+    </footer>
+
+    <script>
+        document.getElementById("event-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const dateInput = document.getElementById("event-date");
+            const errorMessage = dateInput.nextElementSibling;
+            
+            if (new Date(dateInput.value) < new Date()) {
+                errorMessage.textContent = "Date cannot be in the past!";
+                return;
+            } else {
+                errorMessage.textContent = "";
+            }
+            
+            document.getElementById("success-message").classList.remove("hidden");
+        });
+    </script>
+</body>
+<script>
+    // Initialize Supabase
+    const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co"; // Replace with your Supabase URL
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY"; // Replace with your Supabase anon key
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.getElementById("event-form").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        // Get form data
+        const name = document.getElementById("event-name").value;
+        const date = document.getElementById("event-date").value;
+        const time = document.getElementById("event-time").value;
+        const location = document.getElementById("event-location").value;
+        const description = document.getElementById("event-description").value;
+
+        // Get the currently logged-in user (assuming they are authenticated)
+        const user = await supabase.auth.getUser();
+        const organizer_id = user.data.user ? user.data.user.id : null;
+
+        if (!organizer_id) {
+            alert("You must be logged in to create an event!");
+            return;
+        }
+
+        // Insert event into Supabase
+        const { data, error } = await supabase.from("events").insert([
+            {
+                name: name,
+                date: date,
+                time: time,
+                location: location,
+                description: description,
+                organizer_id: organizer_id,
+                created_at: new Date().toISOString()
+            }
+        ]);
+
+        if (error) {
+            console.error("Error inserting data:", error);
+            alert("Failed to create event. Please try again.");
+        } else {
+            console.log("Event created:", data);
+            document.getElementById("success-message").classList.remove("hidden");
+            alert("Event created successfully!");
+        }
+    });
+</script>
+</html>

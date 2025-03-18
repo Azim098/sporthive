@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrations</title>
+    <link rel="stylesheet" href="reg.css">
+</head>
+<body>
+    <nav>
+        <div class="logo"> <img src="images/logo.png" alt="Sports Hive Logo">
+        </div>
+        <ul>
+            <li><a href="organizer.html">Home</a></li>
+            <li><a href="myevent.html">My Events</a></li>
+            <li><a href="createevent.html">Create Event</a></li>
+            <li><a href="oprofile.html">Profile</a></li>
+        </ul>
+    </nav>
+
+    <section id="registrations">
+        <h2>Registered Participants</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Participant Name</th>
+                    <th>Email</th>
+                    <th>Event Name</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Doe</td>
+                    <td>johndoe@example.com</td>
+                    <td>Basketball Tournament</td>
+                    <td><span class="status confirmed">Confirmed</span></td>
+                    <td><button class="remove-btn">Remove</button></td>
+                </tr>
+                <tr>
+                    <td>Jane Smith</td>
+                    <td>janesmith@example.com</td>
+                    <td>Soccer League</td>
+                    <td><span class="status pending">Pending</span></td>
+                    <td><button class="approve-btn">Approve</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 SportsHive</p>
+    </footer>
+</body>
+</html>
