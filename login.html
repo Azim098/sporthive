@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Event Recommendation System - Login</title>
+    <link rel="stylesheet" href="login.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <div class="form-container">
+                <h2>Log in</h2>
+                <form onsubmit="loginUser(event)">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                    
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" placeholder="Enter your password" required>
+                        <span class="eye-icon" onclick="togglePassword()">👁️</span>
+                    </div>
+
+                    <div class="options">
+                        <a href="#">Forgot password?</a>
+                    </div>
+
+                    <button type="submit">Log in</button>
+                </form>
+
+                <p>Don't have an account? <a href="signup.html">Register</a></p>
+                <div class="footer-links">
+                    <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="image-box">
+            <img src="log.jpg" alt="Fitness Image">
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loginUser(event) {
+            event.preventDefault();
+            
+            // Get email and password
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            // Attempt login
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                alert("Login failed: " + error.message);
+                console.error("Login Error:", error);
+                return;
+            }
+
+            console.log("Login Successful:", data);
+
+            // Fetch user role from 'users' table
+            const { data: userData, error: userError } = await supabase
+                .from("users")
+                .select("role")
+                .eq("email", email)
+                .single(); // Fetch only one user
+
+            if (userError) {
+                alert("Error fetching user data: " + userError.message);
+                console.error("User Fetch Error:", userError);
+                return;
+            }
+
+            console.log("User Role:", userData.role);
+
+            // Redirect based on role
+            if (userData.role === "participant") {
+                window.location.href = "index.html";
+            } else if (userData.role === "organizer") {
+                window.location.href = "organizer.html";
+            } else {
+                alert("Unknown role. Please contact support.");
+            }
+        }
+
+        function togglePassword() {
+            const passwordField = document.getElementById("password");
+            passwordField.type = passwordField.type === "password" ? "text" : "password";
+        }
+    </script>
+</body>
+</html>

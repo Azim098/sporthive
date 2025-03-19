@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizer Dashboard</title>
+    <link rel="stylesheet" href="organizer.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="logo">
+            <img src="images/logo.png" alt="Sports Hive Logo">
+        </div>
+        <ul>
+            <li><a href="organizer.html">Home</a></li>
+            <li><a href="createevent.html">Create Event</a></li>
+            <li><a href="myevent.html">Manage Events</a></li>
+            <li><a href="reg.html">View Registrations</a></li>
+            <li><a href="oprofile.html">Profile</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header>
+        <div class="hero-content">
+            <h1>Welcome, <span id="organizer-name">Organizer</span>!</h1>
+            <p>Manage your events efficiently and track registrations seamlessly.</p>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Section -->
+    <section class="dashboard">
+        <div class="dashboard-item">
+            <h2>Create a New Event</h2>
+            <p>Plan and publish your sports event in minutes.</p>
+            <a href="createevent.html" class="btn">Create Event</a>
+        </div>
+
+        <div class="dashboard-item">
+            <h2>Manage Your Events</h2>
+            <p>View, update, or cancel your existing events.</p>
+            <a href="myevent.html" class="btn">My Events</a>
+        </div>
+
+        <div class="dashboard-item">
+            <h2>View Registrations</h2>
+            <p>Check participant registrations for your events.</p>
+            <a href="reg.html" class="btn">Registrations</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Sports Hive. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function fetchOrganizerName() {
+            const { data: user, error } = await supabase.auth.getUser();
+            if (error) {
+                console.error("Error fetching user:", error);
+                return;
+            }
+
+            const userEmail = user?.user?.email;
+            if (!userEmail) return;
+
+            const { data, error: fetchError } = await supabase
+                .from("users")
+                .select("fullname")
+                .eq("email", userEmail)
+                .single();
+
+            if (fetchError) {
+                console.error("Error fetching name:", fetchError);
+            } else {
+                document.getElementById("organizer-name").textContent = data.fullname;
+            }
+        }
+
+        fetchOrganizerName();
+    </script>
+
+</body>
+</html>
