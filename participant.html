@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Hive</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <nav>
+            <div class="logo">
+                <img src="images/logo.png" alt="Sports Hive Logo">
+            </div>
+            <ul>
+                <li><a href="#home" class="home active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="findevents.html"><i class="fas fa-search"></i> Find Events</a></li>
+                <li><a href="adaptive.html"><i class="fas fa-universal-access"></i> Adaptive Arena</a></li>
+                <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+            </ul>
+        </nav>
+        
+        <header class="hero-section">
+            <div class="overlay"></div>
+            <div class="header-content">
+                <h1>Welcome, Participant!</h1>
+                <p>Discover sports events, earn rewards, and stay active.</p>
+                <button class="cta-button">Get Started <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </header>
+        
+        <div class="featured-stats">
+            <div class="stat-card">
+                <i class="fas fa-calendar-check"></i>
+                <h3>48</h3>
+                <p>Upcoming Events</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <h3>2,500+</h3>
+                <p>Active Participants</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-medal"></i>
+                <h3>156</h3>
+                <p>Achievements to Earn</p>
+            </div>
+        </div>
+        
+        <section id="events" class="featured-section">
+            <h2><i class="fas fa-search"></i> Find Events</h2>
+            <p>Search and filter events based on your interests and skill level.</p>
+            <div class="events-grid">
+                <div class="event-card">
+                    <div class="event-image">
+                        <span class="event-date">MAR 20</span>
+                    </div>
+                    <div class="event-details">
+                        <h3>Community Basketball Tournament</h3>
+                        <p><i class="fas fa-map-marker-alt"></i> Downtown Sports Center</p>
+                        <p><i class="fas fa-users"></i> 24 spots remaining</p>
+                        <button class="secondary-button">View Details</button>
+                    </div>
+                </div>
+                <div class="event-card">
+                    <div class="event-image">
+                        <span class="event-date">MAR 25</span>
+                    </div>
+                    <div class="event-details">
+                        <h3>Youth Soccer Championship</h3>
+                        <p><i class="fas fa-map-marker-alt"></i> Riverside Fields</p>
+                        <p><i class="fas fa-users"></i> 12 spots remaining</p>
+                        <button class="secondary-button">View Details</button>
+                    </div>
+                </div>
+            </div>
+            <a href="findevents.html" class="see-all">See All Events <i class="fas fa-chevron-right"></i></a>
+        </section>
+        
+        <section id="badges" class="featured-section">
+            <h2><i class="fas fa-award"></i> Achievements</h2>
+            <p>Check out your earned badges and participate more to unlock rewards.</p>
+            <div class="badges-container">
+                <div class="badge-item">
+                    <div class="badge-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <p>First Participation</p>
+                </div>
+                <div class="badge-item">
+                    <div class="badge-icon">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <p>5K Finisher</p>
+                </div>
+                <div class="badge-item">
+                    <div class="badge-icon locked">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <p>Team Captain</p>
+                </div>
+                <div class="badge-item">
+                    <div class="badge-icon locked">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <p>Tournament Winner</p>
+                </div>
+            </div>
+            <a href="profile.html#badges" class="see-all">View All Badges <i class="fas fa-chevron-right"></i></a>
+        </section>
+        
+        <section id="profile" class="featured-section">
+            <h2><i class="fas fa-user-circle"></i> Your Profile</h2>
+            <p>Manage your preferences and track your participation.</p>
+            <div class="profile-overview">
+                <div class="profile-image">
+                    <img src="images/header.jpg" alt="User Avatar">
+                </div>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <h3>8</h3>
+                        <p>Events Joined</p>
+                    </div>
+                    <div class="stat">
+                        <h3>5</h3>
+                        <p>Badges Earned</p>
+                    </div>
+                    <div class="stat">
+                        <h3>120</h3>
+                        <p>Points</p>
+                    </div>
+                </div>
+            </div>
+            <a href="profile.html" class="see-all">View Full Profile <i class="fas fa-chevron-right"></i></a>
+        </section>
+        
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Sports Hive</h3>
+                    <p>Connecting sports enthusiasts and promoting active lifestyles since 2023.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="findevents.html">Find Events</a></li>
+                        <li><a href="adaptive.html">Adaptive Arena</a></li>
+                        <li><a href="leaderboard.html">Leaderboard</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <p><i class="fas fa-envelope"></i> info@sportshive.com</p>
+                    <p><i class="fas fa-phone"></i> (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Sports Hive | All Rights Reserved</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
