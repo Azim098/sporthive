@@ -39,10 +39,10 @@
         </div>
     </div>
 
-    <!-- Load Supabase SDK First -->
+    <!-- Load Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    <!-- Initialize Supabase in a Separate Script -->
+    <!-- Initialize Supabase -->
     <script>
         window.addEventListener("DOMContentLoaded", () => {
             window.supabase = supabase.createClient(
@@ -52,22 +52,24 @@
         });
     </script>
 
-    <!-- Signup Script -->
+    <!-- Signup & Insert Script -->
     <script>
         async function signUpUser(event) {
             event.preventDefault();
+            
             const fullname = document.getElementById("fullname").value.trim();
             const email = document.getElementById("email").value.toLowerCase();
             const password = document.getElementById("password").value;
             const confirmPassword = document.getElementById("confirm-password").value;
             const role = document.getElementById("role").value;
-            
+
             if (password !== confirmPassword) {
                 alert("Passwords do not match!");
                 return;
             }
 
             try {
+                // Sign up user with Supabase Auth
                 const { data: authData, error: authError } = await window.supabase.auth.signUp({
                     email: email,
                     password: password
@@ -79,29 +81,55 @@
                     return;
                 }
 
-                console.log("User Signed Up:", authData);
+                alert("Signup successful! Check your email to verify your account.");
 
-                alert("Signup successful! Check your email for confirmation.");
+                // Redirect to login page after successful signup
+                window.location.href = "login.html";
+                
+            } catch (error) {
+                console.error("Unexpected Error:", error);
+                alert("An unexpected error occurred. Please try again.");
+            }
+        }
 
-                // Insert user details into the 'users' table
+        async function checkUserAndInsert() {
+            const { data: user, error } = await window.supabase.auth.getUser();
+            
+            if (error || !user) {
+                console.error("Error fetching user:", error);
+                return;
+            }
+
+            // Check if the email is verified before inserting user data
+            if (!user.user || !user.user.confirmed_at) {
+                alert("Please verify your email first!");
+                return;
+            }
+
+            const fullname = document.getElementById("fullname").value.trim();
+            const role = document.getElementById("role").value;
+
+            try {
+                // Insert user into the DB after verification
                 const { error: insertError } = await window.supabase
                     .from("users")
-                    .insert([{ 
-                        id: authData.user.id, // UUID from Supabase Auth
-                        fullname: fullname, 
-                        email: email, 
+                    .insert([{
+                        id: user.user.id,
+                        fullname: fullname,
+                        email: user.user.email,
                         role: role
                     }]);
 
                 if (insertError) {
-                    alert("Error saving user data: " + insertError.message);
                     console.error("Database Insert Error:", insertError);
+                    alert("Error saving user data: " + insertError.message);
                 } else {
                     alert("User data saved successfully!");
-                    window.location.href = "login.html";
+                    window.location.href = "dashboard.html";
                 }
             } catch (error) {
                 console.error("Unexpected Error:", error);
+                alert("An error occurred while saving user data.");
             }
         }
     </script>
