@@ -42,19 +42,19 @@
     </div>
 
     <script>
-        // Initialize Supabase
+        // ✅ Initialize Supabase
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // ✅ Handle Login
         async function loginUser(event) {
             event.preventDefault();
             
-            // Get email and password
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
-            // Attempt login
+            // ✅ Attempt login
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password
@@ -68,12 +68,73 @@
 
             console.log("Login Successful:", data);
 
-            // Fetch user role from 'users' table
+            // ✅ Check if the user is verified
+            const { data: userSession, error: sessionError } = await supabase.auth.getUser();
+            
+            if (sessionError || !userSession || !userSession.user) {
+                alert("Failed to fetch user session.");
+                console.error("Session Error:", sessionError);
+                return;
+            }
+
+            const user = userSession.user;
+
+            if (!user.email_confirmed_at) {
+                alert("Please verify your email before logging in.");
+                return;
+            }
+
+            // ✅ Check if the user is already in the 'users' table
+            const { data: existingUser, error: fetchError } = await supabase
+                .from("users")
+                .select("*")
+                .eq("email", email)
+                .single();
+
+            if (fetchError && fetchError.code !== "PGRST116") {
+                console.error("Error checking existing user:", fetchError);
+                alert("Error verifying user.");
+                return;
+            }
+
+            // ✅ Insert the user data if they don't already exist
+            if (!existingUser) {
+                console.log("User not found, inserting into DB...");
+
+                const fullname = localStorage.getItem("fullname");
+                const role = localStorage.getItem("role");
+
+                if (!fullname || !role) {
+                    alert("User data missing. Please sign up again.");
+                    window.location.href = "signup.html";
+                    return;
+                }
+
+                const { error: insertError } = await supabase
+                    .from("users")
+                    .insert([{
+                        id: user.id,
+                        fullname: fullname,
+                        email: user.email,
+                        role: role
+                    }]);
+
+                if (insertError) {
+                    console.error("Insert Error:", insertError);
+                    alert("Failed to insert user data.");
+                    return;
+                }
+
+                console.log("User data inserted successfully.");
+                alert("Account verified and data saved!");
+            }
+
+            // ✅ Fetch user role from 'users' table
             const { data: userData, error: userError } = await supabase
                 .from("users")
                 .select("role")
                 .eq("email", email)
-                .single(); // Fetch only one user
+                .single();
 
             if (userError) {
                 alert("Error fetching user data: " + userError.message);
@@ -83,7 +144,7 @@
 
             console.log("User Role:", userData.role);
 
-            // Redirect based on ro
+            // ✅ Redirect based on role
             if (userData.role === "participant") {
                 window.location.href = "participant.html";
             } else if (userData.role === "organizer") {
@@ -93,6 +154,7 @@
             }
         }
 
+        // ✅ Toggle Password Visibility
         function togglePassword() {
             const passwordField = document.getElementById("password");
             passwordField.type = passwordField.type === "password" ? "text" : "password";
