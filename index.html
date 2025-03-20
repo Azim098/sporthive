@@ -39,17 +39,17 @@
         </div>
     </div>
 
-    <!-- Load Supabase SDK -->
+    <!-- ✅ Supabase SDK first -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    <!-- Initialize Supabase -->
+    <!-- ✅ Initialize Supabase -->
     <script>
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     </script>
 
-    <!-- Signup Script with Email Verification -->
+    <!-- ✅ Signup Script -->
     <script>
         async function signUpUser(event) {
             event.preventDefault();
@@ -71,7 +71,7 @@
                     email: email,
                     password: password,
                     options: {
-                        emailRedirectTo: "https://azim098.github.io/sporthive/login.html"  // ✅ Redirect after verification
+                        emailRedirectTo: "https://azim098.github.io/sporthive/login.html"
                     }
                 });
 
@@ -87,7 +87,7 @@
                 localStorage.setItem("role", role);
 
                 alert("Signup successful! Check your email to verify your account.");
-                window.location.href = "login.html";  // ✅ Redirect to login page
+                window.location.href = "login.html";
 
             } catch (error) {
                 console.error("Unexpected Error:", error);
