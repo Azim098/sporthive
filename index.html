@@ -44,67 +44,58 @@
 
     <!-- ✅ Initialize Supabase and ensure execution after DOMContentLoaded -->
     <script defer>
-       window.addEventListener("DOMContentLoaded", () => {
-    const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-    
-    const supabase = window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.addEventListener("DOMContentLoaded", () => {
+            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+            
+            // ✅ Ensure Supabase client is properly initialized
+            const supabase = window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const form = document.getElementById("signup-form");
+            // ✅ Handle form submission
+            const form = document.getElementById("signup-form");
 
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
 
-        const fullname = document.getElementById("fullname").value.trim();
-        const email = document.getElementById("email").value.toLowerCase();
-        const password = document.getElementById("password").value;
-        const confirmPassword = document.getElementById("confirm-password").value;
-        const role = document.getElementById("role").value;
+                const fullname = document.getElementById("fullname").value.trim();
+                const email = document.getElementById("email").value.toLowerCase();
+                const password = document.getElementById("password").value;
+                const confirmPassword = document.getElementById("confirm-password").value;
+                const role = document.getElementById("role").value;
 
-        if (password !== confirmPassword) {
-            alert("Passwords do not match!");
-            return;
-        }
+                if (password !== confirmPassword) {
+                    alert("Passwords do not match!");
+                    return;
+                }
 
-        try {
-            // 🔹 Step 1: Sign up user with authentication
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: email,
-                password: password
+                try {
+                    const { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            emailRedirectTo: "https://azim098.github.io/sporthive/login.html"
+                        }
+                    });
+
+                    if (error) {
+                        console.error("Signup Error:", error);
+                        alert("Signup failed: " + error.message);
+                        return;
+                    }
+
+                    // Store user data locally
+                    localStorage.setItem("fullname", fullname);
+                    localStorage.setItem("email", email);
+                    localStorage.setItem("role", role);
+
+                    alert("Signup successful! Check your email to verify your account.");
+                    window.location.href = "login.html";
+                } catch (err) {
+                    console.error("Unexpected Error:", err);
+                    alert("An unexpected error occurred. Please try again.");
+                }
             });
-
-            if (authError) {
-                console.error("Signup Error:", authError);
-                alert("Signup failed: " + authError.message);
-                return;
-            }
-
-            const userId = authData.user?.id; // 🔹 Get user ID from authentication
-            if (!userId) {
-                alert("Signup failed: User ID not found.");
-                return;
-            }
-
-            // 🔹 Step 2: Insert user details into `users` table
-            const { error: dbError } = await supabase.from("users").insert([
-                { id: userId, fullname: fullname, email: email, role: role }
-            ]);
-
-            if (dbError) {
-                console.error("Database Insert Error:", dbError);
-                alert("User registration failed in database.");
-                return;
-            }
-
-            alert("Signup successful! Check your email to verify your account.");
-            window.location.href = "login.html";
-
-        } catch (err) {
-            console.error("Unexpected Error:", err);
-            alert("An unexpected error occurred. Please try again.");
-        }
-    });
-});
+        });
     </script>
 </body>
 </html>
