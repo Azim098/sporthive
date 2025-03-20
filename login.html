@@ -40,32 +40,55 @@
         window.addEventListener("DOMContentLoaded", () => {
             const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
             const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-            
-            const supabase = window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+    
+            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
             document.getElementById("login-form").addEventListener("submit", async (event) => {
                 event.preventDefault();
-
-                const email = document.getElementById("email").value;
+    
+                const email = document.getElementById("email").value.trim();
                 const password = document.getElementById("password").value;
-
+    
+                // ✅ Authenticate user
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
+    
                 if (error) {
                     alert("Login failed: " + error.message);
                     console.error("Login Error:", error);
                     return;
                 }
-
-                alert("Login successful!");
-                window.location.href = "dashboard.html";
+    
+                console.log("User logged in:", data);
+    
+                // ✅ Fetch user profile data (to get their role) from 'users' table
+                const { data: user, error: userError } = await supabase
+                    .from("users")
+                    .select("role")
+                    .eq("email", email)
+                    .single();
+    
+                if (userError) {
+                    console.error("User Fetch Error:", userError);
+                    alert("Failed to fetch user role.");
+                    return;
+                }
+    
+                console.log("User Role:", user.role);
+    
+                // ✅ Redirect based on user role
+                if (user.role === "organizer") {
+                    window.location.href = "organizer.html";
+                } else {
+                    window.location.href = "part.html";
+                }
             });
+    
+            function togglePassword() {
+                const passwordField = document.getElementById("password");
+                passwordField.type = passwordField.type === "password" ? "text" : "password";
+            }
         });
-
-        function togglePassword() {
-            const passwordField = document.getElementById("password");
-            passwordField.type = passwordField.type === "password" ? "text" : "password";
-        }
     </script>
+    
 </body>
 </html>
