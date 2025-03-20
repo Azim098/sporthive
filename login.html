@@ -84,12 +84,12 @@
                 return;
             }
 
-            // Fetch user role from 'users' table
+            // Fetch user role using user ID instead of email
             const { data: roleData, error: roleError } = await supabase
                 .from("users")
                 .select("role")
-                .eq("email", email)
-                .single();
+                .eq("id", userData.user.id)  // Using user ID instead of email
+                .maybeSingle();
 
             if (roleError) {
                 alert("Error fetching user role: " + roleError.message);
@@ -97,12 +97,12 @@
                 return;
             }
 
-            console.log("User Role:", roleData.role);
+            console.log("User Role:", roleData?.role);
 
             // Redirect based on role
-            if (roleData.role === "participant") {
+            if (roleData?.role === "participant") {
                 window.location.href = "participant.html";
-            } else if (roleData.role === "organizer") {
+            } else if (roleData?.role === "organizer") {
                 window.location.href = "organizer.html";
             } else {
                 alert("Unknown role. Please contact support.");
