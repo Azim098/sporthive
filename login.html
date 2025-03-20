@@ -32,63 +32,91 @@
         </div>
     </div>
 
-    <!-- ✅ Load Supabase SDK first with defer -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js" defer></script>
+    <!-- ✅ Load Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    <!-- ✅ Initialize Supabase and ensure execution after DOMContentLoaded -->
-    <script defer>
-        window.addEventListener("DOMContentLoaded", () => {
-            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-    
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-            document.getElementById("login-form").addEventListener("submit", async (event) => {
-                event.preventDefault();
-    
-                const email = document.getElementById("email").value.trim();
-                const password = document.getElementById("password").value;
-    
-                // ✅ Authenticate user
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
-                if (error) {
-                    alert("Login failed: " + error.message);
-                    console.error("Login Error:", error);
+    <!-- ✅ Login Script -->
+    <script>
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById("login-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            // ✅ Authenticate user
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                alert("Login failed: " + error.message);
+                console.error("Login Error:", error);
+                return;
+            }
+
+            // ✅ Ensure the user is verified
+            const { data: userData, error: userError } = await supabase.auth.getUser();
+
+            if (userError || !userData.user) {
+                alert("Failed to get user details. Please try again.");
+                console.error("User Fetch Error:", userError);
+                return;
+            }
+
+            if (!userData.user.confirmed_at) {
+                alert("Please verify your email before logging in.");
+                return;
+            }
+
+            // ✅ Fetch user role from 'users' table
+            let { data: user, error: roleError } = await supabase
+                .from("users")
+                .select("role")
+                .eq("email", email)
+                .single();
+
+            if (roleError || !user) {
+                console.log("User role not found in database. Inserting user details...");
+                
+                // Insert user data if not present in 'users' table
+                const { user_metadata } = userData.user;
+                const fullname = user_metadata?.fullname;
+                const role = user_metadata?.role;
+
+                if (!fullname || !role) {
+                    alert("User data is incomplete. Please sign up again.");
                     return;
                 }
-    
-                console.log("User logged in:", data);
-    
-                // ✅ Fetch user profile data (to get their role) from 'users' table
-                const { data: user, error: userError } = await supabase
-                    .from("users")
-                    .select("role")
-                    .eq("email", email)
-                    .single();
-    
-                if (userError) {
-                    console.error("User Fetch Error:", userError);
-                    alert("Failed to fetch user role.");
+
+                let { error: insertError } = await supabase.from("users").insert([
+                    { fullname: fullname, email: email, role: role }
+                ]);
+
+                if (insertError) {
+                    console.error("User Insert Error:", insertError);
+                    alert("Error adding user details to the database.");
                     return;
                 }
-    
-                console.log("User Role:", user.role);
-    
-                // ✅ Redirect based on user role
-                if (user.role === "organizer") {
-                    window.location.href = "organizer.html";
-                } else {
-                    window.location.href = "part.html";
-                }
-            });
-    
-            function togglePassword() {
-                const passwordField = document.getElementById("password");
-                passwordField.type = passwordField.type === "password" ? "text" : "password";
+
+                user = { role }; // Assign the role for redirection
+            }
+
+            console.log("User Role:", user.role);
+
+            // ✅ Redirect based on user role
+            if (user.role === "organizer") {
+                window.location.href = "organizer.html";
+            } else {
+                window.location.href = "participant.html";
             }
         });
+
+        function togglePassword() {
+            const passwordField = document.getElementById("password");
+            passwordField.type = passwordField.type === "password" ? "text" : "password";
+        }
     </script>
-    
 </body>
 </html>
