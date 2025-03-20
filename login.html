@@ -1,128 +1,55 @@
+<!-- Updated login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sports Event Recommendation System - Login</title>
+    <title>Login - Sports Hive</title>
     <link rel="stylesheet" href="login.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
     <div class="container">
         <div class="login-box">
             <div class="form-container">
-                <h2>Log in</h2>
+                <h2>Login</h2>
                 <form onsubmit="loginUser(event)">
                     <label for="email">Email</label>
                     <input type="email" id="email" placeholder="Enter your email" required>
-                    
+
                     <label for="password">Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="password" placeholder="Enter your password" required>
-                        <span class="eye-icon" onclick="togglePassword()">👁️</span>
-                    </div>
+                    <input type="password" id="password" placeholder="Enter your password" required>
 
-                    <div class="options">
-                        <a href="#">Forgot password?</a>
-                    </div>
-
-                    <button type="submit">Log in</button>
+                    <button type="submit">Login</button>
                 </form>
-
-                <p>Don't have an account? <a href="index.html">Register</a></p>
-                <div class="footer-links">
-                    <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
-                </div>
+                <p>Don't have an account? <a href="index.html">Sign up</a></p>
             </div>
-        </div>
-
-        <div class="image-box">
-            <img src="log.jpg" alt="Fitness Image">
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script>
-        // Initialize Supabase
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Handle email confirmation redirect
-        document.addEventListener("DOMContentLoaded", async () => {
-            const { data, error } = await supabase.auth.getUser();
-
-            if (data?.user?.email_confirmed_at) {
-                alert("✅ Email confirmed! You can now log in.");
-            } else if (error) {
-                console.error("Error fetching user:", error);
-            }
-        });
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function loginUser(event) {
             event.preventDefault();
-            
-            // Get email and password
-            const email = document.getElementById("email").value;
+
+            const email = document.getElementById("email").value.toLowerCase();
             const password = document.getElementById("password").value;
 
-            // Attempt login
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password
             });
 
             if (error) {
-                alert("❌ Login failed: " + error.message);
-                console.error("Login Error:", error);
+                alert("Login failed: " + error.message);
                 return;
             }
 
-            console.log("Login Successful:", data);
-
-            // Fetch user details
-            const { data: userData, error: userError } = await supabase.auth.getUser();
-
-            if (userError) {
-                alert("Error fetching user data: " + userError.message);
-                console.error("User Fetch Error:", userError);
-                return;
-            }
-
-            // Check if the email is verified
-            if (!userData?.user?.email_confirmed_at) {
-                alert("⚠️ Please verify your email before logging in.");
-                await supabase.auth.signOut(); // Logout the user since they are not verified
-                return;
-            }
-
-            // Fetch user role using user ID instead of email
-            const { data: roleData, error: roleError } = await supabase
-                .from("users")
-                .select("role")
-                .eq("id", userData.user.id)  // Using user ID instead of email
-                .maybeSingle();
-
-            if (roleError) {
-                alert("Error fetching user role: " + roleError.message);
-                console.error("Role Fetch Error:", roleError);
-                return;
-            }
-
-            console.log("User Role:", roleData?.role);
-
-            // Redirect based on role
-            if (roleData?.role === "participant") {
-                window.location.href = "participant.html";
-            } else if (roleData?.role === "organizer") {
-                window.location.href = "organizer.html";
-            } else {
-                alert("Unknown role. Please contact support.");
-            }
-        }
-
-        function togglePassword() {
-            const passwordField = document.getElementById("password");
-            passwordField.type = passwordField.type === "password" ? "text" : "password";
+            alert("Login successful!");
+            window.location.href = "dashboard.html";  // Redirect to dashboard after login
         }
     </script>
 </body>
