@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Event Recommendation System - Login</title>
     <link rel="stylesheet" href="login.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
     <div class="container">
         <div class="login-box">
             <div class="form-container">
                 <h2>Log in</h2>
-                <form id="login-form">
+                <form onsubmit="loginUser(event)">
                     <label for="email">Email</label>
                     <input type="email" id="email" placeholder="Enter your email" required>
                     
@@ -21,9 +22,17 @@
                         <span class="eye-icon" onclick="togglePassword()">👁️</span>
                     </div>
 
+                    <div class="options">
+                        <a href="#">Forgot password?</a>
+                    </div>
+
                     <button type="submit">Log in</button>
                 </form>
-                <p>Don't have an account? <a href="signup.html">Register</a></p>
+
+                <p>Don't have an account? <a href="index.html">Register</a></p>
+                <div class="footer-links">
+                    <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+                </div>
             </div>
         </div>
 
@@ -32,23 +41,24 @@
         </div>
     </div>
 
-    <!-- ✅ Load Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-    <!-- ✅ Login Script -->
     <script>
+        // Initialize Supabase
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document.getElementById("login-form").addEventListener("submit", async (event) => {
+        async function loginUser(event) {
             event.preventDefault();
-
-            const email = document.getElementById("email").value.trim();
+            
+            // Get email and password
+            const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
-            // ✅ Authenticate user
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            // Attempt login
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
             if (error) {
                 alert("Login failed: " + error.message);
@@ -56,62 +66,48 @@
                 return;
             }
 
-            // ✅ Ensure the user is verified
+            console.log("Login Successful:", data);
+
+            // Fetch user details
             const { data: userData, error: userError } = await supabase.auth.getUser();
 
-            if (userError || !userData.user) {
-                alert("Failed to get user details. Please try again.");
+            if (userError) {
+                alert("Error fetching user data: " + userError.message);
                 console.error("User Fetch Error:", userError);
                 return;
             }
 
-            if (!userData.user.confirmed_at) {
+            // Check if the email is verified
+            if (!userData?.user?.email_confirmed_at) {
                 alert("Please verify your email before logging in.");
+                await supabase.auth.signOut(); // Logout the user since they are not verified
                 return;
             }
 
-            // ✅ Fetch user role from 'users' table
-            let { data: user, error: roleError } = await supabase
+            // Fetch user role from 'users' table
+            const { data: roleData, error: roleError } = await supabase
                 .from("users")
                 .select("role")
                 .eq("email", email)
                 .single();
 
-            if (roleError || !user) {
-                console.log("User role not found in database. Inserting user details...");
-                
-                // Insert user data if not present in 'users' table
-                const { user_metadata } = userData.user;
-                const fullname = user_metadata?.fullname;
-                const role = user_metadata?.role;
-
-                if (!fullname || !role) {
-                    alert("User data is incomplete. Please sign up again.");
-                    return;
-                }
-
-                let { error: insertError } = await supabase.from("users").insert([
-                    { fullname: fullname, email: email, role: role }
-                ]);
-
-                if (insertError) {
-                    console.error("User Insert Error:", insertError);
-                    alert("Error adding user details to the database.");
-                    return;
-                }
-
-                user = { role }; // Assign the role for redirection
+            if (roleError) {
+                alert("Error fetching user role: " + roleError.message);
+                console.error("Role Fetch Error:", roleError);
+                return;
             }
 
-            console.log("User Role:", user.role);
+            console.log("User Role:", roleData.role);
 
-            // ✅ Redirect based on user role
-            if (user.role === "organizer") {
+            // Redirect based on role
+            if (roleData.role === "participant") {
+                window.location.href = "participant.html";
+            } else if (roleData.role === "organizer") {
                 window.location.href = "organizer.html";
             } else {
-                window.location.href = "participant.html";
+                alert("Unknown role. Please contact support.");
             }
-        });
+        }
 
         function togglePassword() {
             const passwordField = document.getElementById("password");
