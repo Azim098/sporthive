@@ -41,15 +41,17 @@
 
     <!-- ✅ Load Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    
-    <script>
-        document.addEventListener("DOMContentLoaded", async () => {
-            // ✅ Initialize Supabase
-            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            document.getElementById("signup-form").addEventListener("submit", async (event) => {
+    <script>
+        // ✅ Initialize Supabase FIRST before anything else
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("signup-form");
+
+            form.addEventListener("submit", async (event) => {
                 event.preventDefault();
 
                 const fullname = document.getElementById("fullname").value.trim();
@@ -59,12 +61,11 @@
                 const role = document.getElementById("role").value;
 
                 if (password !== confirmPassword) {
-                    alert("❌ Passwords do not match!");
+                    alert("Passwords do not match!");
                     return;
                 }
 
                 try {
-                    // ✅ Sign up user and store metadata
                     const { data, error } = await supabase.auth.signUp({
                         email,
                         password,
@@ -76,52 +77,48 @@
 
                     if (error) {
                         console.error("Signup Error:", error);
-                        alert("❌ Signup failed: " + error.message);
+                        alert("Signup failed: " + error.message);
                         return;
                     }
 
-                    alert("✅ Signup successful! Check your email to verify your account.");
+                    alert("Signup successful! Check your email to verify your account.");
                 } catch (err) {
                     console.error("Unexpected Error:", err);
-                    alert("⚠️ An unexpected error occurred. Please try again.");
+                    alert("An unexpected error occurred. Please try again.");
                 }
             });
 
-            // ✅ Function to check if user is verified and insert into 'users' table
-            async function checkAndInsertUser() {
-                const { data: { user }, error } = await supabase.auth.getUser();
-                
-                if (error || !user) return; // No user logged in, exit function
+            // ✅ Listen for auth state changes (to insert into users table after verification)
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === "SIGNED_IN") {
+                    const user = session.user;
+                    if (!user) return;
 
-                const { id, email, user_metadata } = user;
-                const fullname = user_metadata?.fullname;
-                const role = user_metadata?.role;
+                    const { email, user_metadata } = user;
+                    const fullname = user_metadata?.fullname;
+                    const role = user_metadata?.role;
 
-                if (!fullname || !email || !role) return; // Missing data, exit
+                    if (!fullname || !email || !role) return;
 
-                // ✅ Check if user already exists in 'users' table
-                const { data: existingUser } = await supabase
-                    .from("users")
-                    .select("id")
-                    .eq("email", email)
-                    .single();
+                    // ✅ Check if user already exists
+                    const { data: existingUser } = await supabase
+                        .from("users")
+                        .select("id")
+                        .eq("email", email)
+                        .single();
 
-                if (existingUser) return; // User already exists, exit
+                    if (existingUser) return; // User already exists
 
-                // ✅ Insert user details into the database
-                const { error: insertError } = await supabase.from("users").insert([
-                    { id, fullname, email, role }
-                ]);
+                    // ✅ Insert into users table
+                    const { error: insertError } = await supabase.from("users").insert([
+                        { fullname, email, role }
+                    ]);
 
-                if (insertError) {
-                    console.error("Database Insert Error:", insertError);
-                } else {
-                    console.log("✅ User inserted successfully!");
+                    if (insertError) {
+                        console.error("Database Insert Error:", insertError);
+                    }
                 }
-            }
-
-            // ✅ Run this function when the page loads
-            checkAndInsertUser();
+            });
         });
     </script>
 </body>
