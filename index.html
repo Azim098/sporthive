@@ -43,63 +43,59 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js" defer></script>
 
     <!-- ✅ Initialize Supabase and ensure execution after DOMContentLoaded -->
-  <script defer>
-    window.addEventListener("DOMContentLoaded", () => {
-        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script defer>
+        window.addEventListener("DOMContentLoaded", () => {
+            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+            
+            // ✅ Ensure Supabase client is properly initialized
+            const supabase = window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document.getElementById("signup-form").addEventListener("submit", async (event) => {
-            event.preventDefault();
+            // ✅ Handle form submission
+            const form = document.getElementById("signup-form");
 
-            const fullname = document.getElementById("fullname").value.trim();
-            const email = document.getElementById("email").value.toLowerCase();
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirm-password").value;
-            const role = document.getElementById("role").value;
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
 
-            if (password !== confirmPassword) {
-                alert("Passwords do not match!");
-                return;
-            }
+                const fullname = document.getElementById("fullname").value.trim();
+                const email = document.getElementById("email").value.toLowerCase();
+                const password = document.getElementById("password").value;
+                const confirmPassword = document.getElementById("confirm-password").value;
+                const role = document.getElementById("role").value;
 
-            try {
-                // ✅ Create a new user in Supabase
-                const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: {
-                        emailRedirectTo: "https://azim098.github.io/sporthive/login.html"
-                    }
-                });
-
-                if (error) {
-                    console.error("Signup Error:", error);
-                    alert("Signup failed: " + error.message);
+                if (password !== confirmPassword) {
+                    alert("Passwords do not match!");
                     return;
                 }
 
-                console.log("User signed up:", data);
+                try {
+                    const { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            emailRedirectTo: "https://azim098.github.io/sporthive/login.html"
+                        }
+                    });
 
-                // ✅ Insert user details into Supabase "profiles" table
-                const { error: profileError } = await supabase
-                    .from("profiles")
-                    .insert([{ id: data.user.id, fullname, email, role }]);
+                    if (error) {
+                        console.error("Signup Error:", error);
+                        alert("Signup failed: " + error.message);
+                        return;
+                    }
 
-                if (profileError) {
-                    console.error("Profile Insert Error:", profileError);
+                    // Store user data locally
+                    localStorage.setItem("fullname", fullname);
+                    localStorage.setItem("email", email);
+                    localStorage.setItem("role", role);
+
+                    alert("Signup successful! Check your email to verify your account.");
+                    window.location.href = "login.html";
+                } catch (err) {
+                    console.error("Unexpected Error:", err);
+                    alert("An unexpected error occurred. Please try again.");
                 }
-
-                // ✅ Notify user about email verification
-                alert("Signup successful! Please check your email to verify your account before logging in.");
-                window.location.href = "login.html";
-            } catch (err) {
-                console.error("Unexpected Error:", err);
-                alert("An unexpected error occurred. Please try again.");
-            }
+            });
         });
-    });
-</script>
+    </script>
 </body>
 </html>
