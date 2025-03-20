@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Event Recommendation System - Login</title>
     <link rel="stylesheet" href="login.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
     <div class="container">
@@ -29,7 +28,7 @@
                     <button type="submit">Log in</button>
                 </form>
 
-                <p>Don't have an account? <a href="index.html">Register</a></p>
+                <p>Don't have an account? <a href="signup.html">Register</a></p>
                 <div class="footer-links">
                     <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
                 </div>
@@ -41,20 +40,24 @@
         </div>
     </div>
 
+    <!-- ✅ Supabase SDK first -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <!-- ✅ Initialize Supabase -->
     <script>
-        // ✅ Initialize Supabase
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
 
-        // ✅ Handle Login
+    <!-- ✅ Login Script -->
+    <script>
         async function loginUser(event) {
             event.preventDefault();
             
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
-            // ✅ Attempt login
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password
@@ -66,9 +69,6 @@
                 return;
             }
 
-            console.log("Login Successful:", data);
-
-            // ✅ Check if the user is verified
             const { data: userSession, error: sessionError } = await supabase.auth.getUser();
             
             if (sessionError || !userSession || !userSession.user) {
@@ -84,52 +84,6 @@
                 return;
             }
 
-            // ✅ Check if the user is already in the 'users' table
-            const { data: existingUser, error: fetchError } = await supabase
-                .from("users")
-                .select("*")
-                .eq("email", email)
-                .single();
-
-            if (fetchError && fetchError.code !== "PGRST116") {
-                console.error("Error checking existing user:", fetchError);
-                alert("Error verifying user.");
-                return;
-            }
-
-            // ✅ Insert the user data if they don't already exist
-            if (!existingUser) {
-                console.log("User not found, inserting into DB...");
-
-                const fullname = localStorage.getItem("fullname");
-                const role = localStorage.getItem("role");
-
-                if (!fullname || !role) {
-                    alert("User data missing. Please sign up again.");
-                    window.location.href = "signup.html";
-                    return;
-                }
-
-                const { error: insertError } = await supabase
-                    .from("users")
-                    .insert([{
-                        id: user.id,
-                        fullname: fullname,
-                        email: user.email,
-                        role: role
-                    }]);
-
-                if (insertError) {
-                    console.error("Insert Error:", insertError);
-                    alert("Failed to insert user data.");
-                    return;
-                }
-
-                console.log("User data inserted successfully.");
-                alert("Account verified and data saved!");
-            }
-
-            // ✅ Fetch user role from 'users' table
             const { data: userData, error: userError } = await supabase
                 .from("users")
                 .select("role")
@@ -138,23 +92,13 @@
 
             if (userError) {
                 alert("Error fetching user data: " + userError.message);
-                console.error("User Fetch Error:", userError);
                 return;
             }
 
-            console.log("User Role:", userData.role);
-
             // ✅ Redirect based on role
-            if (userData.role === "participant") {
-                window.location.href = "participant.html";
-            } else if (userData.role === "organizer") {
-                window.location.href = "organizer.html";
-            } else {
-                alert("Unknown role. Please contact support.");
-            }
+            window.location.href = userData.role === "participant" ? "participant.html" : "organizer.html";
         }
 
-        // ✅ Toggle Password Visibility
         function togglePassword() {
             const passwordField = document.getElementById("password");
             passwordField.type = passwordField.type === "password" ? "text" : "password";
