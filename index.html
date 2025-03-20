@@ -44,12 +44,9 @@
 
     <!-- Initialize Supabase -->
     <script>
-        window.addEventListener("DOMContentLoaded", () => {
-            window.supabase = supabase.createClient(
-                "https://idydtkpvhedgyoexkiox.supabase.co",
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY"
-            );
-        });
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     </script>
 
     <!-- Signup Script with Email Verification -->
@@ -69,12 +66,12 @@
             }
 
             try {
-                // ✅ Correct Redirect URL for Verification
-                const { data: authData, error: authError } = await window.supabase.auth.signUp({
+                // ✅ Sign up the user
+                const { data: authData, error: authError } = await supabase.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        emailRedirectTo: "https://azim098.github.io/sporthive/login.html"  // ✅ Redirect after confirmation
+                        emailRedirectTo: "https://azim098.github.io/sporthive/login.html"  // ✅ Redirect after verification
                     }
                 });
 
@@ -84,53 +81,17 @@
                     return;
                 }
 
+                // ✅ Save user data in localStorage for post-verification insertion
+                localStorage.setItem("fullname", fullname);
+                localStorage.setItem("email", email);
+                localStorage.setItem("role", role);
+
                 alert("Signup successful! Check your email to verify your account.");
-                window.location.href = "login.html";
+                window.location.href = "login.html";  // ✅ Redirect to login page
 
             } catch (error) {
                 console.error("Unexpected Error:", error);
                 alert("An unexpected error occurred. Please try again.");
-            }
-        }
-
-        async function checkUserAndInsert() {
-            const { data: user, error } = await window.supabase.auth.getUser();
-            
-            if (error || !user) {
-                console.error("Error fetching user:", error);
-                return;
-            }
-
-            // ✅ Check if the email is verified before inserting data
-            if (!user.user || !user.user.confirmed_at) {
-                alert("Please verify your email first!");
-                return;
-            }
-
-            const fullname = document.getElementById("fullname").value.trim();
-            const role = document.getElementById("role").value;
-
-            try {
-                // Insert user into the DB after verification
-                const { error: insertError } = await window.supabase
-                    .from("users")
-                    .insert([{
-                        id: user.user.id,
-                        fullname: fullname,
-                        email: user.user.email,
-                        role: role
-                    }]);
-
-                if (insertError) {
-                    console.error("Database Insert Error:", insertError);
-                    alert("Error saving user data: " + insertError.message);
-                } else {
-                    alert("User data saved successfully!");
-                    window.location.href = "login.html";
-                }
-            } catch (error) {
-                console.error("Unexpected Error:", error);
-                alert("An error occurred while saving user data.");
             }
         }
     </script>
