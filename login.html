@@ -47,6 +47,17 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Handle email confirmation redirect
+        document.addEventListener("DOMContentLoaded", async () => {
+            const { data, error } = await supabase.auth.getUser();
+
+            if (data?.user?.email_confirmed_at) {
+                alert("✅ Email confirmed! You can now log in.");
+            } else if (error) {
+                console.error("Error fetching user:", error);
+            }
+        });
+
         async function loginUser(event) {
             event.preventDefault();
             
@@ -61,7 +72,7 @@
             });
 
             if (error) {
-                alert("Login failed: " + error.message);
+                alert("❌ Login failed: " + error.message);
                 console.error("Login Error:", error);
                 return;
             }
@@ -79,7 +90,7 @@
 
             // Check if the email is verified
             if (!userData?.user?.email_confirmed_at) {
-                alert("Please verify your email before logging in.");
+                alert("⚠️ Please verify your email before logging in.");
                 await supabase.auth.signOut(); // Logout the user since they are not verified
                 return;
             }
