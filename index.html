@@ -68,34 +68,43 @@
                     return;
                 }
 
-                try {
-                    const { data, error } = await supabase.auth.signUp({
-                        email: email,
-                        password: password,
-                        options: {
-                            emailRedirectTo: "https://azim098.github.io/sporthive/login.html"
-                        }
-                    });
-
-                    if (error) {
-                        console.error("Signup Error:", error);
-                        alert("Signup failed: " + error.message);
-                        return;
-                    }
-
-                    // Store user data locally
-                    localStorage.setItem("fullname", fullname);
-                    localStorage.setItem("email", email);
-                    localStorage.setItem("role", role);
-
-                    alert("Signup successful! Check your email to verify your account.");
-                    window.location.href = "login.html";
-                } catch (err) {
-                    console.error("Unexpected Error:", err);
-                    alert("An unexpected error occurred. Please try again.");
+               try {
+            // 🔹 Step 1: Sign up user with authentication
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    emailRedirectTo: "https://YOUR-USERNAME.github.io/sports-hive/login.html"
                 }
             });
-        });
+
+            if (authError) {
+                console.error("Signup Error:", authError);
+                alert("Signup failed: " + authError.message);
+                return;
+            }
+
+            const userId = authData.user.id; // 🔹 Get user ID from authentication
+
+            // 🔹 Step 2: Insert user details into `users` table
+            const { error: dbError } = await supabase.from("users").insert([
+                { id: userId, fullname: fullname, email: email, role: role }
+            ]);
+
+            if (dbError) {
+                console.error("Database Insert Error:", dbError);
+                alert("User registration failed in database.");
+                return;
+            }
+
+            alert("Signup successful! Check your email to verify your account.");
+            window.location.href = "login.html";
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            alert("An unexpected error occurred. Please try again.");
+        }
+    });
     </script>
 </body>
 </html>
