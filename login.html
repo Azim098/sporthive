@@ -28,15 +28,21 @@
         </div>
     </div>
 
-    <!-- ✅ Load Supabase Library First -->
+    <!-- ✅ Load Supabase First -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    <!-- ✅ JavaScript Code -->
+    <!-- ✅ Hashing Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <!-- ✅ Initialize Supabase -->
     <script>
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  // Replace with actual key
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);  // ✅ Global access
+    </script>
 
+    <!-- ✅ Your Custom JavaScript -->
+    <script>
         async function loginUser(event) {
             event.preventDefault();
 
@@ -44,7 +50,7 @@
             const password = document.getElementById("password").value;
 
             // ✅ Fetch user data manually (because password is stored as SHA-256 hash)
-            const { data: user, error } = await supabase
+            const { data: user, error } = await window.supabase
                 .from("users")
                 .select("id, role, password")
                 .eq("email", email)
@@ -72,9 +78,6 @@
             }
         }
     </script>
-
-    <!-- ✅ Hashing Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
 </body>
 </html>
