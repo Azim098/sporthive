@@ -28,16 +28,14 @@
         </div>
     </div>
 
-    <!-- ✅ Supabase Library -->
+    <!-- ✅ Load Supabase Library First -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    <!-- ✅ Hashing Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
+    <!-- ✅ JavaScript Code -->
     <script>
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  // Replace with actual key
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function loginUser(event) {
             event.preventDefault();
@@ -45,33 +43,38 @@
             const email = document.getElementById("email").value.toLowerCase();
             const password = document.getElementById("password").value;
 
-            // ✅ Hash the password before comparing
-            const hashedPassword = CryptoJS.SHA256(password).toString();
-
-            // ✅ Check user credentials
-            const { data, error } = await supabase
+            // ✅ Fetch user data manually (because password is stored as SHA-256 hash)
+            const { data: user, error } = await supabase
                 .from("users")
                 .select("id, role, password")
                 .eq("email", email)
                 .single();
 
-            if (error || !data) {
-                alert("User not found or incorrect email!");
+            if (error || !user) {
+                alert("Login failed: Invalid email or password.");
                 return;
             }
 
-            if (data.password !== hashedPassword) {
-                alert("Incorrect password!");
+            // ✅ Hash the input password to compare with stored hash
+            const hashedInputPassword = CryptoJS.SHA256(password).toString();
+            if (hashedInputPassword !== user.password) {
+                alert("Incorrect password.");
                 return;
             }
 
-            // ✅ Redirect based on role
-            if (data.role === "participant") {
+            // ✅ Redirect based on user role
+            if (user.role === "participant") {
                 window.location.href = "participant.html";
-            } else if (data.role === "organizer") {
+            } else if (user.role === "organizer") {
                 window.location.href = "organizer.html";
+            } else {
+                alert("Invalid user role.");
             }
         }
     </script>
+
+    <!-- ✅ Hashing Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
 </body>
 </html>
