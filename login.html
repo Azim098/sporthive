@@ -34,50 +34,62 @@
     <!-- ✅ Hashing Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-    <!-- ✅ Initialize Supabase -->
+    <!-- ✅ Initialize Supabase BEFORE using it -->
     <script>
-        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  // Replace with actual key
-        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);  // ✅ Global access
+        window.addEventListener("load", function() {
+            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+            window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log("✅ Supabase initialized successfully!");
+        });
     </script>
 
-    <!-- ✅ Your Custom JavaScript -->
+    <!-- ✅ l.l Login Function AFTER Supabase is initialized -->
     <script>
         async function loginUser(event) {
             event.preventDefault();
 
+            if (!window.supabase) {
+                alert("Supabase not initialized yet. Please wait a moment and try again.");
+                return;
+            }
+
             const email = document.getElementById("email").value.toLowerCase();
             const password = document.getElementById("password").value;
 
-            // ✅ Fetch user data manually (because password is stored as SHA-256 hash)
-            const { data: user, error } = await window.supabase
-                .from("users")
-                .select("id, role, password")
-                .eq("email", email)
-                .single();
+            try {
+                // ✅ Fetch user data manually (because password is stored as SHA-256 hash)
+                const { data: user, error } = await window.supabase
+                    .from("users")
+                    .select("id, role, password")
+                    .eq("email", email)
+                    .single();
 
-            if (error || !user) {
-                alert("Login failed: Invalid email or password.");
-                return;
-            }
+                if (error || !user) {
+                    alert("Login failed: Invalid email or password.");
+                    return;
+                }
 
-            // ✅ Hash the input password to compare with stored hash
-            const hashedInputPassword = CryptoJS.SHA256(password).toString();
-            if (hashedInputPassword !== user.password) {
-                alert("Incorrect password.");
-                return;
-            }
+                // ✅ Hash the input password to compare with stored hash
+                const hashedInputPassword = CryptoJS.SHA256(password).toString();
+                if (hashedInputPassword !== user.password) {
+                    alert("Incorrect password.");
+                    return;
+                }
 
-            // ✅ Redirect based on user role
-            if (user.role === "participant") {
-                window.location.href = "participant.html";
-            } else if (user.role === "organizer") {
-                window.location.href = "organizer.html";
-            } else {
-                alert("Invalid user role.");
+                // ✅ Redirect based on user role
+                if (user.role === "participant") {
+                    window.location.href = "participant.html";
+                } else if (user.role === "organizer") {
+                    window.location.href = "organizer.html";
+                } else {
+                    alert("Invalid user role.");
+                }
+            } catch (err) {
+                console.error("Login error:", err);
+                alert("An error occurred. Please try again.");
             }
         }
     </script>
-
 </body>
 </html>
