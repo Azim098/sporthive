@@ -60,12 +60,10 @@
                 return;
             }
 
+            // Step 1: Sign up the user in Supabase Authentication (Triggers email verification)
             const { data, error } = await supabase.auth.signUp({
                 email: email,
-                password: password,
-                options: {
-                    data: { fullname, role }
-                }
+                password: password
             });
 
             if (error) {
@@ -73,8 +71,49 @@
                 return;
             }
 
-            alert("Signup successful! Please check your email for confirmation.");
+            alert("Signup successful! Please check your email for verification.");
+            
+            // Step 2: Wait for email verification
+            await checkEmailVerification(email);
+
+            // Step 3: Insert user data into the 'users' table after verification
+            const { error: insertError } = await supabase.from("users").insert([
+                {
+                    fullname: fullname,
+                    email: email,
+                    role: role
+                }
+            ]);
+
+            if (insertError) {
+                console.error("Error inserting user data:", insertError.message);
+                return;
+            }
+
+            alert("Account verified and data saved successfully! Redirecting to login...");
             window.location.href = "login.html";
+        }
+
+        async function checkEmailVerification(email) {
+            let isVerified = false;
+
+            alert("Waiting for email verification... Click OK and check your inbox!");
+
+            while (!isVerified) {
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 sec
+
+                // Step 4: Check user session (email verification status)
+                const { data, error } = await supabase.auth.getUser();
+
+                if (error) {
+                    console.error("Error checking email verification:", error.message);
+                    return;
+                }
+
+                if (data.user && data.user.email_confirmed_at) {
+                    isVerified = true;
+                }
+            }
         }
     </script>
 </body>
