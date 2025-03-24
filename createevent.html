@@ -26,6 +26,7 @@
             <li><a href="oprofile.html">Profile</a></li>
         </ul>
     </nav> 
+
     <section id="create-event-form">
         <div class="form-container">
             <h2>Create Your Sports Event</h2>
@@ -94,12 +95,13 @@
     <footer>
         <p>© 2025 SportsConnect</p>
     </footer>
+
     <script>
         const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
         const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
     
-        // Toggle volunteers group
+        // Toggle volunteers group visibility
         function toggleVolunteers() {
             const volunteerGroup = document.getElementById("volunteer-group");
             volunteerGroup.style.display = document.getElementById("include-volunteers").checked ? "block" : "none";
@@ -113,35 +115,31 @@
                 window.location.href = "login.html";
                 return null;
             }
-            console.log("Authenticated user:", user); // Debug: Log user details
+            console.log("Authenticated user:", user); 
             return user;
         }
     
         // Form submission handler
         document.getElementById("event-form").addEventListener("submit", async (event) => {
-            event.preventDefault(); // Ensure form doesn't submit traditionally
+            event.preventDefault(); 
     
             const user = await getUser();
             if (!user) return;
     
             const formData = new FormData(event.target);
-            console.log("Raw form data:", Object.fromEntries(formData)); // Debug: Log raw form data
-    
             const includeVolunteers = formData.get("include-volunteers") === "on";
             const eventVolunteers = formData.get("event-volunteers");
-    
+
             // Validate form data
             if (!formData.get("event-name") || !formData.get("event-date") || !formData.get("event-time") ||
                 !formData.get("event-location") || !formData.get("event-description") ||
                 !formData.get("event-difficulty") || !formData.get("event-registrations")) {
-                console.error("Missing required fields");
                 document.getElementById("error-message").textContent = "Please fill all required fields.";
                 document.getElementById("error-message").classList.remove("hidden");
                 return;
             }
     
             if (includeVolunteers && !eventVolunteers) {
-                console.error("Missing volunteers count when include_volunteers is checked");
                 document.getElementById("error-message").textContent = "Please specify total volunteers.";
                 document.getElementById("error-message").classList.remove("hidden");
                 return;
@@ -164,8 +162,6 @@
                 created_at: new Date().toISOString()
             };
     
-            console.log("Prepared event object:", newEvent); // Debug: Log prepared object
-    
             const submitButton = document.getElementById("submit-button");
             const successMessage = document.getElementById("success-message");
             const errorMessage = document.getElementById("error-message");
@@ -177,13 +173,9 @@
                 const { data, error } = await supabase
                     .from('events')
                     .insert([newEvent]);
-                console.log("Insert response:", { data, error }); // Debug: Log full response
     
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
     
-                successMessage.textContent = "Event Created Successfully! ✅";
                 successMessage.classList.remove("hidden");
                 errorMessage.classList.add("hidden");
     
@@ -195,10 +187,8 @@
                 }, 2000);
     
             } catch (error) {
-                console.error("Insert error details:", JSON.stringify(error, null, 2)); // Detailed error logging
-                errorMessage.textContent = `Error: ${error.message || 'Unknown error'}`;
+                errorMessage.textContent = `Error: ${error.message}`;
                 errorMessage.classList.remove("hidden");
-                successMessage.classList.add("hidden");
             } finally {
                 submitButton.disabled = false;
                 submitButton.textContent = "Create Event";
