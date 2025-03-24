@@ -24,8 +24,10 @@
             </div>
         </div>
     </div>
-    <!-- Supabase must load BEFORE login.js -->
+
+    <!-- Load Supabase first -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="login.js" defer></script> <!-- Add defer to ensure it loads after Supabase -->
+    <!-- Load login.js after Supabase is fully loaded -->
+    <script src="login.js"></script>
 </body>
 </html>
