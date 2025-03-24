@@ -1,17 +1,10 @@
-window.onload = function () {
-    // Ensure Supabase is available
-    if (typeof supabase === "undefined") { 
-        console.error("Supabase is not loaded yet. Check your script order.");
-        return;
-    }
+// Initialize Supabase **outside** window.onload
+const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey); // ✅ This will work now
 
-    // Initialize Supabase
-    const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-    
-    // Corrected: Define supabase AFTER window is loaded
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
+// Wait for DOM to load before accessing elements
+document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("login-form").addEventListener("submit", async function(event) {
         event.preventDefault();
 
@@ -59,4 +52,4 @@ window.onload = function () {
             alert("An unexpected error occurred. Please try again.");
         }
     });
-};
+});
