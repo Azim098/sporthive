@@ -44,38 +44,48 @@
             const email = document.getElementById("email").value.toLowerCase();
             const password = document.getElementById("password").value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password
-            });
+            try {
+                // ✅ Authenticate the user
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
 
-            if (error) {
-                console.error("Login error:", error.message);
-                alert("Login failed: " + error.message);
-                return;
-            }
+                if (error) {
+                    console.error("Login error:", error.message);
+                    alert("Login failed: " + error.message);
+                    return;
+                }
 
-            // ✅ Store JWT Token
-            const token = data?.session?.access_token;
-            if (token) {
-                localStorage.setItem("token", token);  
-            }
+                // ✅ Store the JWT token
+                const token = data?.session?.access_token;
+                if (token) {
+                    localStorage.setItem("token", token);
+                }
 
-            // ✅ Fetch user data to check the role
-            const { data: { user } } = await supabase.auth.getUser();
+                // ✅ Fetch user metadata to check the role
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-            if (user) {
+                if (userError || !user) {
+                    console.error("Failed to fetch user:", userError);
+                    alert("Failed to fetch user data.");
+                    return;
+                }
+
                 const role = user.user_metadata?.role;
 
+                // ✅ Redirect based on user role
                 if (role === "participant") {
                     window.location.href = "participant.html";
                 } else if (role === "organizer") {
                     window.location.href = "organizer.html";
                 } else {
-                    alert("Invalid user role.");
+                    alert("Unknown role. Please contact support.");
                 }
-            } else {
-                alert("Failed to fetch user data.");
+
+            } catch (error) {
+                console.error("Unexpected error:", error);
+                alert("An unexpected error occurred. Please try again.");
             }
         }
     </script>
