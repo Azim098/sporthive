@@ -10,6 +10,7 @@
         .hidden { display: none; }
         #success-message { color: green; font-weight: bold; }
         #error-message { color: red; font-weight: bold; }
+        .volunteer-group { display: none; }
     </style>
 </head>
 <body>
@@ -31,6 +32,7 @@
     <div class="form-container">
         <h2>Create Your Sports Event</h2>
         <form id="event-form">
+            
             <div class="input-group">
                 <label for="event-name">Event Name:</label>
                 <input type="text" id="event-name" name="event-name" required>
@@ -75,12 +77,14 @@
                 <input type="number" id="event-registrations" name="event-registrations" min="1" required>
             </div>
 
+            <!-- Checkbox for volunteers -->
             <div class="input-group">
                 <label for="include-volunteers">Include Volunteers?</label>
-                <input type="checkbox" id="include-volunteers" name="include-volunteers" onclick="toggleVolunteers()">
+                <input type="checkbox" id="include-volunteers" name="include-volunteers">
             </div>
 
-            <div class="input-group" id="volunteer-group" style="display: none;">
+            <!-- Volunteer count field (hidden by default) -->
+            <div class="input-group volunteer-group" id="volunteer-group">
                 <label for="event-volunteers">Total Volunteers Allowed:</label>
                 <input type="number" id="event-volunteers" name="event-volunteers" min="1">
             </div>
@@ -106,16 +110,51 @@
         const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        function toggleVolunteers() {
-            const volunteerGroup = document.getElementById("volunteer-group");
-            volunteerGroup.style.display = document.getElementById("include-volunteers").checked ? "block" : "none";
+        // 🌟 Show/hide volunteer input field when the checkbox is clicked
+        const volunteerCheckbox = document.getElementById("include-volunteers");
+        const volunteerGroup = document.getElementById("volunteer-group");
+
+        volunteerCheckbox.addEventListener("change", () => {
+            if (volunteerCheckbox.checked) {
+                volunteerGroup.style.display = "block";
+            } else {
+                volunteerGroup.style.display = "none";
+            }
+        });
+
+        // 🌟 Fetch organizer UUID
+        async function getOrganizerId() {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('id')
+                    .limit(1);
+
+                if (error || !data || data.length === 0) {
+                    console.error("Error fetching organizer ID:", error?.message || "No organizer found");
+                    return null;
+                }
+
+                return data[0].id;
+
+            } catch (error) {
+                console.error("Error fetching organizer ID:", error);
+                return null;
+            }
         }
 
+        // 🌟 Form submission
         document.getElementById("event-form").addEventListener("submit", async (event) => {
             event.preventDefault();
-            
+
+            const organizerId = await getOrganizerId();
+            if (!organizerId) {
+                alert("No organizer ID found.");
+                return;
+            }
+
             const formData = new FormData(event.target);
-            
+
             const newEvent = {
                 name: formData.get("event-name"),
                 date: formData.get("event-date"),
@@ -127,10 +166,9 @@
                 total_registrations: parseInt(formData.get("event-registrations"), 10),
                 include_volunteers: formData.get("include-volunteers") === "on",
                 total_volunteers: formData.get("event-volunteers") ? parseInt(formData.get("event-volunteers"), 10) : null,
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
+                organizer_id: organizerId
             };
-
-            console.log("Event Object:", newEvent);
 
             try {
                 const { data, error } = await supabase
@@ -155,5 +193,6 @@
         });
     });
 </script>
+
 </body>
 </html>
