@@ -1,10 +1,16 @@
-// Initialize Supabase **outside** window.onload
-const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey); // ✅ This will work now
+document.addEventListener("DOMContentLoaded", async function () {
+    // ✅ Ensure Supabase is available
+    if (typeof window.supabase === "undefined") {
+        console.error("Supabase is not loaded. Check script order.");
+        return;
+    }
 
-// Wait for DOM to load before accessing elements
-document.addEventListener("DOMContentLoaded", function () {
+    // ✅ Define Supabase client
+    const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // ✅ Handle Login Form Submission
     document.getElementById("login-form").addEventListener("submit", async function(event) {
         event.preventDefault();
 
@@ -12,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const password = document.getElementById("password").value;
 
         try {
-            // Login user with Supabase Auth
+            // 🔥 Authenticate User
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password
@@ -25,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const userId = data.user.id;
 
-            // Fetch user role from `users` table
+            // 🔥 Fetch User Role
             const { data: userData, error: roleError } = await supabase
                 .from("users")
                 .select("role")
@@ -39,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const role = userData.role;
 
-            // Redirect based on role
+            // 🔥 Redirect Based on Role
             if (role === "participant") {
                 window.location.href = "participant.html";
             } else if (role === "organizer") {
