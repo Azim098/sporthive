@@ -1,6 +1,6 @@
 window.onload = function () {
     // Ensure Supabase is available
-    if (typeof supabase === "undefined") {
+    if (typeof supabase === "undefined") { 
         console.error("Supabase is not loaded yet. Check your script order.");
         return;
     }
