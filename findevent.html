@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Events - SportsConnect</title>
+    <link rel="stylesheet" href="findevents.css
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <img src="images/logo.png" alt="Sports Hive Logo">
+        </div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="findevents.html" class="find">Find Events</a></li>
+            <li><a href="adaptive.html">Adaptive Arena</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
+            <li><a href="profile.html">Profile</a></li>
+        </ul>
+    </nav>
+    <header>
+        <div class="header-content">
+            <h1>Find Events</h1>
+            <p>Search and register for your favorite sports events based on preferences.</p>
+        </div>
+    </header>
+    <section id="search-filters">
+        <h2>Filter Events</h2>
+        <div>
+            <div class="filters">
+                <label for="skill-level">Skill Level:</label>
+                <select id="skill-level">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="professional">Professional</option>
+                </select>
+
+                <label for="event-time">Event Time:</label>
+                <select id="event-time">
+                    <option value="morning">Morning</option>
+                    <option value="afternoon">Afternoon</option>
+                    <option value="evening">Evening</option>
+                    <option value="night">Night</option>
+                </select>
+
+                <label for="sports">Sports:</label>
+                <select id="sports">
+                    <option value="running">Running</option>
+                    <option value="cycling">Cycling</option>
+                    <option value="swimming">Swimming</option>
+                    <option value="football">Football</option>
+                    <option value="cricket">Cricket</option>
+                    <option value="volleyball">Volleyball</option>
+                    <option value="basketball">Basketball</option>
+                    <option value="javelin">Javelin Throw</option>
+                </select>
+                <div class="checkbox-wrapper-14">
+                    <input id="s1-14" type="checkbox" class="switch">
+                    <label for="s1-14">Apply Filters</label> 
+                </div>
+                <!--<button class="apply-filters">Apply Filters</button>-->
+            </div>
+            <br/>
+            <br/>
+            <form>
+                <input type="text" placeholder="Search for sports events..." class="search-bar" aria-label="Search Events">
+                <button type="submit" class="apply-filters">Search</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="events">
+        <h2>Upcoming Events</h2>
+        <div class="event-list">
+            <div class="event-card">
+                <h3>10K Marathon</h3>
+                <p>Location: Central Park</p>
+                <p>Date: March 15, 2025</p>
+                <p>Time: 8:00 AM</p>
+                <button>Register Now</button>
+            </div>
+            <div class="event-card">
+                <h3>Cycling Challenge</h3>
+                <p>Location: Riverside Trail</p>
+                <p>Date: March 20, 2025</p>
+                <p>Time: 9:00 AM</p>
+                <button>Register Now</button>
+            </div>
+            <div class="event-card">
+                <h3>Swim for Charity</h3>
+                <p>Location: City Pool</p>
+                <p>Date: March 25, 2025</p>
+                <p>Time: 7:00 AM</p>
+                <button>Register Now</button>
+            </div>
+        </div>
+    </section>
+    <footer>
+        <p>&copy; 2025 Sports Hive | All Rights Reserved</p>
+    </footer>
+</body>
+</html>
