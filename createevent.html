@@ -6,7 +6,6 @@
     <title>Create Event</title>
     <link rel="stylesheet" href="createevent.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .hidden { display: none; }
         #success-message { color: green; font-weight: bold; }
@@ -14,137 +13,109 @@
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">
-            <img src="images/logo.png" alt="Sports Hive Logo">
-        </div>
-        <ul>
-            <li><a href="organizer.html">Home</a></li>
-            <li><a href="createevent.html">Create Event</a></li>
-            <li><a href="myevent.html">My Event</a></li>
-            <li><a href="reg.html">Registrations</a></li>
-            <li><a href="oprofile.html">Profile</a></li>
-        </ul>
-    </nav> 
 
-    <section id="create-event-form">
-        <div class="form-container">
-            <h2>Create Your Sports Event</h2>
-            <form id="event-form">
-                <div class="input-group">
-                    <label for="event-name">Event Name:</label>
-                    <input type="text" id="event-name" name="event-name" required>
-                </div>
+<nav>
+    <div class="logo">
+        <img src="images/logo.png" alt="Sports Hive Logo">
+    </div>
+    <ul>
+        <li><a href="organizer.html">Home</a></li>
+        <li><a href="createevent.html">Create Event</a></li>
+        <li><a href="myevent.html">My Event</a></li>
+        <li><a href="reg.html">Registrations</a></li>
+        <li><a href="oprofile.html">Profile</a></li>
+    </ul>
+</nav> 
 
-                <div class="input-group">
-                    <label for="event-date">Date:</label>
-                    <input type="date" id="event-date" name="event-date" required>
-                </div>
+<section id="create-event-form">
+    <div class="form-container">
+        <h2>Create Your Sports Event</h2>
+        <form id="event-form">
+            <div class="input-group">
+                <label for="event-name">Event Name:</label>
+                <input type="text" id="event-name" name="event-name" required>
+            </div>
 
-                <div class="input-group">
-                    <label for="event-time">Time:</label>
-                    <input type="time" id="event-time" name="event-time" required>
-                </div>
+            <div class="input-group">
+                <label for="event-date">Date:</label>
+                <input type="date" id="event-date" name="event-date" required>
+            </div>
 
-                <div class="input-group">
-                    <label for="event-location">Location:</label>
-                    <input type="text" id="event-location" name="event-location" required>
-                </div>
+            <div class="input-group">
+                <label for="event-time">Time:</label>
+                <input type="time" id="event-time" name="event-time" required>
+            </div>
 
-                <div class="input-group">
-                    <label for="event-description">Description:</label>
-                    <textarea id="event-description" name="event-description" rows="4" required></textarea>
-                </div>
+            <div class="input-group">
+                <label for="event-location">Location:</label>
+                <input type="text" id="event-location" name="event-location" required>
+            </div>
 
-                <div class="input-group">
-                    <label for="event-difficulty">Difficulty Level:</label>
-                    <select id="event-difficulty" name="event-difficulty" required>
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="professional">Professional</option>
-                    </select>
-                </div>
+            <div class="input-group">
+                <label for="event-description">Description:</label>
+                <textarea id="event-description" name="event-description" rows="4" required></textarea>
+            </div>
 
-                <div class="input-group">
-                    <label for="event-disabled">Event for Disabled Participants:</label>
-                    <input type="checkbox" id="event-disabled" name="event-disabled">
-                </div>
+            <div class="input-group">
+                <label for="event-difficulty">Difficulty Level:</label>
+                <select id="event-difficulty" name="event-difficulty" required>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="professional">Professional</option>
+                </select>
+            </div>
 
-                <div class="input-group">
-                    <label for="event-registrations">Total Registrations Allowed:</label>
-                    <input type="number" id="event-registrations" name="event-registrations" min="1" required>
-                </div>
+            <div class="input-group">
+                <label for="event-disabled">Event for Disabled Participants:</label>
+                <input type="checkbox" id="event-disabled" name="event-disabled">
+            </div>
 
-                <div class="input-group">
-                    <label for="include-volunteers">Include Volunteers?</label>
-                    <input type="checkbox" id="include-volunteers" name="include-volunteers" onclick="toggleVolunteers()">
-                </div>
+            <div class="input-group">
+                <label for="event-registrations">Total Registrations Allowed:</label>
+                <input type="number" id="event-registrations" name="event-registrations" min="1" required>
+            </div>
 
-                <div class="input-group" id="volunteer-group" style="display: none;">
-                    <label for="event-volunteers">Total Volunteers Allowed:</label>
-                    <input type="number" id="event-volunteers" name="event-volunteers" min="1">
-                </div>
+            <div class="input-group">
+                <label for="include-volunteers">Include Volunteers?</label>
+                <input type="checkbox" id="include-volunteers" name="include-volunteers" onclick="toggleVolunteers()">
+            </div>
 
-                <button type="submit" id="submit-button">Create Event</button>
-                <p id="success-message" class="hidden">Event Created Successfully! ✅</p>
-                <p id="error-message" class="hidden"></p>
-            </form>
-        </div>
-    </section>
+            <div class="input-group" id="volunteer-group" style="display: none;">
+                <label for="event-volunteers">Total Volunteers Allowed:</label>
+                <input type="number" id="event-volunteers" name="event-volunteers" min="1">
+            </div>
 
-    <footer>
-        <p>© 2025 SportsConnect</p>
-    </footer>
+            <button type="submit" id="submit-button">Create Event</button>
+            <p id="success-message" class="hidden">Event Created Successfully! ✅</p>
+            <p id="error-message" class="hidden"></p>
+        </form>
+    </div>
+</section>
 
-    <script>
+<footer>
+    <p>© 2025 SportsConnect</p>
+</footer>
+
+<!-- Supabase Script -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+<script defer>
+    document.addEventListener("DOMContentLoaded", () => {
+
         const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
         const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-    
-        // Toggle volunteers group visibility
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         function toggleVolunteers() {
             const volunteerGroup = document.getElementById("volunteer-group");
             volunteerGroup.style.display = document.getElementById("include-volunteers").checked ? "block" : "none";
         }
-    
-        // Authenticate and get user
-        async function getUser() {
-            const { data: { user }, error } = await supabase.auth.getUser();
-            if (error || !user) {
-                console.error("Authentication error:", error?.message || "No user session");
-                window.location.href = "login.html";
-                return null;
-            }
-            console.log("Authenticated user:", user); 
-            return user;
-        }
-    
-        // Form submission handler
-        document.getElementById("event-form").addEventListener("submit", async (event) => {
-            event.preventDefault(); 
-    
-            const user = await getUser();
-            if (!user) return;
-    
-            const formData = new FormData(event.target);
-            const includeVolunteers = formData.get("include-volunteers") === "on";
-            const eventVolunteers = formData.get("event-volunteers");
 
-            // Validate form data
-            if (!formData.get("event-name") || !formData.get("event-date") || !formData.get("event-time") ||
-                !formData.get("event-location") || !formData.get("event-description") ||
-                !formData.get("event-difficulty") || !formData.get("event-registrations")) {
-                document.getElementById("error-message").textContent = "Please fill all required fields.";
-                document.getElementById("error-message").classList.remove("hidden");
-                return;
-            }
-    
-            if (includeVolunteers && !eventVolunteers) {
-                document.getElementById("error-message").textContent = "Please specify total volunteers.";
-                document.getElementById("error-message").classList.remove("hidden");
-                return;
-            }
-    
+        document.getElementById("event-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            
             const newEvent = {
                 name: formData.get("event-name"),
                 date: formData.get("event-date"),
@@ -154,46 +125,35 @@
                 difficulty: formData.get("event-difficulty"),
                 disabled_friendly: formData.get("event-disabled") === "on",
                 total_registrations: parseInt(formData.get("event-registrations"), 10),
-                current_registrations: 0,
-                include_volunteers: includeVolunteers,
-                total_volunteers: includeVolunteers ? parseInt(eventVolunteers, 10) : null,
-                current_volunteers: 0,
-                organizer_id: user.id,
+                include_volunteers: formData.get("include-volunteers") === "on",
+                total_volunteers: formData.get("event-volunteers") ? parseInt(formData.get("event-volunteers"), 10) : null,
                 created_at: new Date().toISOString()
             };
-    
-            const submitButton = document.getElementById("submit-button");
-            const successMessage = document.getElementById("success-message");
-            const errorMessage = document.getElementById("error-message");
-    
-            submitButton.disabled = true;
-            submitButton.textContent = "Creating...";
-    
+
+            console.log("Event Object:", newEvent);
+
             try {
                 const { data, error } = await supabase
                     .from('events')
                     .insert([newEvent]);
-    
+
                 if (error) throw error;
-    
-                successMessage.classList.remove("hidden");
-                errorMessage.classList.add("hidden");
-    
-                event.target.reset();
-                toggleVolunteers();
-    
+
+                document.getElementById("success-message").classList.remove("hidden");
+                document.getElementById("error-message").classList.add("hidden");
+
                 setTimeout(() => {
                     window.location.href = "myevent.html";
                 }, 2000);
-    
+
             } catch (error) {
-                errorMessage.textContent = `Error: ${error.message}`;
-                errorMessage.classList.remove("hidden");
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = "Create Event";
+                console.error("Error:", error.message);
+                document.getElementById("error-message").textContent = `Error: ${error.message}`;
+                document.getElementById("error-message").classList.remove("hidden");
+                document.getElementById("success-message").classList.add("hidden");
             }
         });
-    </script>
+    });
+</script>
 </body>
 </html>
