@@ -80,7 +80,12 @@
                     window.location.href = "participant.html";
                 } else if (role === "organizer") {
                     window.location.href = "organizer.html";
-                } else {
+                } 
+                else if (role === null) {
+                     alert("You are dumb");
+                }
+                    
+                else {
                     alert("Unknown role. Please contact support.");
                 }
 
