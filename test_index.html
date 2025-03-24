@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup - Sports Hive</title>
+    <link rel="stylesheet" href="signup.css">
+</head>
+<body>
+    <div class="container">
+        <div class="signup-box">
+            <div class="form-container">
+                <h2>Sign Up</h2>
+                <form id="signup-form" onsubmit="signUpUser(event)">
+                    <label for="fullname">Full Name</label>
+                    <input type="text" id="fullname" placeholder="Enter your full name" required>
+                    
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required oninput="this.value = this.value.toLowerCase()">
+
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Create a password" required>
+                    
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" placeholder="Re-enter password" required>
+                    
+                    <label for="role">Sign up as:</label>
+                    <select id="role" required>
+                        <option value="participant">Participant</option>
+                        <option value="organizer">Event Organizer</option>
+                    </select>
+                    
+                    <button type="submit" id="signup-button" disabled>Sign Up</button>
+                </form>
+                <p>Already have an account? <a href="login.html">Log in</a></p>
+            </div>
+        </div>
+        <div class="image-box">
+            <img src="signup.avif" alt="Fitness Image">
+        </div>
+    </div>
+
+    <!-- ✅ Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <!-- ✅ Your Custom JavaScript -->
+    <script>
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ✅ Enable/Disable Button Based on Form Validation
+        document.getElementById("signup-form").addEventListener("input", () => {
+            const isFormValid = [...document.querySelectorAll("#signup-form input, #signup-form select")].every(input => input.value.trim() !== "");
+            document.getElementById("signup-button").disabled = !isFormValid;
+        });
+
+        // ✅ Signup Function with Authentication
+        async function signUpUser(event) {
+            event.preventDefault();
+
+            const fullname = document.getElementById("fullname").value.trim();
+            const email = document.getElementById("email").value.toLowerCase();
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
+            const role = document.getElementById("role").value;
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            // ✅ Create the user with authentication
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { fullname, role }
+                }
+            });
+
+            if (error) {
+                console.error("Signup error:", error);
+                alert("Error: " + error.message);
+                return;
+            }
+
+            // ✅ Store JWT Token
+            const token = data?.session?.access_token;
+            if (token) {
+                localStorage.setItem("token", token);  // Store token for future use
+            }
+
+            alert("Signup successful! Redirecting to login...");
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>
