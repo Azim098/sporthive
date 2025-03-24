@@ -55,7 +55,7 @@
             document.getElementById("signup-button").disabled = !isFormValid;
         });
 
-        // ✅ Signup Function with Authentication
+        // ✅ Signup Function with Metadata Storage
         async function signUpUser(event) {
             event.preventDefault();
 
@@ -70,29 +70,40 @@
                 return;
             }
 
-            // ✅ Create the user with authentication
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: { fullname, role }
+            try {
+                // ✅ Create the user with user_metadata
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            user_metadata: {    // ✅ Correctly storing fullname and role in user_metadata
+                                fullname,
+                                role
+                            }
+                        }
+                    }
+                });
+
+                if (error) {
+                    console.error("Signup error:", error);
+                    alert("Error: " + error.message);
+                    return;
                 }
-            });
 
-            if (error) {
-                console.error("Signup error:", error);
-                alert("Error: " + error.message);
-                return;
+                // ✅ Store JWT Token
+                const token = data?.session?.access_token;
+                if (token) {
+                    localStorage.setItem("token", token);  // Store token for future use
+                }
+
+                alert("Signup successful! Redirecting to login...");
+                window.location.href = "login.html";
+
+            } catch (err) {
+                console.error("Unexpected error:", err);
+                alert("An unexpected error occurred.");
             }
-
-            // ✅ Store JWT Token
-            const token = data?.session?.access_token;
-            if (token) {
-                localStorage.setItem("token", token);  // Store token for future use
-            }
-
-            alert("Signup successful! Redirecting to login...");
-            window.location.href = "login.html";
         }
     </script>
 </body>
