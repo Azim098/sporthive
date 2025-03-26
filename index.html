@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup - Sports Hive</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
     <div class="container">
@@ -33,6 +34,53 @@
             </div>
         </div>
     </div>
-    <script src="index.js"></script>
+
+    <script>
+        const supabaseUrl = "https://YOUR_PROJECT_URL.supabase.co"; // Replace with your Supabase Project URL
+        const supabaseKey = "YOUR_ANON_KEY"; // Replace with your Supabase anon public key
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        const signupForm = document.getElementById("signup-form");
+
+        signupForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const fullname = document.getElementById("fullname").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const role = document.getElementById("role").value;
+
+            try {
+                // 1. Create user in Authentication
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) throw error;
+
+                const userId = data.user.id; // Auth ID
+
+                // 2. Store user details in "users" table
+                const { error: insertError } = await supabase.from("users").insert([
+                    {
+                        id: userId,
+                        fullname: fullname,
+                        email: email,
+                        role: role,
+                        password: password, // optional: you can remove this if not needed
+                    },
+                ]);
+
+                if (insertError) throw insertError;
+
+                alert("Signup successful! Please verify your email.");
+                window.location.href = "login.html";
+            } catch (err) {
+                alert(err.message);
+                console.error(err);
+            }
+        });
+    </script>
 </body>
 </html>
