@@ -19,11 +19,11 @@
                     <input type="email" id="email" placeholder="Enter your email" required oninput="this.value = this.value.toLowerCase()">
 
                     <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Create a password" required>
-                    
+                    <input type="password" id="password" placeholder="Create a password (min 6 characters)" required>
+
                     <label for="confirm-password">Confirm Password</label>
                     <input type="password" id="confirm-password" placeholder="Re-enter password" required>
-                    
+
                     <label for="role">Sign up as:</label>
                     <select id="role" required>
                         <option value="participant">Participant</option>
@@ -39,13 +39,9 @@
         </div>
     </div>
 
-    <!-- ✅ Supabase Library (Load First) -->
+    <!-- ✅ Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    <!-- ✅ Hashing Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
-    <!-- ✅ Your Custom JavaScript -->
     <script>
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
@@ -65,21 +61,49 @@
             const confirmPassword = document.getElementById("confirm-password").value;
             const role = document.getElementById("role").value;
 
+            // ✅ Check password length
+            if (password.length < 6) {
+                alert("Password must be at least 6 characters long!");
+                return;
+            }
+
+            // ✅ Check if passwords match
             if (password !== confirmPassword) {
                 alert("Passwords do not match!");
                 return;
             }
 
-            // ✅ Hash the password using SHA-256 before storing
-            const hashedPassword = CryptoJS.SHA256(password).toString();
+            // ✅ Check if user already exists
+            let { data: existingUser, error: userCheckError } = await supabase
+                .from("users")
+                .select("email")
+                .eq("email", email)
+                .single();
 
-            const { error: insertError } = await supabase.from("users").insert([{ fullname, email, role, password: hashedPassword }]);
-            if (insertError) {
-                alert("Error saving user data: " + insertError.message);
+            if (existingUser) {
+                alert("Account already exists!");
                 return;
             }
 
-            alert("Signup successful! Redirecting to login...");
+            // ✅ Sign up user using Supabase Auth
+            const { user, error: authError } = await supabase.auth.signUp({ email, password });
+
+            if (authError) {
+                alert("Signup failed: " + authError.message);
+                return;
+            }
+
+            // ✅ Store user info in database
+            const { error: dbError } = await supabase.from("users").insert([
+                { id: user.id, fullname, email, role, created_at: new Date().toISOString() }
+            ]);
+
+            if (dbError) {
+                alert("Error saving user data: " + dbError.message);
+                return;
+            }
+
+            alert("Signup successful!");
             window.location.href = "login.html";
         }
     </script>
