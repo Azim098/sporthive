@@ -21,30 +21,61 @@
             <li><a href="profile.html">Profile</a></li>
         </ul>
     </nav>
-
+    
     <header>
         <div class="header-content">
             <h1>Find Events</h1>
             <p>Search and register for your favorite sports events.</p>
         </div>
     </header>
-
+    
     <section id="search-filters">
         <h2>Filter Events</h2>
         <div class="filters">
             <label for="searchInput">Search:</label>
             <input type="text" id="searchInput" placeholder="Search for sports events..." aria-label="Search Events">
+            
+            <label for="skill-level">Skill Level:</label>
+            <select id="skill-level">
+                <option value="">All</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="professional">Professional</option>
+            </select>
+            
+            <label for="event-time">Event Time:</label>
+            <select id="event-time">
+                <option value="">All</option>
+                <option value="morning">Morning</option>
+                <option value="afternoon">Afternoon</option>
+                <option value="evening">Evening</option>
+                <option value="night">Night</option>
+            </select>
+            
+            <label for="sports">Sports:</label>
+            <select id="sports">
+                <option value="">All</option>
+                <option value="running">Running</option>
+                <option value="cycling">Cycling</option>
+                <option value="swimming">Swimming</option>
+                <option value="football">Football</option>
+                <option value="cricket">Cricket</option>
+                <option value="volleyball">Volleyball</option>
+                <option value="basketball">Basketball</option>
+                <option value="javelin">Javelin Throw</option>
+            </select>
+            
             <button id="searchBtn">Search</button>
         </div>
     </section>
-
+    
     <section id="events">
         <h2>Upcoming Events</h2>
         <div id="eventsList" class="event-list">
             <!-- Events will be dynamically inserted here -->
         </div>
     </section>
-
+    
     <footer>
         <p>&copy; 2025 Sports Hive | All Rights Reserved</p>
     </footer>
