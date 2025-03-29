@@ -132,6 +132,12 @@ button:hover {
     background: #e6b800;
     transform: scale(1.05);
 }
+#success-message {
+    color: green;
+    font-weight: bold;
+    display: none;
+}
+
 
 /* Footer */
 footer {
