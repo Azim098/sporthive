@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Event</title>
     <link rel="stylesheet" href="createevent.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         .hidden { display: none; }
         #success-message { color: green; font-weight: bold; }
@@ -22,8 +22,8 @@
     <ul>
         <li><a href="organizer.html">Home</a></li>
         <li><a href="createevent.html">Create Event</a></li>
-        <li><a href="myevent.html">Manage Events</a></li>
-        <li><a href="reg.html">View Registrations</a></li>
+        <li><a href="myevent.html">My Event</a></li>
+        <li><a href="reg.html">Registrations</a></li>
         <li><a href="oprofile.html">Profile</a></li>
     </ul>
 </nav> 
@@ -32,34 +32,35 @@
     <div class="form-container">
         <h2>Create Your Sports Event</h2>
         <form id="event-form">
+            
             <div class="input-group">
                 <label for="event-name">Event Name:</label>
-                <input type="text" id="event-name" required>
+                <input type="text" id="event-name" name="event-name" required>
             </div>
 
             <div class="input-group">
                 <label for="event-date">Date:</label>
-                <input type="date" id="event-date" required>
+                <input type="date" id="event-date" name="event-date" required>
             </div>
 
             <div class="input-group">
                 <label for="event-time">Time:</label>
-                <input type="time" id="event-time" required>
+                <input type="time" id="event-time" name="event-time" required>
             </div>
 
             <div class="input-group">
                 <label for="event-location">Location:</label>
-                <input type="text" id="event-location" required>
+                <input type="text" id="event-location" name="event-location" required>
             </div>
 
             <div class="input-group">
                 <label for="event-description">Description:</label>
-                <textarea id="event-description" rows="4" required></textarea>
+                <textarea id="event-description" name="event-description" rows="4" required></textarea>
             </div>
 
             <div class="input-group">
                 <label for="event-difficulty">Difficulty Level:</label>
-                <select id="event-difficulty" required>
+                <select id="event-difficulty" name="event-difficulty" required>
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
                     <option value="professional">Professional</option>
@@ -68,15 +69,27 @@
 
             <div class="input-group">
                 <label for="event-disabled">Event for Disabled Participants:</label>
-                <input type="checkbox" id="event-disabled">
+                <input type="checkbox" id="event-disabled" name="event-disabled">
             </div>
 
             <div class="input-group">
                 <label for="event-registrations">Total Registrations Allowed:</label>
-                <input type="number" id="event-registrations" min="1" required>
+                <input type="number" id="event-registrations" name="event-registrations" min="1" required>
             </div>
 
-            <button type="submit">Create Event</button>
+            <!-- Checkbox for volunteers -->
+            <div class="input-group">
+                <label for="include-volunteers">Include Volunteers?</label>
+                <input type="checkbox" id="include-volunteers" name="include-volunteers">
+            </div>
+
+            <!-- Volunteer count field (hidden by default) -->
+            <div class="input-group volunteer-group" id="volunteer-group">
+                <label for="event-volunteers">Total Volunteers Allowed:</label>
+                <input type="number" id="event-volunteers" name="event-volunteers" min="1">
+            </div>
+
+            <button type="submit" id="submit-button">Create Event</button>
             <p id="success-message" class="hidden">Event Created Successfully! ✅</p>
             <p id="error-message" class="hidden"></p>
         </form>
@@ -84,56 +97,100 @@
 </section>
 
 <footer>
-    <p>© 2025 SportsHive</p>
+    <p>© 2025 SportsConnect</p>
 </footer>
 
-<script>
-    const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-    const supabaseKey = "YOUR_SUPABASE_ANON_KEY"; // Replace with a secure key
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+<!-- Supabase Script -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 
-    document.getElementById("event-form").addEventListener("submit", async (event) => {
-        event.preventDefault();
+<script defer>
+    document.addEventListener("DOMContentLoaded", () => {
 
-        // Get the currently logged-in user (organizer)
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        if (authError || !user) {
-            document.getElementById("error-message").textContent = "You must be logged in to create an event.";
-            document.getElementById("error-message").classList.remove("hidden");
-            return;
+        // 🌟 Show/hide volunteer input field when the checkbox is clicked
+        const volunteerCheckbox = document.getElementById("include-volunteers");
+        const volunteerGroup = document.getElementById("volunteer-group");
+
+        volunteerCheckbox.addEventListener("change", () => {
+            if (volunteerCheckbox.checked) {
+                volunteerGroup.style.display = "block";
+            } else {
+                volunteerGroup.style.display = "none";
+            }
+        });
+
+        // 🌟 Fetch organizer UUID
+        async function getOrganizerId() {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('id')
+                    .limit(1);
+
+                if (error || !data || data.length === 0) {
+                    console.error("Error fetching organizer ID:", error?.message || "No organizer found");
+                    return null;
+                }
+
+                return data[0].id;
+
+            } catch (error) {
+                console.error("Error fetching organizer ID:", error);
+                return null;
+            }
         }
 
-        const newEvent = {
-            name: document.getElementById("event-name").value,
-            date: document.getElementById("event-date").value,
-            time: document.getElementById("event-time").value,
-            location: document.getElementById("event-location").value,
-            description: document.getElementById("event-description").value,
-            difficulty: document.getElementById("event-difficulty").value,
-            disabled_friendly: document.getElementById("event-disabled").checked,
-            total_registrations: parseInt(document.getElementById("event-registrations").value, 10),
-            created_at: new Date().toISOString(),
-            organizer_id: user.id // Organizer ID from Supabase Auth
-        };
+        // 🌟 Form submission
+        document.getElementById("event-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
 
-        try {
-            const { data, error } = await supabase
-                .from("events")
-                .insert([newEvent]);
+            const organizerId = await getOrganizerId();
+            if (!organizerId) {
+                alert("No organizer ID found.");
+                return;
+            }
 
-            if (error) throw error;
+            const formData = new FormData(event.target);
 
-            document.getElementById("success-message").classList.remove("hidden");
-            document.getElementById("error-message").classList.add("hidden");
+            const newEvent = {
+                name: formData.get("event-name"),
+                date: formData.get("event-date"),
+                time: formData.get("event-time"),
+                location: formData.get("event-location"),
+                description: formData.get("event-description"),
+                difficulty: formData.get("event-difficulty"),
+                disabled_friendly: formData.get("event-disabled") === "on",
+                total_registrations: parseInt(formData.get("event-registrations"), 10),
+                include_volunteers: formData.get("include-volunteers") === "on",
+                total_volunteers: formData.get("event-volunteers") ? parseInt(formData.get("event-volunteers"), 10) : null,
+                created_at: new Date().toISOString(),
+                organizer_id: organizerId
+            };
 
-           document.getElementById("event-form").reset();
+            try {
+                const { data, error } = await supabase
+                    .from('events')
+                    .insert([newEvent]);
 
-        } catch (error) {
-            document.getElementById("error-message").textContent = `Error: ${error.message}`;
-            document.getElementById("error-message").classList.remove("hidden");
-            document.getElementById("success-message").classList.add("hidden");
-        }
+                if (error) throw error;
+
+                document.getElementById("success-message").classList.remove("hidden");
+                document.getElementById("error-message").classList.add("hidden");
+
+                setTimeout(() => {
+                    window.location.href = "myevent.html";
+                }, 2000);
+
+            } catch (error) {
+                console.error("Error:", error.message);
+                document.getElementById("error-message").textContent = Error: ${error.message};
+                document.getElementById("error-message").classList.remove("hidden");
+                document.getElementById("success-message").classList.add("hidden");
+            }
+        });
     });
 </script>
 
