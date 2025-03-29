@@ -97,7 +97,7 @@
     <script>
          const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
         function toggleVolunteers() {
             const volunteerGroup = document.getElementById("volunteer-group");
