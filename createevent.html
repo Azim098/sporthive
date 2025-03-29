@@ -80,7 +80,7 @@
             <!-- Checkbox for volunteers -->
             <div class="input-group">
                 <label for="include-volunteers">Include Volunteers?</label>
-                <input type="checkbox" id="include-volunteers" name="include-volunteers">
+                <input type="checkbox" id="include-volunteers" name="include-volunteers" onclick="toggleVolunteers()">
             </div>
 
             <!-- Volunteer count field (hidden by default) -->
@@ -111,6 +111,10 @@
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // 🌟 Show/hide volunteer input field when the checkbox is clicked
+          function toggleVolunteers() {
+            const volunteerGroup = document.getElementById("volunteer-group");
+            volunteerGroup.style.display = document.getElementById("include-volunteers").checked ? "block" : "none";
+        }
         const volunteerCheckbox = document.getElementById("include-volunteers");
         const volunteerGroup = document.getElementById("volunteer-group");
 
