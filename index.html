@@ -44,7 +44,7 @@
 
     <script>
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY"; 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.getElementById("signup-form").addEventListener("input", () => {
@@ -72,29 +72,25 @@
                 return;
             }
 
-            // ✅ Step 1: Try signing up with Supabase Auth
+            // ✅ Step 1: Sign up user (No email verification)
             const { data, error: authError } = await supabase.auth.signUp({
                 email,
                 password
-            });
+            }, { redirectTo: null });
 
-            // ✅ If user already exists, Supabase returns an error
             if (authError) {
-                if (authError.message.includes("User already registered")) {
-                    alert("Account already exists!");
-                } else {
-                    alert("Signup failed: " + authError.message);
-                }
+                alert("Signup failed: " + authError.message);
                 return;
             }
 
-            // ✅ Step 2: Store additional user info in the database
-            const authId = data.user?.id; // Get Auth ID
+            // ✅ Step 2: Get the Auth ID
+            const authId = data.user?.id;
             if (!authId) {
                 alert("Error: No Auth ID generated.");
                 return;
             }
 
+            // ✅ Step 3: Store user info in "users" table
             const { error: dbError } = await supabase.from("users").insert([
                 { id: authId, fullname, email, role, created_at: new Date().toISOString() }
             ]);
@@ -104,8 +100,8 @@
                 return;
             }
 
-            alert("Signup successful!");
-            window.location.href = "login.html";
+            alert("Signup successful! Redirecting...");
+            window.location.href = "dashboard.html";
         }
     </script>
 </body>
