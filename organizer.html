@@ -12,7 +12,7 @@
     <!-- Navigation Bar -->
     <nav>
         <div class="logo">
-            <img src="images/logo.png" alt="Sports Hive Logo">
+            <img src="logo.png" alt="Sports Hive Logo">
         </div>
         <ul>
             <li><a href="createevent.html">Create Event</a></li>
@@ -25,7 +25,7 @@
     <!-- Hero Section -->
     <header>
         <div class="hero-content">
-            <h1>Welcome, <span id="organizer-name">Loading...</span>!</h1>
+            <h1>Welcome, <span id="events-name">Loading...</span>!</h1>
             <p>Manage your events efficiently and track registrations seamlessly.</p>
         </div>
     </header>
@@ -61,12 +61,12 @@
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function fetchOrganizerName() {
-            document.getElementById("organizer-name").textContent = "Loading...";
+            document.getElementById("events-name").textContent = "Loading...";
 
             const { data: user, error: authError } = await supabase.auth.getUser();
             if (authError || !user?.user?.email) {
                 console.error("Error fetching user:", authError);
-                document.getElementById("organizer-name").textContent = "Organizer";
+                document.getElementById("events-name").textContent = "Organizer";
                 return;
             }
 
@@ -79,9 +79,9 @@
 
             if (fetchError || !data) {
                 console.error("Error fetching name:", fetchError);
-                document.getElementById("organizer-name").textContent = "Organizer";
+                document.getElementById("events-name").textContent = "Organizer";
             } else {
-                document.getElementById("organizer-name").textContent = data.fullname;
+                document.getElementById("events-name").textContent = data.fullname;
             }
         }
 
