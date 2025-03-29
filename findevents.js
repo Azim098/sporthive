@@ -1,45 +1,35 @@
-// Initialize Supabase
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY"; 
-const supabase = window.supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  
+
+// ✅ Fix: Use window.supabase
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 document.addEventListener("DOMContentLoaded", async () => {
     await loadEvents(); // Load events on page load
 
     document.getElementById("searchBtn").addEventListener("click", async () => {
-        await loadEvents();
+        const query = document.getElementById("searchInput").value;
+        await loadEvents(query);
     });
 });
 
-async function loadEvents() {
+async function loadEvents(searchQuery = "") {
     console.log("Fetching events...");
-    const searchInput = document.getElementById("searchInput");
-    const skillFilter = document.getElementById("skillFilter");
-    const timeFilter = document.getElementById("timeFilter");
-    const sportFilter = document.getElementById("sportFilter");
-    
-    const searchQuery = searchInput ? searchInput.value.trim() : "";
-    const skill = skillFilter ? skillFilter.value.trim() : "";
-    const time = timeFilter ? timeFilter.value.trim() : "";
-    const sport = sportFilter ? sportFilter.value.trim() : "";
 
-    let query = supabase.from("events").select("*");
-
-    if (searchQuery) query = query.ilike("name", `%${searchQuery}%`);
-    if (skill) query = query.eq("skill", skill);
-    if (time) query = query.eq("time", time);
-    if (sport) query = query.eq("sport", sport);
-    
-    let { data: events, error } = await query;
+    let { data: events, error } = await supabase
+        .from("events")
+        .select("*")
+        .ilike("name", `%${searchQuery}%`);
 
     console.log("Fetched Data:", events, "Error:", error);
+
     if (error) {
         console.error("Error fetching events:", error.message);
         return;
     }
 
     const eventsList = document.getElementById("eventsList");
-    eventsList.innerHTML = "";
+    eventsList.innerHTML = ""; // Clear previous results
 
     if (!events || events.length === 0) {
         eventsList.innerHTML = "<p>No events found.</p>";
@@ -72,6 +62,7 @@ async function loadEvents() {
 
 async function getUserId() {
     const { data, error } = await supabase.auth.getUser();
+    console.log("User Data:", data, "Error:", error);
     return data?.user?.id || null;
 }
 
