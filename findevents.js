@@ -15,7 +15,7 @@ async function loadEvents(searchQuery = "") {
     let { data: events, error } = await supabase
         .from("events")
         .select("*")
-        .ilike("event_name", `%${searchQuery}%`);
+        .ilike("name", `%${searchQuery}%`);
 
     if (error) {
         console.error("Error fetching events:", error.message);
