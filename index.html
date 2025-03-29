@@ -44,11 +44,12 @@
 
     <script>
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-        const SUPABASE_ANON_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.getElementById("signup-form").addEventListener("input", () => {
-            const isFormValid = [...document.querySelectorAll("#signup-form input, #signup-form select")].every(input => input.value.trim() !== "");
+            const isFormValid = [...document.querySelectorAll("#signup-form input, #signup-form select")]
+                .every(input => input.value.trim() !== "");
             document.getElementById("signup-button").disabled = !isFormValid;
         });
 
@@ -71,30 +72,24 @@
                 return;
             }
 
-            // ✅ Step 1: Check if email is already registered
-            let { data: existingUsers, error: userCheckError } = await supabase
-                .from("users")
-                .select("email")
-                .eq("email", email);
-
-            if (existingUsers.length > 0) {
-                alert("Account already exists!");
-                return;
-            }
-
-            // ✅ Step 2: Sign up user with Supabase Auth
+            // ✅ Step 1: Try signing up with Supabase Auth
             const { data, error: authError } = await supabase.auth.signUp({
                 email,
                 password
             });
 
+            // ✅ If user already exists, Supabase returns an error
             if (authError) {
-                alert("Signup failed: " + authError.message);
+                if (authError.message.includes("User already registered")) {
+                    alert("Account already exists!");
+                } else {
+                    alert("Signup failed: " + authError.message);
+                }
                 return;
             }
 
-            // ✅ Step 3: Store additional user info in the database
-            const authId = data.user?.id;  // Get Auth ID
+            // ✅ Step 2: Store additional user info in the database
+            const authId = data.user?.id; // Get Auth ID
             if (!authId) {
                 alert("Error: No Auth ID generated.");
                 return;
