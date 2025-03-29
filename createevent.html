@@ -94,7 +94,11 @@
     <footer>
         <p>© 2025 SportsConnect</p>
     </footer>
-    <script>
+    <!-- Supabase Script -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+<script defer>
+    document.addEventListener("DOMContentLoaded", () => {
          const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -103,23 +107,50 @@
             const volunteerGroup = document.getElementById("volunteer-group");
             volunteerGroup.style.display = document.getElementById("include-volunteers").checked ? "block" : "none";
         }
-    
+
+        // 🌟 Fetch organizer UUID
+        async function getOrganizerId() {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('id')
+                    .limit(1);
+
+                if (error || !data || data.length === 0) {
+                    console.error("Error fetching organizer ID:", error?.message || "No organizer found");
+                    return null;
+                }
+
+                return data[0].id;
+
+            } catch (error) {
+                console.error("Error fetching organizer ID:", error);
+                return null;
+            }
+        }
+        
         document.getElementById("event-form").addEventListener("submit", async (event) => {
             event.preventDefault();
-    
+              const organizerId = await getOrganizerId();
+            if (!organizerId) {
+                alert("No organizer ID found.");
+                return;
+            }
+            
             const formData = new FormData(event.target);
             const newEvent = {
-                name: formData.get("event-name"),
+                 name: formData.get("event-name"),
                 date: formData.get("event-date"),
                 time: formData.get("event-time"),
                 location: formData.get("event-location"),
                 description: formData.get("event-description"),
                 difficulty: formData.get("event-difficulty"),
-                is_disabled_friendly: formData.get("event-disabled") === "on",
-                max_registrations: parseInt(formData.get("event-registrations"), 10),
+                disabled_friendly: formData.get("event-disabled") === "on",
+                total_registrations: parseInt(formData.get("event-registrations"), 10),
                 include_volunteers: formData.get("include-volunteers") === "on",
-                max_volunteers: formData.get("event-volunteers") ? parseInt(formData.get("event-volunteers"), 10) : null,
-                created_at: new Date().toISOString()
+                total_volunteers: formData.get("event-volunteers") ? parseInt(formData.get("event-volunteers"), 10) : null,
+                created_at: new Date().toISOString(),
+                organizer_id: organizerId
             };
     
             try {
