@@ -28,7 +28,7 @@ async function loadEvents(searchQuery = "") {
     events.forEach(event => {
         const eventCard = document.createElement("div");
         eventCard.innerHTML = `
-            <h3>${event.event_name}</h3>
+            <h3>${event.name}</h3>
             <p>${event.description}</p>
             <p>Date: ${event.date}</p>
             <p>Location: ${event.location}</p>
