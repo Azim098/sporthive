@@ -1,25 +1,31 @@
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  
-
-// ✅ Fix: Use window.supabase
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 document.addEventListener("DOMContentLoaded", async () => {
     await loadEvents(); // Load events on page load
 
     document.getElementById("searchBtn").addEventListener("click", async () => {
-        const query = document.getElementById("searchInput").value;
-        await loadEvents(query);
+        await loadEvents();
     });
 });
 
-async function loadEvents(searchQuery = "") {
+async function loadEvents() {
     console.log("Fetching events...");
+    
+    const searchQuery = document.getElementById("searchInput").value || "";
+    const skillLevel = document.getElementById("skillFilter").value;
+    const eventTime = document.getElementById("timeFilter").value;
+    const sportType = document.getElementById("sportFilter").value;
+    
+    let query = supabase.from("events").select("*");
+    
+    if (searchQuery) query = query.ilike("name", `%${searchQuery}%`);
+    if (skillLevel) query = query.eq("skill_level", skillLevel);
+    if (eventTime) query = query.eq("event_time", eventTime);
+    if (sportType) query = query.eq("sport", sportType);
 
-    let { data: events, error } = await supabase
-        .from("events")
-        .select("*")
-        .ilike("name", `%${searchQuery}%`);
+    const { data: events, error } = await query;
 
     console.log("Fetched Data:", events, "Error:", error);
 
@@ -29,7 +35,7 @@ async function loadEvents(searchQuery = "") {
     }
 
     const eventsList = document.getElementById("eventsList");
-    eventsList.innerHTML = ""; // Clear previous results
+    eventsList.innerHTML = "";
 
     if (!events || events.length === 0) {
         eventsList.innerHTML = "<p>No events found.</p>";
@@ -58,62 +64,4 @@ async function loadEvents(searchQuery = "") {
             await registerForEvent(event.id, button, codeElement);
         });
     });
-}
-
-async function getUserId() {
-    const { data, error } = await supabase.auth.getUser();
-    console.log("User Data:", data, "Error:", error);
-    return data?.user?.id || null;
-}
-
-function generateUniqueCode() {
-    return Math.random().toString(36).substring(2, 10).toUpperCase();
-}
-
-async function checkRegistration(eventId, buttonElement, codeElement) {
-    const participantId = await getUserId();
-    if (!participantId) return;
-
-    const { data, error } = await supabase
-        .from("register")
-        .select("unique_code")
-        .eq("participant_id", participantId)
-        .eq("event_id", eventId)
-        .single();
-
-    if (data) {
-        buttonElement.textContent = "Registered";
-        buttonElement.disabled = true;
-        buttonElement.classList.add("registered");
-        codeElement.textContent = `Your Code: ${data.unique_code}`;
-    }
-}
-
-async function registerForEvent(eventId, buttonElement, codeElement) {
-    const participantId = await getUserId();
-    if (!participantId) {
-        alert("You need to log in to register!");
-        return;
-    }
-
-    const uniqueCode = generateUniqueCode();
-
-    const { data, error } = await supabase
-        .from("register")
-        .insert([{ 
-            participant_id: participantId, 
-            event_id: eventId, 
-            unique_code: uniqueCode 
-        }]);
-
-    if (error) {
-        console.error("Registration failed:", error.message);
-        return;
-    }
-
-    buttonElement.textContent = "Registered";
-    buttonElement.disabled = true;
-    buttonElement.classList.add("registered");
-
-    codeElement.textContent = `Your Code: ${uniqueCode}`;
 }
