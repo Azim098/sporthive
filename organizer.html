@@ -63,28 +63,32 @@
         async function fetchOrganizerName() {
             document.getElementById("events-name").textContent = "Loading...";
 
-            const { data: user, error: authError } = await supabase.auth.getUser();
-            if (authError || !user?.user?.email) {
-                console.error("Error fetching user:", authError);
+            // ✅ Fetch the logged-in user session
+            const { data, error } = await supabase.auth.getSession();
+            if (error || !data.session || !data.session.user) {
+                console.error("Error fetching user session:", error);
                 document.getElementById("events-name").textContent = "Organizer";
                 return;
             }
 
-            const userEmail = user.user.email;
-            const { data, error: fetchError } = await supabase
+            const userEmail = data.session.user.email; // ✅ Get email from session
+
+            // ✅ Fetch user details from "users" table
+            const { data: userData, error: fetchError } = await supabase
                 .from("users")
                 .select("fullname")
                 .eq("email", userEmail)
                 .single();
 
-            if (fetchError || !data) {
+            if (fetchError || !userData) {
                 console.error("Error fetching name:", fetchError);
                 document.getElementById("events-name").textContent = "Organizer";
             } else {
-                document.getElementById("events-name").textContent = data.fullname;
+                document.getElementById("events-name").textContent = userData.fullname;
             }
         }
 
+        // ✅ Call function after page load
         fetchOrganizerName();
     </script>
 
