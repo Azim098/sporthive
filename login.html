@@ -28,66 +28,51 @@
         </div>
     </div>
 
-    <!-- ✅ Load Supabase First -->
+    <!-- ✅ Load Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    <!-- ✅ Hashing Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
-    <!-- ✅ Initialize Supabase BEFORE using it -->
+    <!-- ✅ Initialize Supabase -->
     <script>
-        window.addEventListener("load", function() {
-            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-            window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log("✅ Supabase initialized successfully!");
-        });
-    </script>
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <!-- ✅ l.l Login Function AFTER Supabase is initialized -->
-    <script>
         async function loginUser(event) {
             event.preventDefault();
-
-            if (!window.supabase) {
-                alert("Supabase not initialized yet. Please wait a moment and try again.");
-                return;
-            }
 
             const email = document.getElementById("email").value.toLowerCase();
             const password = document.getElementById("password").value;
 
-            try {
-                // ✅ Fetch user data manually (because password is stored as SHA-256 hash)
-                const { data: user, error } = await window.supabase
-                    .from("users")
-                    .select("id, role, password")
-                    .eq("email", email)
-                    .single();
+            // ✅ Step 1: Use Supabase Auth to sign in
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
 
-                if (error || !user) {
-                    alert("Login failed: Invalid email or password.");
-                    return;
-                }
+            if (error) {
+                alert("Login failed: " + error.message);
+                return;
+            }
 
-                // ✅ Hash the input password to compare with stored hash
-                const hashedInputPassword = CryptoJS.SHA256(password).toString();
-                if (hashedInputPassword !== user.password) {
-                    alert("Incorrect password.");
-                    return;
-                }
+            // ✅ Step 2: Get the user's role from the database
+            const { data: userData, error: userError } = await supabase
+                .from("users")
+                .select("role")
+                .eq("id", data.user.id)
+                .single();
 
-                // ✅ Redirect based on user role
-                if (user.role === "participant") {
-                    window.location.href = "participant.html";
-                } else if (user.role === "organizer") {
-                    window.location.href = "organizer.html";
-                } else {
-                    alert("Invalid user role.");
-                }
-            } catch (err) {
-                console.error("Login error:", err);
-                alert("An error occurred. Please try again.");
+            if (userError) {
+                alert("Error fetching user data.");
+                return;
+            }
+
+            // ✅ Step 3: Redirect user based on role
+            if (userData.role === "participant") {
+                window.location.href = "participant.html";
+            } else if (userData.role === "organizer") {
+                window.location.href = "organizer.html";
+            } else {
+                alert("Invalid user role.");
             }
         }
     </script>
