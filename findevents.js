@@ -1,6 +1,6 @@
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY"; 
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 document.addEventListener("DOMContentLoaded", async () => {
     await loadEvents(); // Load events on page load
@@ -12,10 +12,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function loadEvents(searchQuery = "") {
+    console.log("Fetching events...");
+
     let { data: events, error } = await supabase
         .from("events")
         .select("*")
         .ilike("name", `%${searchQuery}%`);
+
+    console.log("Fetched Data:", events, "Error:", error);
 
     if (error) {
         console.error("Error fetching events:", error.message);
@@ -25,13 +29,19 @@ async function loadEvents(searchQuery = "") {
     const eventsList = document.getElementById("eventsList");
     eventsList.innerHTML = ""; // Clear previous results
 
+    if (!events || events.length === 0) {
+        eventsList.innerHTML = "<p>No events found.</p>";
+        return;
+    }
+
     events.forEach(event => {
         const eventCard = document.createElement("div");
+        eventCard.classList.add("event-card");
         eventCard.innerHTML = `
             <h3>${event.name}</h3>
             <p>${event.description}</p>
-            <p>Date: ${event.date}</p>
-            <p>Location: ${event.location}</p>
+            <p><strong>Date:</strong> ${event.date}</p>
+            <p><strong>Location:</strong> ${event.location}</p>
             <button class="register-button" data-event-id="${event.id}">Register</button>
             <p class="unique-code" style="font-weight: bold;"></p>
         `;
@@ -49,8 +59,9 @@ async function loadEvents(searchQuery = "") {
 }
 
 async function getUserId() {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    return user ? user.id : null;
+    const { data, error } = await supabase.auth.getUser();
+    console.log("User Data:", data, "Error:", error);
+    return data?.user?.id || null;
 }
 
 function generateUniqueCode() {
