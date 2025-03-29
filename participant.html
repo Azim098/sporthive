@@ -167,5 +167,47 @@
             </div>
         </footer>
     </div>
+      <!-- ✅ Load Supabase script first -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <!-- ✅ JavaScript Code -->
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+            
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            async function fetchOrganizerName() {
+                document.getElementById("events-name").textContent = "Loading...";
+
+                // ✅ Fetch the logged-in user session
+                const { data, error } = await supabase.auth.getSession();
+                if (error || !data.session || !data.session.user) {
+                    console.error("Error fetching user session:", error);
+                    document.getElementById("events-name").textContent = "Organizer";
+                    return;
+                }
+
+                const userEmail = data.session.user.email; // ✅ Get email from session
+
+                // ✅ Fetch user details from "users" table
+                const { data: userData, error: fetchError } = await supabase
+                    .from("users")
+                    .select("fullname")
+                    .eq("email", userEmail)
+                    .single();
+
+                if (fetchError || !userData) {
+                    console.error("Error fetching name:", fetchError);
+                    document.getElementById("events-name").textContent = "Participant";
+                } else {
+                    document.getElementById("events-name").textContent = userData.fullname;
+                }
+            }
+
+            fetchOrganizerName();
+        });
+    </script>
 </body>
 </html>
