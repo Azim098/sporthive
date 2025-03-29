@@ -127,9 +127,7 @@
             document.getElementById("success-message").classList.remove("hidden");
             document.getElementById("error-message").classList.add("hidden");
 
-            setTimeout(() => {
-                window.location.href = "myevent.html";
-            }, 2000);
+           document.getElementById("event-form").reset();
 
         } catch (error) {
             document.getElementById("error-message").textContent = `Error: ${error.message}`;
