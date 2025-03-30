@@ -3,104 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Organizer Dashboard</title>
+    <title>Organizer Profile</title>
     <link rel="stylesheet" href="oprofile.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
-
-    <!-- Navigation Bar -->
     <nav>
         <div class="logo">
-            <img src="logo.png" alt="Sports Hive Logo">
+            <img src="images/logo1.png" alt="Sports Hive Logo">
         </div>
         <ul>
             <li><a href="organizer.html">Home</a></li>
+            <li><a href="myevent.html">My Events</a></li>
             <li><a href="createevent.html">Create Event</a></li>
-            <li><a href="myevent.html">Manage Events</a></li>
-            <li><a href="reg.html">View Registrations</a></li>
-            <li><a href="oprofile.html">Profile</a></li>
+            <li><a href="reg.html">Registrations</a></li>
         </ul>
     </nav>
 
-    <!-- Hero Section -->
-    <header>
-        <div class="overlay"></div>
-        <div class="hero-content">
-            <h1>Welcome, <span id="organizer-name">Organizer</span>!</h1>
-            <p>Manage your events efficiently and track registrations seamlessly.</p>
-        </div>
-    </header>
-
-    <!-- Profile Section -->
     <section id="profile">
+        <h2>Organizer Profile</h2>
         <div class="profile-card">
-            <img src="images/profile.png" alt="Profile Picture" class="profile-pic">
-            <h2 id="organizer-fullname">Organizer Name</h2>
+            <input type="file" id="profile-upload" accept="image/*" style="display: none;" onchange="uploadProfilePic(event)">
+            <img src="images/prof.jpg" alt="Profile Picture" class="profile-pic" id="profile-pic" onclick="document.getElementById('profile-upload').click();">
+            <h3 id="organizer-name">Loading...</h3>
             <p>Email: <span id="organizer-email">Loading...</span></p>
-            <button class="manage-btn" onclick="location.href='oprofile.html'">Manage Profile</button>
+            <p>Events Organized: <span id="events-count">0</span></p>
+            <p>Total Participants: <span id="participants-count">0</span></p>
+            <button class="manage-btn">Manage Events</button>
         </div>
     </section>
 
-    <!-- Dashboard Section -->
-    <section class="dashboard">
-        <div class="dashboard-item">
-            <h2>Create a New Event</h2>
-            <p>Plan and publish your sports event in minutes.</p>
-            <a href="createevent.html" class="btn">Create Event</a>
-        </div>
-
-        <div class="dashboard-item">
-            <h2>Manage Your Events</h2>
-            <p>View, update, or cancel your existing events.</p>
-            <a href="myevent.html" class="btn">My Events</a>
-        </div>
-
-        <div class="dashboard-item">
-            <h2>View Registrations</h2>
-            <p>Check participant registrations for your events.</p>
-            <a href="reg.html" class="btn">Registrations</a>
-        </div>
-    </section>
-
-    <!-- Footer -->
     <footer>
-        <p>&copy; 2025 Sports Hive. All rights reserved.</p>
+        <p>&copy; 2025 Sports Hive</p>
     </footer>
 
     <script>
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function fetchOrganizerData() {
-            const { data: user, error } = await supabase.auth.getUser();
-            if (error) {
-                console.error("Error fetching user:", error);
+        async function fetchProfile() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                alert("Please log in to view your profile.");
                 return;
             }
+            
+            let { data, error } = await supabase.from('users').select('*').eq('id', user.id).single();
+            if (error) {
+                console.error("Error fetching profile:", error.message);
+                return;
+            }
+            
+            document.getElementById("organizer-name").innerText = data.fullname;
+            document.getElementById("organizer-email").innerText = data.email;
+            
+            let { data: events, error: eventsError } = await supabase.from('events').select('*').eq('organizer_id', user.id);
+            if (!eventsError) {
+                document.getElementById("events-count").innerText = events.length;
+            }
 
-            const userEmail = user?.user?.email;
-            if (!userEmail) return;
-
-            document.getElementById("organizer-email").textContent = userEmail;
-
-            const { data, error: fetchError } = await supabase
-                .from("users")
-                .select("fullname")
-                .eq("email", userEmail)
-                .single();
-
-            if (fetchError) {
-                console.error("Error fetching name:", fetchError);
-            } else {
-                document.getElementById("organizer-name").textContent = data.fullname;
-                document.getElementById("organizer-fullname").textContent = data.fullname;
+            let { data: registrations, error: regError } = await supabase.from('register').select('*').in('event_id', events.map(e => e.id));
+            if (!regError) {
+                document.getElementById("participants-count").innerText = registrations.length;
             }
         }
 
-        fetchOrganizerData();
-    </script>
+        async function uploadProfilePic(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                alert("Please log in to change your profile picture.");
+                return;
+            }
+            
+            const filePath = `profile_pics/${user.id}`;
+            let { data, error } = await supabase.storage.from('profile_pictures').upload(filePath, file, { upsert: true });
+            
+            if (error) {
+                console.error("Error uploading profile picture:", error.message);
+                return;
+            }
+            
+            let { data: urlData } = supabase.storage.from('profile_pictures').getPublicUrl(filePath);
+            document.getElementById("profile-pic").src = urlData.publicUrl;
+        }
 
+        document.addEventListener("DOMContentLoaded", fetchProfile);
+    </script>
 </body>
 </html>
