@@ -40,86 +40,86 @@
     </footer>
 
     <script>
-       // Initialize Supabase
-const { createClient } = supabase;
-const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        // Initialize Supabase
+        const { createClient } = supabase;
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Function to check authentication and fetch user ID
+        async function getUser() {
+            const { data, error } = await supabase.auth.getUser();
+            if (error || !data?.user) {
+                console.error("User not authenticated. Redirecting to login.");
+                window.location.href = "login.html"; // Redirect to login if not logged in
+                return null;
+            }
+            console.log("Logged-in user ID:", data.user.id);
+            return data.user.id;
+        }
 
-// Function to check authentication and fetch user ID
-async function getUser() {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
-    if (error || !session || !session.user) {
-        console.error("User not authenticated. Redirecting to login.");
-        window.location.href = "login.html"; // Redirect to login if not logged in
-        return null;
-    }
-    
-    console.log("Logged-in user ID:", session.user.id); // Debugging
-    return session.user.id;
-}
+        // Function to fetch and display events created by the logged-in organizer
+        async function fetchEvents() {
+            const userId = await getUser();
+            if (!userId) return;
 
-// Function to fetch and display events created by the logged-in organizer
-async function fetchEvents() {
-    const userId = await getUser();
-    if (!userId) return;
+            console.log("Fetching events for user:", userId);
 
-    console.log("Fetching events for user:", userId);
+            // Fetch events where organizer_id matches logged-in user
+            const { data: events, error } = await supabase
+                .from('events')
+                .select('*')
+                .eq('organizer_id', userId);
 
-    // Fetch events where organizer_id matches logged-in user
-    const { data: events, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('organizer_id', userId);
+            if (error) {
+                console.error("Error fetching events:", error.message);
+                return;
+            }
 
-    if (error) {
-        console.error("Error fetching events:", error.message);
-        return;
-    }
+            console.log("Fetched events:", events); // Debugging
 
-    console.log("Fetched events:", events); // Debugging
+            const eventsContainer = document.getElementById("events-container");
+            const noEventsText = document.getElementById("no-events");
 
-    const eventList = document.getElementById("event-list");
-    eventList.innerHTML = "<h2>Your Events</h2>"; // Reset list
+            eventsContainer.innerHTML = ""; // Clear existing events
 
-    if (!events || events.length === 0) {
-        eventList.innerHTML += "<p>No events found.</p>";
-        return;
-    }
+            if (!events || events.length === 0) {
+                noEventsText.classList.remove("hidden");
+                return;
+            }
 
-    // Loop through events and display them
-    events.forEach(event => {
-        const eventCard = document.createElement("div");
-        eventCard.classList.add("event-card");
-        eventCard.innerHTML = `
-            <h3>${event.name}</h3>
-            <p>Date: ${new Date(event.date).toDateString()}</p>
-            <p>Location: ${event.location}</p>
-            <button onclick="showDetails('${event.name}', '${new Date(event.date).toDateString()}', '${event.location}', '${event.description}')">View Details</button>
-        `;
-        eventList.appendChild(eventCard);
-    });
-}
+            noEventsText.classList.add("hidden");
 
-// Function to show event details in a modal
-function showDetails(title, date, location, description) {
-    document.getElementById("modal-title").innerText = title;
-    document.getElementById("modal-date").innerText = "Date: " + date;
-    document.getElementById("modal-location").innerText = "Location: " + location;
-    document.getElementById("modal-description").innerText = description;
-    document.getElementById("event-modal").style.display = "block";
-}
+            // Loop through events and display them
+            events.forEach(event => {
+                const eventCard = document.createElement("div");
+                eventCard.classList.add("event-card");
+                eventCard.innerHTML = `
+                    <h3>${event.name}</h3>
+                    <p>Date: ${new Date(event.date).toDateString()}</p>
+                    <p>Location: ${event.location}</p>
+                    <button onclick="showDetails('${event.name}', '${new Date(event.date).toDateString()}', '${event.location}', '${event.description}')">View Details</button>
+                `;
+                eventsContainer.appendChild(eventCard);
+            });
+        }
 
-// Function to close the modal
-function closeModal() {
-    document.getElementById("event-modal").style.display = "none";
-}
+        // Function to show event details in a modal
+        function showDetails(title, date, location, description) {
+            document.getElementById("modal-title").innerText = title;
+            document.getElementById("modal-date").innerText = "Date: " + date;
+            document.getElementById("modal-location").innerText = "Location: " + location;
+            document.getElementById("modal-description").innerText = description;
+            document.getElementById("event-modal").style.display = "block";
+        }
 
-// Fetch events when the page loads
-document.addEventListener("DOMContentLoaded", fetchEvents);
+        // Function to close the modal
+        function closeModal() {
+            document.getElementById("event-modal").style.display = "none";
+        }
 
+        // Fetch events when the page loads
+        document.addEventListener("DOMContentLoaded", fetchEvents);
     </script>
 </body>
 </html>
