@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Organizer Profile</title>
-    <link rel="stylesheet" href="oprofile.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <link rel="stylesheet" href="profile.css">
 </head>
 <body>
     <nav>
@@ -23,12 +22,12 @@
     <section id="profile">
         <h2>Organizer Profile</h2>
         <div class="profile-card">
-            <input type="file" id="profile-upload" accept="image/*" style="display: none;" onchange="uploadProfilePic(event)">
-            <img src="images/prof.jpg" alt="Profile Picture" class="profile-pic" id="profile-pic" onclick="document.getElementById('profile-upload').click();">
-            <h3 id="organizer-name">Loading...</h3>
-            <p>Email: <span id="organizer-email">Loading...</span></p>
-            <p>Events Organized: <span id="events-count">0</span></p>
-            <p>Total Participants: <span id="participants-count">0</span></p>
+            <img id="profile-pic" src="images/prof.jpg" alt="Profile Picture" class="profile-pic">
+            <input type="file" id="profile-pic-upload" accept="image/*">
+            <h3 id="profile-name">Loading...</h3>
+            <p id="profile-email">Email: Loading...</p>
+            <p id="profile-events">Events Organized: 0</p>
+            <p id="profile-participants">Total Participants: 0</p>
             <button class="manage-btn">Manage Events</button>
         </div>
     </section>
@@ -38,60 +37,100 @@
     </footer>
 
     <script>
-        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialize Supabase
+const { createClient } = supabase;
+const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function fetchProfile() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                alert("Please log in to view your profile.");
-                return;
-            }
-            
-            let { data, error } = await supabase.from('users').select('*').eq('id', user.id).single();
-            if (error) {
-                console.error("Error fetching profile:", error.message);
-                return;
-            }
-            
-            document.getElementById("organizer-name").innerText = data.fullname;
-            document.getElementById("organizer-email").innerText = data.email;
-            
-            let { data: events, error: eventsError } = await supabase.from('events').select('*').eq('organizer_id', user.id);
-            if (!eventsError) {
-                document.getElementById("events-count").innerText = events.length;
-            }
+// Fetch logged-in user's profile
+async function fetchUserProfile() {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (!user) {
+        alert("You need to log in first.");
+        window.location.href = "login.html";  // Redirect to login if not logged in
+        return;
+    }
 
-            let { data: registrations, error: regError } = await supabase.from('register').select('*').in('event_id', events.map(e => e.id));
-            if (!regError) {
-                document.getElementById("participants-count").innerText = registrations.length;
-            }
-        }
+    const userId = user.id;
 
-        async function uploadProfilePic(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                alert("Please log in to change your profile picture.");
-                return;
-            }
-            
-            const filePath = `profile_pics/${user.id}`;
-            let { data, error } = await supabase.storage.from('profile_pictures').upload(filePath, file, { upsert: true });
-            
-            if (error) {
-                console.error("Error uploading profile picture:", error.message);
-                return;
-            }
-            
-            let { data: urlData } = supabase.storage.from('profile_pictures').getPublicUrl(filePath);
-            document.getElementById("profile-pic").src = urlData.publicUrl;
-        }
+    // Fetch user details
+    let { data: userData, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-        document.addEventListener("DOMContentLoaded", fetchProfile);
+    if (profileError) {
+        console.error("Error fetching user profile:", profileError.message);
+        return;
+    }
+
+    // Fetch number of events organized
+    let { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('id, total_registrations')
+        .eq('organizer_id', userId);
+
+    if (eventsError) {
+        console.error("Error fetching events:", eventsError.message);
+        return;
+    }
+
+    const eventsOrganized = eventsData.length;
+    const totalParticipants = eventsData.reduce((sum, event) => sum + (event.total_registrations || 0), 0);
+
+    // Update UI
+    document.getElementById("profile-name").innerText = userData.fullname;
+    document.getElementById("profile-email").innerText = "Email: " + userData.email;
+    document.getElementById("profile-events").innerText = "Events Organized: " + eventsOrganized;
+    document.getElementById("profile-participants").innerText = "Total Participants: " + totalParticipants;
+
+    // Load profile picture if exists
+    if (userData.profile_picture) {
+        document.getElementById("profile-pic").src = userData.profile_picture;
+    }
+}
+
+// Function to upload profile picture
+async function uploadProfilePicture(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const { data, error } = await supabase
+        .storage
+        .from('profile_pictures')
+        .upload(`profile_${Date.now()}.jpg`, file, { cacheControl: '3600', upsert: false });
+
+    if (error) {
+        console.error("Error uploading profile picture:", error.message);
+        return;
+    }
+
+    const profilePicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile_pictures/${data.path}`;
+
+    // Update user's profile picture URL in the database
+    const { error: updateError } = await supabase
+        .from('users')
+        .update({ profile_picture: profilePicUrl })
+        .eq('id', supabase.auth.user().id);
+
+    if (updateError) {
+        console.error("Error updating profile picture:", updateError.message);
+        return;
+    }
+
+    // Update UI
+    document.getElementById("profile-pic").src = profilePicUrl;
+}
+
+// Attach event listener for file upload
+document.getElementById("profile-pic-upload").addEventListener("change", uploadProfilePicture);
+
+// Fetch profile on page load
+document.addEventListener("DOMContentLoaded", fetchUserProfile);
+
     </script>
 </body>
 </html>
