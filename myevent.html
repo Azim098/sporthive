@@ -53,97 +53,112 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function getUser() {
-            const { data, error } = await supabase.auth.getUser();
-            if (error || !data?.user) {
-                window.location.href = "login.html";
-                return null;
-            }
-            return data.user.id;
-        }
+       // Get the authenticated user
+async function getUser() {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) {
+        console.error("User not authenticated. Redirecting to login.");
+        window.location.href = "login.html"; 
+        return null;
+    }
+    console.log("Logged-in user ID:", data.user.id);
+    return data.user.id;
+}
 
-        async function fetchEvents() {
-            const userId = await getUser();
-            if (!userId) return;
+// Fetch and display events created by the user
+async function fetchEvents() {
+    const userId = await getUser();
+    if (!userId) return;
 
-            const { data: events, error } = await supabase
-                .from('events')
-                .select('*')
-                .eq('organizer_id', userId);
+    console.log("Fetching events for user:", userId);
 
-            if (error) {
-                console.error("Error fetching events:", error);
-                return;
-            }
+    const { data: events, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('organizer_id', userId);
 
-            const eventsList = document.getElementById("eventsList");
-            eventsList.innerHTML = "";
+    if (error) {
+        console.error("Error fetching events:", error.message);
+        return;
+    }
 
-            if (!events || events.length === 0) {
-                document.getElementById("no-events").classList.remove("hidden");
-                return;
-            }
+    console.log("Fetched events:", events);
 
-            events.forEach(event => {
-                const eventCard = document.createElement("div");
-                eventCard.classList.add("event-card");
-                eventCard.innerHTML = `
-                    <h3>${event.name}</h3>
-                    <p>${event.description}</p>
-                    <p><strong>Time:</strong> ${event.time}</p>
-                    <p><strong>Location:</strong> ${event.location}</p>
-                    <button onclick="openEditModal(${event.id}, '${event.name}', '${event.description}', '${event.time}', '${event.location}')">Edit</button>
-                    <button onclick="deleteEvent(${event.id})">Delete</button>
-                `;
-                eventsList.appendChild(eventCard);
-            });
-        }
+    const eventsContainer = document.getElementById("events-container");
+    const noEventsText = document.getElementById("no-events");
 
-        function openEditModal(id, name, description, time, location) {
-            document.getElementById("edit-event-id").value = id;
-            document.getElementById("edit-name").value = name;
-            document.getElementById("edit-description").value = description;
-            document.getElementById("edit-time").value = time;
-            document.getElementById("edit-location").value = location;
-            document.getElementById("edit-modal").style.display = "block";
-        }
+    eventsContainer.innerHTML = ""; // Clear previous events
 
-        function closeEditModal() {
-            document.getElementById("edit-modal").style.display = "none";
-        }
+    if (!events || events.length === 0) {
+        noEventsText.classList.remove("hidden");
+        return;
+    }
 
-        async function saveEventChanges() {
-            const id = document.getElementById("edit-event-id").value;
-            const name = document.getElementById("edit-name").value;
-            const description = document.getElementById("edit-description").value;
-            const time = document.getElementById("edit-time").value;
-            const location = document.getElementById("edit-location").value;
+    noEventsText.classList.add("hidden");
 
-            const { error } = await supabase
-                .from('events')
-                .update({ name, description, time, location })
-                .eq('id', id);
+    events.forEach(event => {
+        const eventCard = document.createElement("div");
+        eventCard.classList.add("event-card");
 
-            if (error) {
-                console.error("Error updating event:", error);
-                return;
-            }
-            closeEditModal();
-            fetchEvents();
-        }
+        eventCard.innerHTML = `
+            <h3>${event.name}</h3>
+            <p>${event.description}</p>
+            <p><strong>Time:</strong> ${event.time}</p>
+            <p><strong>Location:</strong> ${event.location}</p>
+            <button onclick="editEvent('${event.id}')">Edit</button>
+            <button onclick="deleteEvent('${event.id}')">Delete</button>
+        `;
 
-        async function deleteEvent(eventId) {
-            if (!confirm("Are you sure you want to delete this event?")) return;
+        eventsContainer.appendChild(eventCard);
+    });
+}
 
-            const { error } = await supabase.from('events').delete().eq('id', eventId);
-            if (error) {
-                console.error("Error deleting event:", error);
-                return;
-            }
-            fetchEvents();
-        }
+// Edit event function
+async function editEvent(eventId) {
+    const newName = prompt("Enter new event name:");
+    const newDescription = prompt("Enter new description:");
+    const newTime = prompt("Enter new time:");
+    const newLocation = prompt("Enter new location:");
 
-        document.addEventListener("DOMContentLoaded", fetchEvents);
+    if (!newName || !newDescription || !newTime || !newLocation) {
+        alert("All fields are required!");
+        return;
+    }
+
+    const { error } = await supabase
+        .from('events')
+        .update({ name: newName, description: newDescription, time: newTime, location: newLocation })
+        .eq('id', eventId);
+
+    if (error) {
+        console.error("Error updating event:", error.message);
+        return;
+    }
+
+    alert("Event updated successfully!");
+    fetchEvents(); // Refresh event list
+}
+
+// Delete event function
+async function deleteEvent(eventId) {
+    if (!confirm("Are you sure you want to delete this event?")) return;
+
+    const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+
+    if (error) {
+        console.error("Error deleting event:", error.message);
+        return;
+    }
+
+    alert("Event deleted successfully!");
+    fetchEvents(); // Refresh event list
+}
+
+// Fetch events on page load
+document.addEventListener("DOMContentLoaded", fetchEvents);
     </script>
 </body>
 </html>
