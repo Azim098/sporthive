@@ -118,6 +118,7 @@ function displayEvents(events) {
             <h3>${event.name}</h3>
             <p>${event.description}</p>
             <p><strong>Time:</strong> ${event.time}</p>
+            <p><strong>Date:</strong> ${event.date}</p>
             <p><strong>Location:</strong> ${event.location}</p>
             <button class="register-button" data-event-id="${event.id}">Register</button>
             <button class="volunteer-button" data-event-id="${event.id}">Register as Volunteer</button>
