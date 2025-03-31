@@ -8,30 +8,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("toggleFilters").addEventListener("click", async () => {
         const query = document.getElementById("searchInput").value;
-        const skillLevel = document.getElementById("skill-level").value;
+        const skillLevel = document.getElementById("difficulty").value;
         const eventTime = document.getElementById("event-time").value;
         const sport = document.getElementById("sports").value;
 
-        await loadEvents(query, skillLevel, eventTime, sport);
+        await loadEvents(query, difficulty, eventTime, sport);
     });
 });
 
 // Updated loadEvents to account for additional filters
-async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", sport = "") {
+async function loadEvents(searchQuery = "", difficulty = "", eventTime = "", sport = "") {
     console.log("Fetching events...");
 
     let filters = {};
     if (searchQuery) {
         filters.name = { ilike: `%${searchQuery}%` };
     }
-    if (skillLevel) {
-        filters.skill_level = { eq: skillLevel };
+    if (difficulty) {
+        filters.difficulty = { eq: difficulty };
     }
     if (eventTime) {
         filters.time = { eq: eventTime };
     }
     if (sport) {
-        filters.sport = { eq: sport };
+        filters.name = { ilike: `%${sport}%` };
     }
 
     let { data: events, error } = await supabase
