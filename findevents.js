@@ -1,11 +1,11 @@
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  
+const supabaseKey = "";  // Replace with your actual Supabase key
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 document.addEventListener("DOMContentLoaded", () => {
     loadEvents();
 
-    // Toggle filters functionality
+    // ✅ Event listener for toggle filterseyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY
     document.getElementById("s1-14").addEventListener("change", async (e) => {
         if (e.target.checked) {
             await applyFilteredEvents();
@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // ✅ Event listener for filter button
     document.querySelector(".apply-filters").addEventListener("click", async () => {
         const toggleFilters = document.getElementById("s1-14").checked;
         if (toggleFilters) {
@@ -22,14 +23,22 @@ document.addEventListener("DOMContentLoaded", () => {
             await loadEvents();
         }
     });
+
+    // ✅ Event listener for search button
+    const searchButton = document.getElementById("searchButton");  // Replace with the actual button ID
+    if (searchButton) {
+        searchButton.addEventListener("click", async () => {
+            await applyFilteredEvents();
+        });
+    }
 });
 
+// ✅ Load and display events with optional filters
 async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", sport = "") {
     console.log("Loading events...");
 
     let filters = [];
 
-    // ✅ Modified to search by both name and description columns
     if (searchQuery) {
         filters.push(`name.ilike.%${searchQuery}%`);
         filters.push(`description.ilike.%${searchQuery}%`);
@@ -46,7 +55,10 @@ async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", spo
         filters.push(`name.ilike.%${sport}%`);
     }
 
-    let query = supabase.from("events").select("*");
+    let query = supabase
+        .from("events")
+        .select("*", { head: false })  // Ensure full data retrieval
+        .headers({ "Accept": "application/json" });
 
     // Combine filters with OR logic
     if (filters.length > 0) {
@@ -63,7 +75,7 @@ async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", spo
     displayEvents(events);
 }
 
-// Apply filters based on user selection
+// ✅ Apply filters based on user input
 async function applyFilteredEvents() {
     const searchQuery = document.getElementById("searchInput").value.trim();
     const skillLevel = document.getElementById("skill-level").value;
@@ -73,7 +85,7 @@ async function applyFilteredEvents() {
     await loadEvents(searchQuery, skillLevel, eventTime, sport);
 }
 
-// Time range mapping based on the selected filter
+// ✅ Map event time slot to range
 function getTimeRange(slot) {
     switch (slot) {
         case "morning": 
@@ -89,7 +101,7 @@ function getTimeRange(slot) {
     }
 }
 
-// Render the events in the HTML
+// ✅ Display the events in the HTML
 function displayEvents(events) {
     const eventsList = document.getElementById("eventsList");
     eventsList.innerHTML = "";
@@ -125,7 +137,7 @@ function displayEvents(events) {
     });
 }
 
-// Retrieve the user ID
+// ✅ Get the user ID from Supabase auth
 async function getUserId() {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
@@ -135,22 +147,23 @@ async function getUserId() {
     return data.user.id;
 }
 
-// Generate a unique code for registration
+// ✅ Generate unique registration code
 function generateUniqueCode() {
     return Math.random().toString(36).substr(2, 8).toUpperCase();
 }
 
-// Check if the user is already registered
+// ✅ Check if the user is already registered
 async function checkRegistration(eventId, button, codeElement) {
     const participantId = await getUserId();
     if (!participantId) return;
 
     const { data, error } = await supabase
         .from("register")
-        .select("unique_code")
+        .select("unique_code", { head: false })
         .eq("participant_id", participantId)
         .eq("event_id", eventId)
-        .single();
+        .single()
+        .headers({ "Accept": "application/json" });
 
     if (data) {
         button.textContent = "Registered";
@@ -160,7 +173,7 @@ async function checkRegistration(eventId, button, codeElement) {
     }
 }
 
-// Register the user for the event
+// ✅ Register the user for the event
 async function registerForEvent(eventId, button, codeElement) {
     const participantId = await getUserId();
     if (!participantId) {
@@ -176,7 +189,8 @@ async function registerForEvent(eventId, button, codeElement) {
             participant_id: participantId, 
             event_id: eventId, 
             unique_code: uniqueCode 
-        }]);
+        }])
+        .headers({ "Accept": "application/json" });
 
     if (error) {
         console.error("Registration failed:", error.message);
@@ -186,6 +200,5 @@ async function registerForEvent(eventId, button, codeElement) {
     button.textContent = "Registered";
     button.disabled = true;
     button.classList.add("registered");
-
     codeElement.textContent = `Your Code: ${uniqueCode}`;
 }
