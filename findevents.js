@@ -100,7 +100,8 @@ function displayEvents(events) {
             <p>${event.description}</p>
             <p><strong>Time:</strong> ${event.time}</p>
             <p><strong>Location:</strong> ${event.location}</p>
-            <p><strong>Registrations:</strong> ${event.current_registrations} / ${event.total_registrations}</p>
+            <p><strong>Participants:</strong> ${event.current_registrations} / ${event.total_registrations}</p>
+            <p><strong>Volunteers:</strong> ${event.current_volunteers} / ${event.total_volunteers}</p>
             ${isRegistrationFull ? '<p style="color: red;"><strong>Registration Full</strong></p>' : `
                 <button class="register-button" data-event-id="${event.id}" style="display: block;">Register</button>
                 <button class="volunteer-button" data-event-id="${event.id}" style="display: block;">Register as Volunteer</button>
@@ -199,21 +200,6 @@ async function checkVolunteerRegistration(eventId, registerButton, volunteerButt
     }
 }
 
-// ✅ Update current_registrations in the events table
-async function updateEventRegistrations(eventId, currentRegistrations) {
-    const newCount = currentRegistrations + 1;
-    const { error } = await supabase
-        .from("events")
-        .update({ current_registrations: newCount })
-        .eq("id", eventId);
-
-    if (error) {
-        console.error("Error updating event registrations:", error.message);
-        return false;
-    }
-    return true;
-}
-
 // ✅ Register the user for the event as a participant
 async function registerForEvent(eventId, totalRegistrations, currentRegistrations, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
@@ -230,6 +216,19 @@ async function registerForEvent(eventId, totalRegistrations, currentRegistration
         return;
     }
 
+    // Verify that the event exists
+    const { data: event, error: eventError } = await supabase
+        .from("events")
+        .select("id")
+        .eq("id", eventId)
+        .single();
+
+    if (eventError || !event) {
+        console.error("Event not found:", eventError?.message);
+        alert("Event not found. Please try again.");
+        return;
+    }
+
     const uniqueCode = generateUniqueCode();
 
     const { error: insertError } = await supabase
@@ -242,14 +241,7 @@ async function registerForEvent(eventId, totalRegistrations, currentRegistration
 
     if (insertError) {
         console.error("Registration failed:", insertError.message);
-        alert("Failed to register for the event. Please try again.");
-        return;
-    }
-
-    // Update the current_registrations count
-    const updated = await updateEventRegistrations(eventId, currentRegistrations);
-    if (!updated) {
-        alert("Failed to update registration count. Please try again.");
+        alert(`Failed to register for the event: ${insertError.message}`);
         return;
     }
 
@@ -280,6 +272,19 @@ async function registerAsVolunteer(eventId, totalRegistrations, currentRegistrat
         return;
     }
 
+    // Verify that the event exists
+    const { data: event, error: eventError } = await supabase
+        .from("events")
+        .select("id")
+        .eq("id", eventId)
+        .single();
+
+    if (eventError || !event) {
+        console.error("Event not found:", eventError?.message);
+        alert("Event not found. Please try again.");
+        return;
+    }
+
     const uniqueCode = generateUniqueCode();
 
     const { error: insertError } = await supabase
@@ -292,14 +297,7 @@ async function registerAsVolunteer(eventId, totalRegistrations, currentRegistrat
 
     if (insertError) {
         console.error("Volunteer registration failed:", insertError.message);
-        alert("Failed to register as a volunteer. Please try again.");
-        return;
-    }
-
-    // Update the current_registrations count
-    const updated = await updateEventRegistrations(eventId, currentRegistrations);
-    if (!updated) {
-        alert("Failed to update registration count. Please try again.");
+        alert(`Failed to register as a volunteer: ${insertError.message}`);
         return;
     }
 
