@@ -180,7 +180,7 @@ async function checkVolunteerRegistration(eventId, registerButton, volunteerButt
     if (!participantId) return;
 
     const { data, error } = await supabase
-        .from("volunteer")
+        .from("volunteers")
         .select("unique_code")
         .eq("participant_id", participantId)
         .eq("event_id", eventId)
@@ -288,7 +288,7 @@ async function registerAsVolunteer(eventId, totalRegistrations, currentRegistrat
     const uniqueCode = generateUniqueCode();
 
     const { error: insertError } = await supabase
-        .from("volunteer")
+        .from("volunteers")
         .insert([{ 
             participant_id: participantId, 
             event_id: eventId, 
