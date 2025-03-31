@@ -6,26 +6,10 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 document.addEventListener("DOMContentLoaded", () => {
     loadEvents();
 
-    // ✅ Toggle switch event listener
-    document.getElementById("s1-14").addEventListener("change", async (e) => {
-        const searchQuery = document.getElementById("searchInput").value.trim();
-        if (e.target.checked) {
-            await applyFilteredEvents(searchQuery);  // Search + filters
-        } else {
-            await loadEvents(searchQuery);  // Search by text only
-        }
-    });
-
     // ✅ Filter button event listener
     document.querySelector(".apply-filters").addEventListener("click", async () => {
         const searchQuery = document.getElementById("searchInput").value.trim();
-        const toggleFilters = document.getElementById("s1-14").checked;
-
-        if (toggleFilters) {
-            await applyFilteredEvents(searchQuery);  // Search + filters
-        } else {
-            await loadEvents(searchQuery);  // Text-only search
-        }
+        await applyFilteredEvents(searchQuery);  // Search + filters
     });
 
     // ✅ Search button event listener
@@ -33,13 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (searchButton) {
         searchButton.addEventListener("click", async () => {
             const searchQuery = document.getElementById("searchInput").value.trim();
-            const toggleFilters = document.getElementById("s1-14").checked;
-
-            if (toggleFilters) {
-                await applyFilteredEvents(searchQuery);  // Search + filters
-            } else {
-                await loadEvents(searchQuery);  // Text-only search
-            }
+            await applyFilteredEvents(searchQuery);  // Search + filters
         });
     }
 });
@@ -114,35 +92,43 @@ function displayEvents(events) {
         const eventCard = document.createElement("div");
         eventCard.classList.add("event-card");
 
+        // Check if registration is full
+        const isRegistrationFull = event.current_registrations >= event.total_registrations;
+
         eventCard.innerHTML = `
             <h3>${event.name}</h3>
             <p>${event.description}</p>
             <p><strong>Time:</strong> ${event.time}</p>
-            <p><strong>Date:</strong> ${event.date}</p>
             <p><strong>Location:</strong> ${event.location}</p>
-            <button class="register-button" data-event-id="${event.id}">Register</button>
-            <button class="volunteer-button" data-event-id="${event.id}">Register as Volunteer</button>
+            <p><strong>Registrations:</strong> ${event.current_registrations} / ${event.total_registrations}</p>
+            ${isRegistrationFull ? '<p style="color: red;"><strong>Registration Full</strong></p>' : `
+                <button class="register-button" data-event-id="${event.id}" style="display: block;">Register</button>
+                <button class="volunteer-button" data-event-id="${event.id}" style="display: block;">Register as Volunteer</button>
+            `}
             <p class="unique-code" style="font-weight: bold;"></p>
             <p class="volunteer-code" style="font-weight: bold;"></p>
         `;
 
         eventsList.appendChild(eventCard);
 
-        const registerButton = eventCard.querySelector(".register-button");
-        const volunteerButton = eventCard.querySelector(".volunteer-button");
-        const codeElement = eventCard.querySelector(".unique-code");
-        const volunteerCodeElement = eventCard.querySelector(".volunteer-code");
+        if (!isRegistrationFull) {
+            const registerButton = eventCard.querySelector(".register-button");
+            const volunteerButton = eventCard.querySelector(".volunteer-button");
+            const codeElement = eventCard.querySelector(".unique-code");
+            const volunteerCodeElement = eventCard.querySelector(".volunteer-code");
 
-        checkRegistration(event.id, registerButton, codeElement);
-        checkVolunteerRegistration(event.id, volunteerButton, volunteerCodeElement);
+            // Check registration status and hide opposing button if already registered
+            checkRegistration(event.id, registerButton, volunteerButton, codeElement);
+            checkVolunteerRegistration(event.id, registerButton, volunteerButton, volunteerCodeElement);
 
-        registerButton.addEventListener("click", async () => {
-            await registerForEvent(event.id, registerButton, codeElement);
-        });
+            registerButton.addEventListener("click", async () => {
+                await registerForEvent(event.id, event.total_registrations, event.current_registrations, registerButton, volunteerButton, codeElement);
+            });
 
-        volunteerButton.addEventListener("click", async () => {
-            await registerAsVolunteer(event.id, volunteerButton, volunteerCodeElement);
-        });
+            volunteerButton.addEventListener("click", async () => {
+                await registerAsVolunteer(event.id, event.total_registrations, event.current_registrations, registerButton, volunteerButton, volunteerCodeElement);
+            });
+        }
     });
 }
 
@@ -162,7 +148,7 @@ function generateUniqueCode() {
 }
 
 // ✅ Check if the user is already registered as a participant
-async function checkRegistration(eventId, button, codeElement) {
+async function checkRegistration(eventId, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
     if (!participantId) return;
 
@@ -173,16 +159,22 @@ async function checkRegistration(eventId, button, codeElement) {
         .eq("event_id", eventId)
         .single();
 
+    if (error && error.code !== "PGRST116") { // PGRST116 means no rows found, which is fine
+        console.error("Error checking registration:", error.message);
+        return;
+    }
+
     if (data) {
-        button.textContent = "Registered";
-        button.disabled = true;
-        button.classList.add("registered");
+        registerButton.textContent = "Registered";
+        registerButton.disabled = true;
+        registerButton.classList.add("registered");
         codeElement.textContent = `Your Registration Code: ${data.unique_code}`;
+        volunteerButton.style.display = "none"; // Hide volunteer button if already registered as participant
     }
 }
 
 // ✅ Check if the user is already registered as a volunteer
-async function checkVolunteerRegistration(eventId, button, codeElement) {
+async function checkVolunteerRegistration(eventId, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
     if (!participantId) return;
 
@@ -193,25 +185,54 @@ async function checkVolunteerRegistration(eventId, button, codeElement) {
         .eq("event_id", eventId)
         .single();
 
+    if (error && error.code !== "PGRST116") { // PGRST116 means no rows found, which is fine
+        console.error("Error checking volunteer registration:", error.message);
+        return;
+    }
+
     if (data) {
-        button.textContent = "Volunteered";
-        button.disabled = true;
-        button.classList.add("registered");
+        volunteerButton.textContent = "Volunteered";
+        volunteerButton.disabled = true;
+        volunteerButton.classList.add("registered");
         codeElement.textContent = `Your Volunteer Code: ${data.unique_code}`;
+        registerButton.style.display = "none"; // Hide register button if already registered as volunteer
     }
 }
 
+// ✅ Update current_registrations in the events table
+async function updateEventRegistrations(eventId, currentRegistrations) {
+    const newCount = currentRegistrations + 1;
+    const { error } = await supabase
+        .from("events")
+        .update({ current_registrations: newCount })
+        .eq("id", eventId);
+
+    if (error) {
+        console.error("Error updating event registrations:", error.message);
+        return false;
+    }
+    return true;
+}
+
 // ✅ Register the user for the event as a participant
-async function registerForEvent(eventId, button, codeElement) {
+async function registerForEvent(eventId, totalRegistrations, currentRegistrations, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
     if (!participantId) {
         alert("You need to log in to register!");
         return;
     }
 
+    // Check if registration limit is reached
+    if (currentRegistrations >= totalRegistrations) {
+        alert("Registration is full for this event!");
+        registerButton.style.display = "none";
+        volunteerButton.style.display = "none";
+        return;
+    }
+
     const uniqueCode = generateUniqueCode();
 
-    const { error } = await supabase
+    const { error: insertError } = await supabase
         .from("register")
         .insert([{ 
             participant_id: participantId, 
@@ -219,28 +240,49 @@ async function registerForEvent(eventId, button, codeElement) {
             unique_code: uniqueCode 
         }]);
 
-    if (error) {
-        console.error("Registration failed:", error.message);
+    if (insertError) {
+        console.error("Registration failed:", insertError.message);
+        alert("Failed to register for the event. Please try again.");
         return;
     }
 
-    button.textContent = "Registered";
-    button.disabled = true;
-    button.classList.add("registered");
+    // Update the current_registrations count
+    const updated = await updateEventRegistrations(eventId, currentRegistrations);
+    if (!updated) {
+        alert("Failed to update registration count. Please try again.");
+        return;
+    }
+
+    registerButton.textContent = "Registered";
+    registerButton.disabled = true;
+    registerButton.classList.add("registered");
     codeElement.textContent = `Your Registration Code: ${uniqueCode}`;
+    volunteerButton.style.display = "none"; // Hide volunteer button after registration
+
+    // Reload events to update the registration count display
+    const searchQuery = document.getElementById("searchInput").value.trim();
+    await applyFilteredEvents(searchQuery);
 }
 
 // ✅ Register the user for the event as a volunteer
-async function registerAsVolunteer(eventId, button, codeElement) {
+async function registerAsVolunteer(eventId, totalRegistrations, currentRegistrations, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
     if (!participantId) {
         alert("You need to log in to volunteer!");
         return;
     }
 
+    // Check if registration limit is reached
+    if (currentRegistrations >= totalRegistrations) {
+        alert("Registration is full for this event!");
+        registerButton.style.display = "none";
+        volunteerButton.style.display = "none";
+        return;
+    }
+
     const uniqueCode = generateUniqueCode();
 
-    const { error } = await supabase
+    const { error: insertError } = await supabase
         .from("volunteer")
         .insert([{ 
             participant_id: participantId, 
@@ -248,13 +290,26 @@ async function registerAsVolunteer(eventId, button, codeElement) {
             unique_code: uniqueCode 
         }]);
 
-    if (error) {
-        console.error("Volunteer registration failed:", error.message);
+    if (insertError) {
+        console.error("Volunteer registration failed:", insertError.message);
+        alert("Failed to register as a volunteer. Please try again.");
         return;
     }
 
-    button.textContent = "Volunteered";
-    button.disabled = true;
-    button.classList.add("registered");
+    // Update the current_registrations count
+    const updated = await updateEventRegistrations(eventId, currentRegistrations);
+    if (!updated) {
+        alert("Failed to update registration count. Please try again.");
+        return;
+    }
+
+    volunteerButton.textContent = "Volunteered";
+    volunteerButton.disabled = true;
+    volunteerButton.classList.add("registered");
     codeElement.textContent = `Your Volunteer Code: ${uniqueCode}`;
+    registerButton.style.display = "none"; // Hide register button after volunteering
+
+    // Reload events to update the registration count display
+    const searchQuery = document.getElementById("searchInput").value.trim();
+    await applyFilteredEvents(searchQuery);
 }
