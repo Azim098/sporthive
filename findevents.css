@@ -224,6 +224,12 @@ section {
     font-weight: bold;
     width: auto; /* Makes the button fit content */
     padding: 10px 20px;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.apply-filters:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) inset;
 }
 
 /* Events Section */
