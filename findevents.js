@@ -1,38 +1,45 @@
 // ✅ Include Supabase Initialization
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  // Replace with your actual Supabase key
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 document.addEventListener("DOMContentLoaded", () => {
     loadEvents();
 
-    // ✅ Event listener for filter toggle
+    // ✅ Toggle switch event listener
     document.getElementById("s1-14").addEventListener("change", async (e) => {
+        const searchQuery = document.getElementById("searchInput").value.trim();
         if (e.target.checked) {
-            await applyFilteredEvents();
+            await applyFilteredEvents(searchQuery);  // Search + filters
         } else {
-            await loadEvents();
+            await loadEvents(searchQuery);  // Search by text only
         }
     });
 
-    // ✅ Event listener for filter button
-    const filterButton = document.querySelector(".apply-filters");
-    if (filterButton) {
-        filterButton.addEventListener("click", async () => {
-            const toggleFilters = document.getElementById("s1-14").checked;
-            if (toggleFilters) {
-                await applyFilteredEvents();
-            } else {
-                await loadEvents();
-            }
-        });
-    }
+    // ✅ Filter button event listener
+    document.querySelector(".apply-filters").addEventListener("click", async () => {
+        const searchQuery = document.getElementById("searchInput").value.trim();
+        const toggleFilters = document.getElementById("s1-14").checked;
 
-    // ✅ Event listener for search button
+        if (toggleFilters) {
+            await applyFilteredEvents(searchQuery);  // Search + filters
+        } else {
+            await loadEvents(searchQuery);  // Text-only search
+        }
+    });
+
+    // ✅ Search button event listener
     const searchButton = document.getElementById("searchButton");
     if (searchButton) {
         searchButton.addEventListener("click", async () => {
-            await applyFilteredEvents();
+            const searchQuery = document.getElementById("searchInput").value.trim();
+            const toggleFilters = document.getElementById("s1-14").checked;
+
+            if (toggleFilters) {
+                await applyFilteredEvents(searchQuery);  // Search + filters
+            } else {
+                await loadEvents(searchQuery);  // Text-only search
+            }
         });
     }
 });
@@ -68,9 +75,8 @@ async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", spo
     displayEvents(events);
 }
 
-// ✅ Apply filters based on user input
-async function applyFilteredEvents() {
-    const searchQuery = document.getElementById("searchInput").value.trim();
+// ✅ Apply filters with optional search query
+async function applyFilteredEvents(searchQuery = "") {
     const skillLevel = document.getElementById("skill-level").value;
     const eventTime = document.getElementById("event-time").value;
     const sport = document.getElementById("sports").value;
