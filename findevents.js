@@ -1,5 +1,5 @@
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  // Remove for security reasons
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY" // Remove for security reasons
 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -7,37 +7,48 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadEvents(); // Load events on page load
 
     document.getElementById("toggleFilters").addEventListener("click", async () => {
+        // Check if filters should be applied
+        const applyFilters = document.querySelector('.switch').checked; // Check if the toggle switch is on
+
         const query = document.getElementById("searchInput").value;
-        const skillLevel = document.getElementById("difficulty").value;
+        const skillLevel = document.getElementById("skill-level").value; // Corrected ID for skill-level
         const eventTime = document.getElementById("event-time").value;
         const sport = document.getElementById("sports").value;
 
-        await loadEvents(query, difficulty, eventTime, sport);
+        if (applyFilters) { // Only load events if filters are applied
+            await loadEvents(query, skillLevel, eventTime, sport);
+        } else {
+            await loadEvents(); // Load all events if filters are not applied
+        }
     });
 });
 
 // Updated loadEvents to account for additional filters
-async function loadEvents(searchQuery = "", difficulty = "", eventTime = "", sport = "") {
+async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", sport = "") {
     console.log("Fetching events...");
 
-    let filters = {};
+    let filters = [];
+
+    // Allow filters to work regardless of searchQuery
     if (searchQuery) {
-        filters.name = { ilike: `%${searchQuery}%` };
+        filters.push(`name.ilike.%${searchQuery}%`);
     }
-    if (difficulty) {
-        filters.difficulty = { eq: difficulty };
+    if (skillLevel) {
+        filters.push(`difficulty.eq.${skillLevel}`);
     }
     if (eventTime) {
-        filters.time = { eq: eventTime };
+        filters.push(`time.eq.${eventTime}`);
     }
     if (sport) {
-        filters.name = { ilike: `%${sport}%` };
+        filters.push(`name.ilike.%${sport}%`);
     }
+
+    let filterString = filters.length > 0 ? filters.join(',') : null;
 
     let { data: events, error } = await supabase
         .from("events")
         .select("*")
-        .or(Object.entries(filters).map(([key, value]) => `${key}.eq.${value}`).join(','));
+        .or(filterString);
 
     console.log("Fetched Data:", events, "Error:", error);
 
@@ -61,7 +72,7 @@ async function loadEvents(searchQuery = "", difficulty = "", eventTime = "", spo
             <h3>${event.name}</h3>
             <p>${event.description}</p>
             <p><strong>Date:</strong> ${event.date}</p>
-            <p><strong>Time:</strong> ${event.time}</p> <!-- Added time -->
+            <p><strong>Time:</strong> ${event.time}</p> <!-- Ensured time is displayed -->
             <p><strong>Location:</strong> ${event.location}</p>
             <button class="register-button" data-event-id="${event.id}">Register</button>
             <p class="unique-code" style="font-weight: bold;"></p>
