@@ -1,3 +1,4 @@
+// ✅ Include Supabase Initialization
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  // Replace with your actual Supabase key
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -5,7 +6,7 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 document.addEventListener("DOMContentLoaded", () => {
     loadEvents();
 
-    // ✅ Event listener for toggle filterseyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY
+    // ✅ Event listener for filter toggle
     document.getElementById("s1-14").addEventListener("change", async (e) => {
         if (e.target.checked) {
             await applyFilteredEvents();
@@ -15,17 +16,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ✅ Event listener for filter button
-    document.querySelector(".apply-filters").addEventListener("click", async () => {
-        const toggleFilters = document.getElementById("s1-14").checked;
-        if (toggleFilters) {
-            await applyFilteredEvents();
-        } else {
-            await loadEvents();
-        }
-    });
+    const filterButton = document.querySelector(".apply-filters");
+    if (filterButton) {
+        filterButton.addEventListener("click", async () => {
+            const toggleFilters = document.getElementById("s1-14").checked;
+            if (toggleFilters) {
+                await applyFilteredEvents();
+            } else {
+                await loadEvents();
+            }
+        });
+    }
 
     // ✅ Event listener for search button
-    const searchButton = document.getElementById("searchButton");  // Replace with the actual button ID
+    const searchButton = document.getElementById("searchButton");
     if (searchButton) {
         searchButton.addEventListener("click", async () => {
             await applyFilteredEvents();
@@ -37,32 +41,21 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", sport = "") {
     console.log("Loading events...");
 
-    let filters = [];
+    let query = supabase.from("events").select("*");
 
+    // ✅ Apply filters
     if (searchQuery) {
-        filters.push(`name.ilike.%${searchQuery}%`);
-        filters.push(`description.ilike.%${searchQuery}%`);
+        query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
     }
     if (skillLevel) {
-        filters.push(`difficulty.eq.${skillLevel}`);
+        query = query.filter("difficulty", "eq", skillLevel);
     }
     if (eventTime) {
         const timeRange = getTimeRange(eventTime);
-        filters.push(`time.gte.${timeRange.start}`);
-        filters.push(`time.lt.${timeRange.end}`);
+        query = query.gte("time", timeRange.start).lt("time", timeRange.end);
     }
     if (sport) {
-        filters.push(`name.ilike.%${sport}%`);
-    }
-
-    let query = supabase
-        .from("events")
-        .select("*", { head: false })  // Ensure full data retrieval
-        .headers({ "Accept": "application/json" });
-
-    // Combine filters with OR logic
-    if (filters.length > 0) {
-        query = query.or(filters.join(","));
+        query = query.or(`name.ilike.%${sport}%`);
     }
 
     const { data: events, error } = await query;
@@ -159,11 +152,10 @@ async function checkRegistration(eventId, button, codeElement) {
 
     const { data, error } = await supabase
         .from("register")
-        .select("unique_code", { head: false })
+        .select("unique_code")
         .eq("participant_id", participantId)
         .eq("event_id", eventId)
-        .single()
-        .headers({ "Accept": "application/json" });
+        .single();
 
     if (data) {
         button.textContent = "Registered";
@@ -183,14 +175,13 @@ async function registerForEvent(eventId, button, codeElement) {
 
     const uniqueCode = generateUniqueCode();
 
-    const { data, error } = await supabase
+    const { error } = await supabase
         .from("register")
         .insert([{ 
             participant_id: participantId, 
             event_id: eventId, 
             unique_code: uniqueCode 
-        }])
-        .headers({ "Accept": "application/json" });
+        }]);
 
     if (error) {
         console.error("Registration failed:", error.message);
