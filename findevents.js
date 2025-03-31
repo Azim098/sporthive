@@ -1,25 +1,43 @@
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";  // Remove for security reasons
 
-// ✅ Fix: Use window.supabase
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 document.addEventListener("DOMContentLoaded", async () => {
     await loadEvents(); // Load events on page load
 
-    document.getElementById("searchBtn").addEventListener("click", async () => {
+    document.getElementById("toggleFilters").addEventListener("click", async () => {
         const query = document.getElementById("searchInput").value;
-        await loadEvents(query);
+        const skillLevel = document.getElementById("skill-level").value;
+        const eventTime = document.getElementById("event-time").value;
+        const sport = document.getElementById("sports").value;
+
+        await loadEvents(query, skillLevel, eventTime, sport);
     });
 });
 
-async function loadEvents(searchQuery = "") {
+// Updated loadEvents to account for additional filters
+async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", sport = "") {
     console.log("Fetching events...");
+
+    let filters = {};
+    if (searchQuery) {
+        filters.name = { ilike: `%${searchQuery}%` };
+    }
+    if (skillLevel) {
+        filters.skill_level = { eq: skillLevel };
+    }
+    if (eventTime) {
+        filters.time = { eq: eventTime };
+    }
+    if (sport) {
+        filters.sport = { eq: sport };
+    }
 
     let { data: events, error } = await supabase
         .from("events")
         .select("*")
-        .ilike("name", `%${searchQuery}%`);
+        .or(Object.entries(filters).map(([key, value]) => `${key}.eq.${value}`).join(','));
 
     console.log("Fetched Data:", events, "Error:", error);
 
@@ -43,6 +61,7 @@ async function loadEvents(searchQuery = "") {
             <h3>${event.name}</h3>
             <p>${event.description}</p>
             <p><strong>Date:</strong> ${event.date}</p>
+            <p><strong>Time:</strong> ${event.time}</p> <!-- Added time -->
             <p><strong>Location:</strong> ${event.location}</p>
             <button class="register-button" data-event-id="${event.id}">Register</button>
             <p class="unique-code" style="font-weight: bold;"></p>
@@ -58,62 +77,4 @@ async function loadEvents(searchQuery = "") {
             await registerForEvent(event.id, button, codeElement);
         });
     });
-}
-
-async function getUserId() {
-    const { data, error } = await supabase.auth.getUser();
-    console.log("User Data:", data, "Error:", error);
-    return data?.user?.id || null;
-}
-
-function generateUniqueCode() {
-    return Math.random().toString(36).substring(2, 10).toUpperCase();
-}
-
-async function checkRegistration(eventId, buttonElement, codeElement) {
-    const participantId = await getUserId();
-    if (!participantId) return;
-
-    const { data, error } = await supabase
-        .from("register")
-        .select("unique_code")
-        .eq("participant_id", participantId)
-        .eq("event_id", eventId)
-        .single();
-
-    if (data) {
-        buttonElement.textContent = "Registered";
-        buttonElement.disabled = true;
-        buttonElement.classList.add("registered");
-        codeElement.textContent = `Your Code: ${data.unique_code}`;
-    }
-}
-
-async function registerForEvent(eventId, buttonElement, codeElement) {
-    const participantId = await getUserId();
-    if (!participantId) {
-        alert("You need to log in to register!");
-        return;
-    }
-
-    const uniqueCode = generateUniqueCode();
-
-    const { data, error } = await supabase
-        .from("register")
-        .insert([{ 
-            participant_id: participantId, 
-            event_id: eventId, 
-            unique_code: uniqueCode 
-        }]);
-
-    if (error) {
-        console.error("Registration failed:", error.message);
-        return;
-    }
-
-    buttonElement.textContent = "Registered";
-    buttonElement.disabled = true;
-    buttonElement.classList.add("registered");
-
-    codeElement.textContent = `Your Code: ${uniqueCode}`;
 }
