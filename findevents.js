@@ -275,13 +275,21 @@ async function registerAsVolunteer(eventId, totalRegistrations, currentRegistrat
     // Verify that the event exists
     const { data: event, error: eventError } = await supabase
         .from("events")
-        .select("id")
+        .select("id, total_volunteers, current_volunteers")
         .eq("id", eventId)
         .single();
 
     if (eventError || !event) {
         console.error("Event not found:", eventError?.message);
         alert("Event not found. Please try again.");
+        return;
+    }
+
+    // Check if volunteer limit is reached
+    if (event.current_volunteers >= event.total_volunteers) {
+        alert("Volunteer slots are full for this event!");
+        registerButton.style.display = "none";
+        volunteerButton.style.display = "none";
         return;
     }
 
