@@ -56,6 +56,7 @@ section {
 .profile-card {
     padding: 30px;
     background: linear-gradient(to left, #5881d8, #acd8fc);
+    background: url('i12.jpeg');
     border: 2px solid white;
     border-radius: 10px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);

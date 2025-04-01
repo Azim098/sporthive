@@ -3,11 +3,11 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background: #f8f9fa;
-    color: #333;
+    background: linear-gradient(to right, #4c1c64, #9b70f7); /* Gradient Background */
+    color: white;
 }
 
-
+/* Navigation Bar */
 nav {
     display: flex;
     justify-content: space-between;
@@ -21,7 +21,6 @@ nav {
     max-width: 130px; 
     height: auto;
 }
-
 
 nav ul {
     list-style: none;
@@ -39,12 +38,16 @@ nav ul li a {
     font-size: 1.2em;
 }
 
+/* Section */
 section {
     padding: 30px;
-    margin: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    background: linear-gradient(to left, #5881d8, #acd8fc); /* Gradient Background */
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 800px;
+    text-align: center;
 }
 
 /* Table Styles */
@@ -52,10 +55,10 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-}
-
-table, th, td {
-    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 th, td {
@@ -64,8 +67,12 @@ th, td {
 }
 
 th {
-    background: #007bff;
+    background: #4c1c64;
     color: white;
+}
+
+tr:nth-child(even) {
+    background: #f2f2f2;
 }
 
 .status {
@@ -94,12 +101,12 @@ button {
 }
 
 .remove-btn {
-    background: #dc3545;
+    background: #ff4d4d;
     color: white;
 }
 
 .remove-btn:hover {
-    background: #c82333;
+    background: #e60000;
 }
 
 .approve-btn {
@@ -111,6 +118,7 @@ button {
     background: #218838;
 }
 
+/* Footer */
 footer {
     text-align: center;
     padding: 15px;
