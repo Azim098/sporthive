@@ -20,6 +20,8 @@
             <li><a href="reg.html">View Registrations</a></li>
             <li><a href="oprofile.html">Profile</a></li>
         </ul>
+        <!-- Logout Button -->
+        <button id="logout-btn" class="logout-btn">Logout</button>
     </nav>
 
     <!-- Hero Section -->
@@ -94,9 +96,38 @@
                 }
             }
 
+            async function logout() {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error("Error logging out:", error);
+                } else {
+                    window.location.href = "login.html"; // ✅ Redirect to login page after logout
+                }
+            }
+
+            // ✅ Attach logout function to button
+            document.getElementById("logout-btn").addEventListener("click", logout);
+
             fetchOrganizerName();
         });
     </script>
+
+    <style>
+        /* Logout Button Styles */
+        .logout-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: auto;
+            border-radius: 5px;
+        }
+        .logout-btn:hover {
+            background-color: #e60000;
+        }
+    </style>
 
 </body>
 </html>
