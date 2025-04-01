@@ -1,174 +1,155 @@
 /* General Styles */
-body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f8f9fa;
-    color: #222; /* Darker for better readability */
-}
-
-
-.logo img {
-    max-width: 130px;
-    height: auto;
-}
-
-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    background-color: #333;
-    color: white;
-}
-
-.nav-links {
-    display: flex;
-    align-items: center;
-    margin-left: auto; /* Moves the navigation links to the right */
-}
-
-nav ul {
-    list-style: none;
-    display: flex;
-    gap: 15px;
-    padding: 0;
-    margin: 0;
-}
-
-nav ul li {
-    display: inline;
-}
-
-nav ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 8px 12px;
-}
-
-.logout-btn {
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-size: 14px;
-    margin-left: 20px; /* Adds space between the nav links and logout button */
-    border-radius: 5px;
-}
-
-.logout-btn:hover {
-    background-color: #e60000;
-}
-
-
-/* Form Section */
-#create-event-form {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    background: url('create.webp') no-repeat center center/cover;
-    padding: 50px 10px;
-}
-
-/* Glass Effect Form Container */
-.form-container {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 30px;
-    max-width: 500px;
-    width: 100%;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    color: #1c0097; /* White for contrast on semi-transparent background */
-}
-
-.form-container h2 {
-    font-size: 2em;
-    margin-bottom: 20px;
-}
-
-/* Input Fields */
-.input-group {
-    text-align: left;
-    margin-bottom: 15px;
-}
-
-.input-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color:  #1c0097; /* White text for visibility */
-}
-
-input, textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.2);
-    color: #1c0097; /* White text inside input fields */
-    font-size: 1.3em;
-}
-
-input::placeholder, textarea::placeholder {
-    color: rgba(0, 101, 168, 0.8); /* Slightly darker for better contrast */
-}
-
-/* Error Message */
-.error-message {
-    color: #ff4d4d; /* Bright red for visibility */
-    font-size: 0.9em;
-    margin-top: 5px;
-}
-
-/* Success Message */
-.hidden {
-    display: none;
-}
-
-#success-message {
-    color: #34ec97; /* Green success message */
-    font-weight: bold;
-    margin-top: 10px;
-}
-
-/* Button Styles */
-button {
-    background: #ff81e4;
-    color: #4c1c64;
-    padding: 12px 20px;
-    font-size: 1.2em;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-button:hover {
-    background: #e6b800;
-    transform: scale(1.05);
-}
-#success-message {
-    color: green;
-    font-weight: bold;
-    display: none;
-}
-
-
-/* Footer */
-footer {
-    text-align: center;
-    padding: 15px;
-    background: #4c1c64;
-    color: white;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .form-container {
-        max-width: 90%;
-    }
-}
+ body {
+     font-family: 'Arial', sans-serif;
+     margin: 0;
+     padding: 0;
+     background: #f8f9fa;
+     color: #222; /* Darker for better readability */
+ }
+ 
+ /* Navigation Bar */
+ nav {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     background: linear-gradient(to left, #4c1c64, #9b70f7);
+     color: white;
+     padding: 15px 50px;
+ }
+ 
+ .logo img {
+     max-width: 130px;
+     height: auto;
+ }
+ 
+ nav ul {
+     list-style: none;
+     display: flex;
+     padding: 0;
+ }
+ 
+ nav ul li {
+     margin: 0 15px;
+ }
+ 
+ nav ul li a {
+     text-decoration: none;
+     color: #fff; /* High contrast on dark nav */
+     font-size: 1.2em;
+     transition: 0.3s;
+ }
+ 
+ nav ul li a:hover {
+     text-decoration: underline;
+ }
+ 
+ /* Form Section */
+ #create-event-form {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     min-height: 80vh;
+     background: url('create.webp') no-repeat center center/cover;
+     padding: 50px 10px;
+ }
+ 
+ /* Glass Effect Form Container */
+ .form-container {
+     background: rgba(255, 255, 255, 0.15);
+     border-radius: 12px;
+     padding: 30px;
+     max-width: 500px;
+     width: 100%;
+     backdrop-filter: blur(10px);
+     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+     text-align: center;
+     color: #1c0097; /* White for contrast on semi-transparent background */
+ }
+ 
+ .form-container h2 {
+     font-size: 2em;
+     margin-bottom: 20px;
+ }
+ 
+ /* Input Fields */
+ .input-group {
+     text-align: left;
+     margin-bottom: 15px;
+ }
+ 
+ .input-group label {
+     display: block;
+     font-weight: bold;
+     margin-bottom: 5px;
+     color:  #1c0097; /* White text for visibility */
+ }
+ 
+ input, textarea {
+     width: 100%;
+     padding: 12px;
+     border: 1px solid rgba(255, 255, 255, 0.5);
+     border-radius: 8px;
+     background: rgba(255, 255, 255, 0.2);
+     color: #1c0097; /* White text inside input fields */
+     font-size: 1.3em;
+ }
+ 
+ input::placeholder, textarea::placeholder {
+     color: rgba(0, 101, 168, 0.8); /* Slightly darker for better contrast */
+ }
+ 
+ /* Error Message */
+ .error-message {
+     color: #ff4d4d; /* Bright red for visibility */
+     font-size: 0.9em;
+     margin-top: 5px;
+ }
+ 
+ /* Success Message */
+ .hidden {
+     display: none;
+ }
+ 
+ #success-message {
+     color: #34ec97; /* Green success message */
+     font-weight: bold;
+     margin-top: 10px;
+ }
+ 
+ /* Button Styles */
+ button {
+     background: #ff81e4;
+     color: #4c1c64;
+     padding: 12px 20px;
+     font-size: 1.2em;
+     border: none;
+     border-radius: 8px;
+     cursor: pointer;
+     transition: 0.3s;
+ }
+ 
+ button:hover {
+     background: #e6b800;
+     transform: scale(1.05);
+ }
+ #success-message {
+     color: green;
+     font-weight: bold;
+     display: none;
+ }
+ 
+ 
+ /* Footer */
+ footer {
+     text-align: center;
+     padding: 15px;
+     background: #4c1c64;
+     color: white;
+ }
+ 
+ /* Responsive Design */
+ @media (max-width: 768px) {
+     .form-container {
+         max-width: 90%;
+     }
+ }
