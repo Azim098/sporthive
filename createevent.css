@@ -7,41 +7,60 @@ body {
     color: #222; /* Darker for better readability */
 }
 
-/* Navigation Bar */
-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(to left, #4c1c64, #9b70f7);
-    color: white;
-    padding: 15px 50px;
-}
 
 .logo img {
     max-width: 130px;
     height: auto;
 }
 
+nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    margin-left: auto; /* Moves the navigation links to the right */
+}
+
 nav ul {
     list-style: none;
     display: flex;
+    gap: 15px;
     padding: 0;
+    margin: 0;
 }
 
 nav ul li {
-    margin: 0 15px;
+    display: inline;
 }
 
 nav ul li a {
+    color: white;
     text-decoration: none;
-    color: #fff; /* High contrast on dark nav */
-    font-size: 1.2em;
-    transition: 0.3s;
+    padding: 8px 12px;
 }
 
-nav ul li a:hover {
-    text-decoration: underline;
+.logout-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 20px; /* Adds space between the nav links and logout button */
+    border-radius: 5px;
 }
+
+.logout-btn:hover {
+    background-color: #e60000;
+}
+
 
 /* Form Section */
 #create-event-form {
