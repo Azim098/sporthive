@@ -208,24 +208,8 @@ async function registerForEvent(eventId, totalRegistrations, currentRegistration
         return;
     }
 
-    // Check if registration limit is reached
     if (currentRegistrations >= totalRegistrations) {
         alert("Registration is full for this event!");
-        registerButton.style.display = "none";
-        volunteerButton.style.display = "none";
-        return;
-    }
-
-    // Verify that the event exists
-    const { data: event, error: eventError } = await supabase
-        .from("events")
-        .select("id")
-        .eq("id", eventId)
-        .single();
-
-    if (eventError || !event) {
-        console.error("Event not found:", eventError?.message);
-        alert("Event not found. Please try again.");
         return;
     }
 
@@ -233,63 +217,34 @@ async function registerForEvent(eventId, totalRegistrations, currentRegistration
 
     const { error: insertError } = await supabase
         .from("register")
-        .insert([{ 
-            participant_id: participantId, 
-            event_id: eventId, 
-            unique_code: uniqueCode 
-        }]);
+        .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
 
     if (insertError) {
-        console.error("Registration failed:", insertError.message);
-        alert(`Failed to register for the event: ${insertError.message}`);
+        alert(`Failed to register: ${insertError.message}`);
         return;
     }
 
+    await supabase
+        .from("events")
+        .update({ current_registrations: currentRegistrations + 1 })
+        .eq("id", eventId);
+
     registerButton.textContent = "Registered";
     registerButton.disabled = true;
-    registerButton.classList.add("registered");
     codeElement.textContent = `Your Registration Code: ${uniqueCode}`;
-    volunteerButton.style.display = "none"; // Hide volunteer button after registration
-
-    // Reload events to update the registration count display
-    const searchQuery = document.getElementById("searchInput").value.trim();
-    await applyFilteredEvents(searchQuery);
+    volunteerButton.style.display = "none";
 }
 
 // ✅ Register the user for the event as a volunteer
-async function registerAsVolunteer(eventId, totalRegistrations, currentRegistrations, registerButton, volunteerButton, codeElement) {
+async function registerAsVolunteer(eventId, totalVolunteers, currentVolunteers, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
     if (!participantId) {
         alert("You need to log in to volunteer!");
         return;
     }
 
-    // Check if registration limit is reached
-    if (currentRegistrations >= totalRegistrations) {
-        alert("Registration is full for this event!");
-        registerButton.style.display = "none";
-        volunteerButton.style.display = "none";
-        return;
-    }
-
-    // Verify that the event exists
-    const { data: event, error: eventError } = await supabase
-        .from("events")
-        .select("id, total_volunteers, current_volunteers")
-        .eq("id", eventId)
-        .single();
-
-    if (eventError || !event) {
-        console.error("Event not found:", eventError?.message);
-        alert("Event not found. Please try again.");
-        return;
-    }
-
-    // Check if volunteer limit is reached
-    if (event.current_volunteers >= event.total_volunteers) {
+    if (currentVolunteers >= totalVolunteers) {
         alert("Volunteer slots are full for this event!");
-        registerButton.style.display = "none";
-        volunteerButton.style.display = "none";
         return;
     }
 
@@ -297,25 +252,21 @@ async function registerAsVolunteer(eventId, totalRegistrations, currentRegistrat
 
     const { error: insertError } = await supabase
         .from("volunteers")
-        .insert([{ 
-            participant_id: participantId, 
-            event_id: eventId, 
-            unique_code: uniqueCode 
-        }]);
+        .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
 
     if (insertError) {
-        console.error("Volunteer registration failed:", insertError.message);
         alert(`Failed to register as a volunteer: ${insertError.message}`);
         return;
     }
 
+    await supabase
+        .from("events")
+        .update({ current_volunteers: currentVolunteers + 1 })
+        .eq("id", eventId);
+
     volunteerButton.textContent = "Volunteered";
     volunteerButton.disabled = true;
-    volunteerButton.classList.add("registered");
     codeElement.textContent = `Your Volunteer Code: ${uniqueCode}`;
-    registerButton.style.display = "none"; // Hide register button after volunteering
-
-    // Reload events to update the registration count display
-    const searchQuery = document.getElementById("searchInput").value.trim();
-    await applyFilteredEvents(searchQuery);
+    registerButton.style.display = "none";
 }
+
