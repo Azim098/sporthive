@@ -1,17 +1,18 @@
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background: #f8f9fa;
-    color: #333;
+    color: white;
 }
 
+/* Navigation Bar */
 nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: linear-gradient(to left, #4c1c64, #9b70f7); 
-    color: white;
     padding: 15px 50px;
 }
 
@@ -20,78 +21,91 @@ nav {
     height: auto;
 }
 
-
-nav ul {
-    list-style: none;
+.nav-container {
     display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
     padding: 0;
+    margin: 0;
+    gap: 15px;
 }
 
-nav ul li {
-    margin: 0 15px;
-}
-
-nav ul li a {
+.nav-links li a {
     text-decoration: none;
     color: white;
     font-size: 1.2em;
 }
-.header-content {
-    max-width: 800px;
-    margin: 0 auto;
-}
 
+/* Profile Section */
 section {
-    padding: 30px;
-    margin: 20px;
-    background: url('images/i11.jpg') no-repeat center center/cover;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    margin: 30px auto;
+    background: linear-gradient(to right, #4c1c64, #9b70f7); 
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     text-align: center;
+    max-width: 700px;
 }
 
+/* Profile Card */
 .profile-card {
-    padding: 20px;
-    background: linear-gradient(to left,    #5881d8, #acd8fc);
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    background: linear-gradient(to left, #5881d8, #acd8fc);
+    border: 2px solid white;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
     display: inline-block;
     text-align: center;
+    max-width: 400px;
 }
 
 .profile-pic {
-    width: 120px;
-    height: 120px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
     margin-bottom: 15px;
-    border: 3px solid #007bff;
-}
-h2{
-    color: white;
-}
-h3 {
-    margin: 10px 0;
-    color: #007bff;
+    border: 4px solid #ffcc00;
 }
 
+h2 {
+    color: #ffcc00;
+    font-size: 2em;
+    margin-bottom: 5px;
+}
+
+h3 {
+    color: #007bff;
+    margin: 10px 0;
+    font-size: 1.3em;
+}
+
+/* Buttons */
+.manage-btn {
+    background: #ffcc00;
+    color: #4c1c64;
+    padding: 12px 20px;
+    font-size: 1em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+.manage-btn:hover {
+    background: #e6b800;
+    transform: scale(1.05);
+}
+
+/* Footer */
 footer {
     text-align: center;
     padding: 15px;
     background: #4c1c64;
     color: white;
-}
-.manage-btn {
-    background: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1em;
-    cursor: pointer;
-    margin-top: 15px;
-}
-
-.manage-btn:hover {
-    background: #0056b3;
 }
