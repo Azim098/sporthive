@@ -15,9 +15,9 @@ nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
-    background-color: #333;
+    background: linear-gradient(to left, #4c1c64, #9b70f7); 
     color: white;
+    padding: 15px 50px;
 }
 
 .nav-links {
@@ -117,4 +117,89 @@ footer {
 
 .manage-btn:hover {
     background: #0056b3;
+}
+/* About Section */
+#about {
+    background: linear-gradient(to right, #4c1c64, #9b70f7);
+    color: white;
+    padding: 80px 10%;
+    text-align: center;
+}
+
+/* Layout */
+.about-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+/* Text Side */
+.about-text {
+    flex: 1;
+    max-width: 500px;
+    text-align: left;
+}
+
+.about-text h2 {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+}
+
+.about-text h2 span {
+    color: #ffcc00; /* Highlighted word */
+}
+
+.about-text p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* Button */
+.about-btn {
+    background: #ffcc00;
+    color: #4c1c64;
+    padding: 12px 20px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.about-btn:hover {
+    background: #e6b800;
+    transform: scale(1.05);
+}
+
+/* Image Side */
+.about-image {
+    flex: 1;
+    max-width: 500px;
+    text-align: center;
+}
+
+.about-image img {
+    width: 100%;
+    max-width: 450px;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .about-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .about-text, .about-image {
+        max-width: 100%;
+    }
+
+    .about-text {
+        text-align: center;
+    }
 }
