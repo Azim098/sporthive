@@ -26,30 +26,32 @@
 
     <!-- Hero Section -->
     <header>
+        <div class="overlay"></div>
         <div class="hero-content">
-            <h1>Welcome, <span id="events-name">Loading...</span>!</h1>
+            <h1><span class="highlight">Welcome!!!</span> <span id="events-name">Loading...</span>!</h1>
             <p>Manage your events efficiently and track registrations seamlessly.</p>
+            <button class="btn" onclick="scrollToSection()">READ MORE</button>
         </div>
     </header>
 
-    <!-- Main Dashboard Section -->
-    <section class="dashboard">
-        <div class="dashboard-item">
-            <h2>Create a New Event</h2>
-            <p>Plan and publish your sports event in minutes.</p>
-            <a href="createevent.html" class="btn">Create Event</a>
-        </div>
-
-        <div class="dashboard-item">
-            <h2>Manage Your Events</h2>
-            <p>View, update, or cancel your existing events.</p>
-            <a href="myevent.html" class="btn">My Events</a>
-        </div>
-
-        <div class="dashboard-item">
-            <h2>View Registrations</h2>
-            <p>Check participant registrations for your events.</p>
-            <a href="reg.html" class="btn">Registrations</a>
+    <section id="about">
+        <div class="about-container">
+            <div class="about-text">
+                <h2>About <span>Sports Hive</span></h2>
+                <p>
+                    Welcome to **Sports Hive**, your go-to platform for managing and participating in sports events.
+                    Whether you're an organizer looking to create engaging competitions or an athlete eager to
+                    join thrilling tournaments, we've got you covered!
+                </p>
+                <p>
+                    Explore a world of sports, track your progress, and connect with a community of passionate athletes.
+                    We bring you seamless event registration, real-time updates, and a modern experience like never before!
+                </p>
+                <button class="about-btn">Learn More</button>
+            </div>
+            <div class="about-image">
+                <img src="i4.jpg" alt="Athlete in action">
+            </div>
         </div>
     </section>
 
@@ -110,6 +112,9 @@
 
             fetchOrganizerName();
         });
+        function scrollToSection() {
+            document.getElementById("about").scrollIntoView({ behavior: "smooth" });
+        }
     </script>
 
 </body>
