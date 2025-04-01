@@ -16,6 +16,47 @@ nav {
     color: white;
     padding: 15px 50px;
 }
+/* Container to keep nav links and logout button together */
+.nav-container {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between items */
+}
+
+/* Styling for the navigation links */
+.nav-links {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 15px; /* Keeps links close together */
+}
+
+.nav-links li {
+    display: inline;
+}
+
+.nav-links li a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+    font-size: 1.1em;
+}
+
+/* Logout Button */
+.logout-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 1em;
+    border-radius: 5px;
+}
+
+.logout-btn:hover {
+    background-color: #e60000;
+}
 
 .logo img {
     max-width: 130px; 
