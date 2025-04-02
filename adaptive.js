@@ -20,21 +20,29 @@ async function loadEvents(searchQuery = "", filters = {}) {
     if (searchQuery) {
         query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
     }
-    if (filters.skillLevel) {
+
+    if (filters.skillLevel && filters.skillLevel !== "any") {
         query = query.eq("difficulty", filters.skillLevel);
     }
-    if (filters.eventTime) {
+
+    if (filters.eventTime && filters.eventTime !== "any") {
         const timeRange = getTimeRange(filters.eventTime);
         query = query.gte("time", timeRange.start).lt("time", timeRange.end);
     }
-    if (filters.sport) {
+
+    if (filters.sport && filters.sport !== "any") {
         query = query.ilike("sport", `%${filters.sport}%`);
     }
 
     const { data: events, error } = await query;
-    if (error) console.error("Error loading events:", error.message);
+    if (error) {
+        console.error("Error loading events:", error.message);
+        return;
+    }
+
     displayEvents(events || []);
 }
+
 
 async function applyFilteredEvents() {
     const searchQuery = document.querySelector(".search-bar").value.trim();
