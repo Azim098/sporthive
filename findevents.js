@@ -16,6 +16,17 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
         console.error("Apply filters button not found");
     }
+
+    // Real-time subscription
+    supabase
+        .channel("events-changes")
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "events" }, (payload) => {
+            console.log("Real-time update received:", payload.new);
+            updateEventCard(payload.new);
+        })
+        .subscribe((status) => {
+            console.log("Subscription status:", status);
+        });
 });
 
 async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", sport = "") {
@@ -110,6 +121,29 @@ function createEventCard(event) {
     return eventCard;
 }
 
+function updateEventCard(updatedEvent) {
+    const eventCard = document.querySelector(`.event-card[data-event-id="${updatedEvent.id}"]`);
+    if (!eventCard) {
+        console.log("Event card not found for update:", updatedEvent.id);
+        return;
+    }
+
+    const participantsCount = eventCard.querySelector(".participants-count");
+    const volunteersCount = eventCard.querySelector(".volunteers-count");
+    const registerButton = eventCard.querySelector(".register-button");
+    const volunteerButton = eventCard.querySelector(".volunteer-button");
+
+    participantsCount.innerHTML = `<strong>Participants:</strong> ${updatedEvent.current_registrations} / ${updatedEvent.total_registrations}`;
+    volunteersCount.innerHTML = `<strong>Volunteers:</strong> ${updatedEvent.current_volunteers} / ${updatedEvent.total_volunteers}`;
+
+    if (updatedEvent.current_registrations >= updatedEvent.total_registrations && registerButton) {
+        registerButton.outerHTML = '<p style="color: red;"><strong>Registration Full</strong></p>';
+    }
+    if (updatedEvent.current_volunteers >= updatedEvent.total_volunteers && volunteerButton) {
+        volunteerButton.outerHTML = '<p style="color: red;"><strong>Volunteer Slots Full</strong></p>';
+    }
+}
+
 function setupEventCardListeners(eventCard, event) {
     const registerButton = eventCard.querySelector(".register-button");
     const volunteerButton = eventCard.querySelector(".volunteer-button");
@@ -137,6 +171,7 @@ async function getUserId() {
     try {
         const { data, error } = await supabase.auth.getUser();
         if (error || !data.user) throw new Error("User not authenticated");
+        console.log("User ID fetched:", data.user.id);
         return data.user.id;
     } catch (error) {
         console.error("Error getting user ID:", error);
@@ -206,6 +241,7 @@ async function registerForEvent(eventId, registerButton, volunteerButton, codeEl
     }
 
     try {
+        // Fetch current event state
         const { data: event, error: fetchError } = await supabase
             .from("events")
             .select("current_registrations, total_registrations")
@@ -213,6 +249,8 @@ async function registerForEvent(eventId, registerButton, volunteerButton, codeEl
             .single();
 
         if (fetchError) throw new Error(`Fetch error: ${fetchError.message}`);
+        console.log("Current event state:", event);
+
         if (event.current_registrations >= event.total_registrations) {
             alert("Registration is full for this event!");
             return;
@@ -221,19 +259,26 @@ async function registerForEvent(eventId, registerButton, volunteerButton, codeEl
         const uniqueCode = generateUniqueCode();
         const newCount = event.current_registrations + 1;
 
+        // Insert registration
         const { error: insertError } = await supabase
             .from("register")
             .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
 
         if (insertError) throw new Error(`Insert error: ${insertError.message}`);
+        console.log("Registration inserted:", { participantId, eventId, uniqueCode });
 
-        const { error: updateError } = await supabase
+        // Update event table
+        const { data: updatedEvent, error: updateError } = await supabase
             .from("events")
             .update({ current_registrations: newCount })
-            .eq("id", eventId);
+            .eq("id", eventId)
+            .select()
+            .single();
 
         if (updateError) throw new Error(`Update error: ${updateError.message}`);
+        console.log("Event table updated:", updatedEvent);
 
+        // Update UI
         registerButton.textContent = "Registered";
         registerButton.disabled = true;
         registerButton.classList.add("registered");
@@ -254,6 +299,7 @@ async function registerAsVolunteer(eventId, registerButton, volunteerButton, cod
     }
 
     try {
+        // Fetch current event state
         const { data: event, error: fetchError } = await supabase
             .from("events")
             .select("current_volunteers, total_volunteers")
@@ -261,6 +307,8 @@ async function registerAsVolunteer(eventId, registerButton, volunteerButton, cod
             .single();
 
         if (fetchError) throw new Error(`Fetch error: ${fetchError.message}`);
+        console.log("Current event state:", event);
+
         if (event.current_volunteers >= event.total_volunteers) {
             alert("Volunteer slots are full for this event!");
             return;
@@ -269,19 +317,26 @@ async function registerAsVolunteer(eventId, registerButton, volunteerButton, cod
         const uniqueCode = generateUniqueCode();
         const newCount = event.current_volunteers + 1;
 
+        // Insert volunteer registration
         const { error: insertError } = await supabase
             .from("volunteers")
             .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
 
         if (insertError) throw new Error(`Insert error: ${insertError.message}`);
+        console.log("Volunteer registration inserted:", { participantId, eventId, uniqueCode });
 
-        const { error: updateError } = await supabase
+        // Update event table
+        const { data: updatedEvent, error: updateError } = await supabase
             .from("events")
             .update({ current_volunteers: newCount })
-            .eq("id", eventId);
+            .eq("id", eventId)
+            .select()
+            .single();
 
         if (updateError) throw new Error(`Update error: ${updateError.message}`);
+        console.log("Event table updated:", updatedEvent);
 
+        // Update UI
         volunteerButton.textContent = "Volunteered";
         volunteerButton.disabled = true;
         volunteerButton.classList.add("registered");
