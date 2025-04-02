@@ -33,7 +33,7 @@ async function loadEvents(searchQuery = "", filters = {}) {
     }
 
     if (filters.sport && filters.sport !== "all") {
-        query = query.ilike("sport", `%${filters.sport}%`);
+        query = query.ilike("name", `%${filters.sport}%`); // Changed to compare against name
     }
 
     const { data: events, error } = await query;
@@ -82,13 +82,14 @@ function displayEvents(events) {
     events.forEach(event => {
         const eventCard = document.createElement("div");
         eventCard.classList.add("event-card");
+        eventCard.dataset.eventId = event.id; // Added for easier reference
         eventCard.innerHTML = `
             <h3>${event.name}</h3>
             <p>${event.description}</p>
             <p><strong>Date:</strong> ${event.date}</p>
             <p><strong>Time:</strong> ${event.time}</p>
             <p><strong>Location:</strong> ${event.location}</p>
-            <p><strong>Registrations:</strong> ${event.current_registrations}/${event.total_registrations}</p>
+            <p class="registrations-count"><strong>Registrations:</strong> ${event.current_registrations}/${event.total_registrations}</p>
             <button class="register-button" data-event-id="${event.id}">Register</button>
             <p class="unique-code"></p>
         `;
@@ -100,7 +101,11 @@ function displayEvents(events) {
         checkRegistration(event.id, button, codeElement);
 
         button.addEventListener("click", async () => {
-            await registerForEvent(event.id, button, codeElement);
+            if (button.textContent === "Register") {
+                await registerForEvent(event.id, button, codeElement);
+            } else {
+                await unregisterFromEvent(event.id, button, codeElement);
+            }
         });
     });
 }
@@ -122,8 +127,7 @@ async function checkRegistration(eventId, button, codeElement) {
         .single();
 
     if (data) {
-        button.textContent = "Registered";
-        button.disabled = true;
+        button.textContent = "Unregister";
         button.classList.add("registered");
         codeElement.textContent = `Your Code: ${data.unique_code}`;
     }
@@ -163,16 +167,91 @@ async function registerForEvent(eventId, button, codeElement) {
         return;
     }
 
-    // Atomic Increment using Supabase RPC
-    const { error: updateError } = await supabase.rpc("increment_registrations", { event_id: eventId });
+    // Update event table with new registration count
+    const { data: event, error: fetchError } = await supabase
+        .from("events")
+        .select("id, current_registrations, total_registrations")
+        .eq("id", eventId)
+        .single();
+
+    if (fetchError) {
+        console.error("Fetch error:", fetchError.message);
+        return;
+    }
+
+    const newCount = event.current_registrations + 1;
+
+    const { error: updateError } = await supabase
+        .from("events")
+        .update({ current_registrations: newCount })
+        .eq("id", eventId);
 
     if (updateError) {
         console.error("Failed to update registration count:", updateError.message);
         return;
     }
 
-    button.textContent = "Registered";
-    button.disabled = true;
+    // Update UI
+    button.textContent = "Unregister";
     button.classList.add("registered");
     codeElement.textContent = `Your Code: ${uniqueCode}`;
+
+    // Update registration count display
+    const eventCard = button.closest(".event-card");
+    const registrationsCount = eventCard.querySelector(".registrations-count");
+    registrationsCount.innerHTML = `<strong>Registrations:</strong> ${newCount}/${event.total_registrations}`;
+}
+
+async function unregisterFromEvent(eventId, button, codeElement) {
+    const userId = await getUserId();
+    if (!userId) {
+        alert("You need to log in to unregister!");
+        return;
+    }
+
+    // Delete the registration
+    const { error: deleteError } = await supabase
+        .from("register")
+        .delete()
+        .eq("participant_id", userId)
+        .eq("event_id", eventId);
+
+    if (deleteError) {
+        console.error("Failed to unregister:", deleteError.message);
+        return;
+    }
+
+    // Fetch current event state and decrement
+    const { data: event, error: fetchError } = await supabase
+        .from("events")
+        .select("id, current_registrations, total_registrations")
+        .eq("id", eventId)
+        .single();
+
+    if (fetchError) {
+        console.error("Fetch error:", fetchError.message);
+        return;
+    }
+
+    const newCount = Math.max(0, event.current_registrations - 1); // Ensure it doesn't go below 0
+
+    const { error: updateError } = await supabase
+        .from("events")
+        .update({ current_registrations: newCount })
+        .eq("id", eventId);
+
+    if (updateError) {
+        console.error("Failed to update registration count:", updateError.message);
+        return;
+    }
+
+    // Update UI
+    button.textContent = "Register";
+    button.classList.remove("registered");
+    codeElement.textContent = "";
+
+    // Update registration count display
+    const eventCard = button.closest(".event-card");
+    const registrationsCount = eventCard.querySelector(".registrations-count");
+    registrationsCount.innerHTML = `<strong>Registrations:</strong> ${newCount}/${event.total_registrations}`;
 }
