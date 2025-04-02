@@ -6,14 +6,34 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 document.addEventListener("DOMContentLoaded", () => {
     loadEvents();
 
-    document.getElementById("s1-14").addEventListener("change", applyFilteredEvents);
-    document.querySelector(".apply-filters").addEventListener("click", applyFilteredEvents);
-    document.querySelector(".search-bar").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            applyFilteredEvents();
-        }
-    });
+    // Event listener for the filter toggle
+    const filterToggle = document.getElementById("s1-14");
+    if (filterToggle) {
+        filterToggle.addEventListener("change", applyFilteredEvents);
+    } else {
+        console.error("Filter toggle (s1-14) not found");
+    }
+
+    // Event listener for the apply filters button
+    const applyFiltersButton = document.querySelector(".apply-filters");
+    if (applyFiltersButton) {
+        applyFiltersButton.addEventListener("click", applyFilteredEvents);
+    } else {
+        console.error("Apply filters button not found");
+    }
+
+    // Event listener for the search bar (Enter key)
+    const searchBar = document.querySelector(".search-bar");
+    if (searchBar) {
+        searchBar.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                applyFilteredEvents();
+            }
+        });
+    } else {
+        console.error("Search bar not found");
+    }
 });
 
 async function loadEvents(searchQuery = "", filters = {}) {
@@ -33,7 +53,7 @@ async function loadEvents(searchQuery = "", filters = {}) {
     }
 
     if (filters.sport && filters.sport !== "all") {
-        query = query.ilike("name", `%${filters.sport}%`); // Changed to compare against name
+        query = query.ilike("name", `%${filters.sport}%`);
     }
 
     const { data: events, error } = await query;
@@ -46,17 +66,19 @@ async function loadEvents(searchQuery = "", filters = {}) {
 }
 
 async function applyFilteredEvents() {
-    const searchQuery = document.querySelector(".search-bar").value.trim();
-    const filtersEnabled = document.getElementById("s1-14").checked;
+    const searchBar = document.querySelector(".search-bar");
+    const searchQuery = searchBar ? searchBar.value.trim() : "";
+    const filtersEnabled = document.getElementById("s1-14")?.checked || false;
 
     let filters = {};
     if (filtersEnabled) {
         filters = {
-            skillLevel: document.getElementById("skill-level").value,
-            eventTime: document.getElementById("event-time").value,
-            sport: document.getElementById("sports").value
+            skillLevel: document.getElementById("skill-level")?.value || "",
+            eventTime: document.getElementById("event-time")?.value || "",
+            sport: document.getElementById("sports")?.value || ""
         };
     }
+    console.log("Applying filters with query:", searchQuery, "and filters:", filters);
     await loadEvents(searchQuery, filters);
 }
 
@@ -72,6 +94,10 @@ function getTimeRange(slot) {
 
 function displayEvents(events) {
     const eventsContainer = document.querySelector(".events-container");
+    if (!eventsContainer) {
+        console.error("Events container not found");
+        return;
+    }
     eventsContainer.innerHTML = "";
 
     if (!events.length) {
@@ -82,7 +108,7 @@ function displayEvents(events) {
     events.forEach(event => {
         const eventCard = document.createElement("div");
         eventCard.classList.add("event-card");
-        eventCard.dataset.eventId = event.id; // Added for easier reference
+        eventCard.dataset.eventId = event.id;
         eventCard.innerHTML = `
             <h3>${event.name}</h3>
             <p>${event.description}</p>
@@ -103,7 +129,7 @@ function displayEvents(events) {
         button.addEventListener("click", async () => {
             if (button.textContent === "Register") {
                 await registerForEvent(event.id, button, codeElement);
-            } else {
+            } else if (button.textContent === "Unregister") {
                 await unregisterFromEvent(event.id, button, codeElement);
             }
         });
