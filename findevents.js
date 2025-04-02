@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await applyFilteredEvents(searchQuery);
     });
 
-    // Real-time subscription to events table updates
+    // Real-time subscription
     supabase
         .channel('events-changes')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, (payload) => {
@@ -129,7 +129,10 @@ function setupEventCardListeners(eventCard, event) {
 
 async function getUserId() {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) return null;
+    if (error || !data.user) {
+        console.error("Error getting user:", error?.message);
+        return null;
+    }
     return data.user.id;
 }
 
@@ -147,6 +150,11 @@ async function checkRegistration(eventId, registerButton, volunteerButton, codeE
         .eq("participant_id", participantId)
         .eq("event_id", eventId)
         .single();
+
+    if (error && error.code !== "PGRST116") {
+        console.error("Error checking registration:", error.message);
+        return;
+    }
 
     if (data) {
         registerButton.textContent = "Registered";
@@ -168,6 +176,11 @@ async function checkVolunteerRegistration(eventId, registerButton, volunteerButt
         .eq("event_id", eventId)
         .single();
 
+    if (error && error.code !== "PGRST116") {
+        console.error("Error checking volunteer registration:", error.message);
+        return;
+    }
+
     if (data) {
         volunteerButton.textContent = "Volunteered";
         volunteerButton.disabled = true;
@@ -184,7 +197,7 @@ async function registerForEvent(eventId, registerButton, volunteerButton, codeEl
         return;
     }
 
-    // Fetch current event state
+    // Fetch current event data to check limits
     const { data: event, error: fetchError } = await supabase
         .from("events")
         .select("current_registrations, total_registrations")
@@ -224,7 +237,6 @@ async function registerForEvent(eventId, registerButton, volunteerButton, codeEl
         return;
     }
 
-    // UI updates will happen via real-time subscription
     registerButton.textContent = "Registered";
     registerButton.disabled = true;
     registerButton.classList.add("registered");
@@ -239,7 +251,7 @@ async function registerAsVolunteer(eventId, registerButton, volunteerButton, cod
         return;
     }
 
-    // Fetch current event state
+    // Fetch current event data to check limits
     const { data: event, error: fetchError } = await supabase
         .from("events")
         .select("current_volunteers, total_volunteers")
@@ -279,7 +291,6 @@ async function registerAsVolunteer(eventId, registerButton, volunteerButton, cod
         return;
     }
 
-    // UI updates will happen via real-time subscription
     volunteerButton.textContent = "Volunteered";
     volunteerButton.disabled = true;
     volunteerButton.classList.add("registered");
