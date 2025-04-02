@@ -136,8 +136,10 @@ function displayEvents(events) {
             <p><strong>Location:</strong> ${event.location}</p>
             <p class="registrations-count"><strong>Registrations:</strong> ${event.current_registrations}/${event.total_registrations}</p>
             <p class="volunteers-count"><strong>Volunteers:</strong> ${event.current_volunteers}/${event.total_volunteers}</p>
-            <button class="register-button" data-event-id="${event.id}">Register</button>
-            <button class="volunteer-button" data-event-id="${event.id}">Register as Volunteer</button>
+            <div class="button-container">
+                <button class="register-button" data-event-id="${event.id}">Register</button>
+                <button class="volunteer-button" data-event-id="${event.id}">Register as Volunteer</button>
+            </div>
             <p class="unique-code"></p>
             <p class="volunteer-code"></p>
         `;
@@ -205,6 +207,11 @@ async function checkVolunteerRegistration(eventId, button, codeElement, register
         .eq("participant_id", userId)
         .eq("event_id", eventId)
         .single();
+
+    if (error) {
+        console.error("Error checking volunteer registration:", error.message);
+        return;
+    }
 
     if (data) {
         button.textContent = "Unregister as Volunteer";
@@ -407,7 +414,7 @@ async function unregisterFromEvent(eventId, button, codeElement, volunteerButton
     button.classList.remove("registered");
     button.style.cursor = "pointer";
     codeElement.textContent = "";
-    volunteerButton.style.display = "block"; // Show volunteer button
+    volunteerButton.style.display = "inline-block"; // Show volunteer button with inline-block to maintain layout
 
     // Update registration count display
     const eventCard = button.closest(".event-card");
@@ -421,6 +428,9 @@ async function unregisterAsVolunteer(eventId, button, codeElement, registerButto
         alert("You need to log in to unregister as a volunteer!");
         return;
     }
+
+    // Log the userId and eventId for debugging
+    console.log("Attempting to unregister volunteer with userId:", userId, "and eventId:", eventId);
 
     // Delete the volunteer registration from the volunteers table
     const { data: deletedData, error: deleteError } = await supabase
@@ -465,7 +475,7 @@ async function unregisterAsVolunteer(eventId, button, codeElement, registerButto
     button.classList.remove("volunteered");
     button.style.cursor = "pointer";
     codeElement.textContent = "";
-    registerButton.style.display = "block"; // Show register button
+    registerButton.style.display = "inline-block"; // Show register button with inline-block to maintain layout
 
     // Update volunteer count display
     const eventCard = button.closest(".event-card");
