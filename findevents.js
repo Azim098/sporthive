@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await applyFilteredEvents(searchQuery);
     });
 
-    // Real-time subscription
+    // Subscribe to real-time updates
     supabase
         .channel('events-changes')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, (payload) => {
@@ -68,14 +68,8 @@ function displayEvents(events) {
 function createEventCard(event) {
     const eventCard = document.createElement("div");
     eventCard.classList.add("event-card");
-    eventCard.dataset.eventId = event.id;
-
-    updateEventCardContent(eventCard, event);
-    setupEventCardListeners(eventCard, event);
-    return eventCard;
-}
-
-function updateEventCardContent(eventCard, event) {
+    eventCard.dataset.eventId = event.id; // Store event ID for updates
+    
     const isRegistrationFull = event.current_registrations >= event.total_registrations;
     const isVolunteerFull = event.current_volunteers >= event.total_volunteers;
 
@@ -95,14 +89,9 @@ function updateEventCardContent(eventCard, event) {
         <p class="unique-code" style="font-weight: bold;"></p>
         <p class="volunteer-code" style="font-weight: bold;"></p>
     `;
-}
 
-function updateEventCard(updatedEvent) {
-    const eventCard = document.querySelector(`.event-card[data-event-id="${updatedEvent.id}"]`);
-    if (eventCard) {
-        updateEventCardContent(eventCard, updatedEvent);
-        setupEventCardListeners(eventCard, updatedEvent);
-    }
+    setupEventCardListeners(eventCard, event);
+    return eventCard;
 }
 
 function setupEventCardListeners(eventCard, event) {
@@ -110,190 +99,18 @@ function setupEventCardListeners(eventCard, event) {
     const volunteerButton = eventCard.querySelector(".volunteer-button");
     const codeElement = eventCard.querySelector(".unique-code");
     const volunteerCodeElement = eventCard.querySelector(".volunteer-code");
+    const participantsCount = eventCard.querySelector(".participants-count");
+    const volunteersCount = eventCard.querySelector(".volunteers-count");
 
     checkRegistration(event.id, registerButton, volunteerButton, codeElement);
     checkVolunteerRegistration(event.id, registerButton, volunteerButton, volunteerCodeElement);
 
     if (registerButton) {
         registerButton.addEventListener("click", async () => {
-            await registerForEvent(event.id, registerButton, volunteerButton, codeElement);
+            await registerForEvent(event.id, registerButton, volunteerButton, codeElement, participantsCount);
         });
     }
 
     if (volunteerButton) {
         volunteerButton.addEventListener("click", async () => {
-            await registerAsVolunteer(event.id, registerButton, volunteerButton, volunteerCodeElement);
-        });
-    }
-}
-
-async function getUserId() {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
-        console.error("Error getting user:", error?.message);
-        return null;
-    }
-    return data.user.id;
-}
-
-function generateUniqueCode() {
-    return Math.random().toString(36).substr(2, 8).toUpperCase();
-}
-
-async function checkRegistration(eventId, registerButton, volunteerButton, codeElement) {
-    const participantId = await getUserId();
-    if (!participantId || !registerButton) return;
-
-    const { data, error } = await supabase
-        .from("register")
-        .select("unique_code")
-        .eq("participant_id", participantId)
-        .eq("event_id", eventId)
-        .single();
-
-    if (error && error.code !== "PGRST116") {
-        console.error("Error checking registration:", error.message);
-        return;
-    }
-
-    if (data) {
-        registerButton.textContent = "Registered";
-        registerButton.disabled = true;
-        registerButton.classList.add("registered");
-        codeElement.textContent = `Your Registration Code: ${data.unique_code}`;
-        if (volunteerButton) volunteerButton.style.display = "none";
-    }
-}
-
-async function checkVolunteerRegistration(eventId, registerButton, volunteerButton, codeElement) {
-    const participantId = await getUserId();
-    if (!participantId || !volunteerButton) return;
-
-    const { data, error } = await supabase
-        .from("volunteers")
-        .select("unique_code")
-        .eq("participant_id", participantId)
-        .eq("event_id", eventId)
-        .single();
-
-    if (error && error.code !== "PGRST116") {
-        console.error("Error checking volunteer registration:", error.message);
-        return;
-    }
-
-    if (data) {
-        volunteerButton.textContent = "Volunteered";
-        volunteerButton.disabled = true;
-        volunteerButton.classList.add("registered");
-        codeElement.textContent = `Your Volunteer Code: ${data.unique_code}`;
-        if (registerButton) registerButton.style.display = "none";
-    }
-}
-
-async function registerForEvent(eventId, registerButton, volunteerButton, codeElement) {
-    const participantId = await getUserId();
-    if (!participantId) {
-        alert("You need to log in to register!");
-        return;
-    }
-
-    // Fetch current event data to check limits
-    const { data: event, error: fetchError } = await supabase
-        .from("events")
-        .select("current_registrations, total_registrations")
-        .eq("id", eventId)
-        .single();
-
-    if (fetchError) {
-        alert(`Error fetching event: ${fetchError.message}`);
-        return;
-    }
-
-    if (event.current_registrations >= event.total_registrations) {
-        alert("Registration is full for this event!");
-        return;
-    }
-
-    const uniqueCode = generateUniqueCode();
-
-    // Insert registration
-    const { error: insertError } = await supabase
-        .from("register")
-        .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
-
-    if (insertError) {
-        alert(`Failed to register: ${insertError.message}`);
-        return;
-    }
-
-    // Update event count
-    const { error: updateError } = await supabase
-        .from("events")
-        .update({ current_registrations: event.current_registrations + 1 })
-        .eq("id", eventId);
-
-    if (updateError) {
-        alert(`Failed to update registration count: ${updateError.message}`);
-        return;
-    }
-
-    registerButton.textContent = "Registered";
-    registerButton.disabled = true;
-    registerButton.classList.add("registered");
-    codeElement.textContent = `Your Registration Code: ${uniqueCode}`;
-    if (volunteerButton) volunteerButton.style.display = "none";
-}
-
-async function registerAsVolunteer(eventId, registerButton, volunteerButton, codeElement) {
-    const participantId = await getUserId();
-    if (!participantId) {
-        alert("You need to log in to volunteer!");
-        return;
-    }
-
-    // Fetch current event data to check limits
-    const { data: event, error: fetchError } = await supabase
-        .from("events")
-        .select("current_volunteers, total_volunteers")
-        .eq("id", eventId)
-        .single();
-
-    if (fetchError) {
-        alert(`Error fetching event: ${fetchError.message}`);
-        return;
-    }
-
-    if (event.current_volunteers >= event.total_volunteers) {
-        alert("Volunteer slots are full for this event!");
-        return;
-    }
-
-    const uniqueCode = generateUniqueCode();
-
-    // Insert volunteer registration
-    const { error: insertError } = await supabase
-        .from("volunteers")
-        .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
-
-    if (insertError) {
-        alert(`Failed to volunteer: ${insertError.message}`);
-        return;
-    }
-
-    // Update event count
-    const { error: updateError } = await supabase
-        .from("events")
-        .update({ current_volunteers: event.current_volunteers + 1 })
-        .eq("id", eventId);
-
-    if (updateError) {
-        alert(`Failed to update volunteer count: ${updateError.message}`);
-        return;
-    }
-
-    volunteerButton.textContent = "Volunteered";
-    volunteerButton.disabled = true;
-    volunteerButton.classList.add("registered");
-    codeElement.textContent = `Your Volunteer Code: ${uniqueCode}`;
-    if (registerButton) registerButton.style.display = "none";
-}
+            await registerAsVolunteer
