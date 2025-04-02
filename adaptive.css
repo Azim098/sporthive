@@ -295,8 +295,16 @@ section {
 }
 .register-button.registered {
     cursor: pointer !important;
+    color: green;
+}
+.button-container {
+    display: flex;
+    gap: 10px; /* Adjust spacing between buttons as needed */
 }
 
+.register-button, .volunteer-button {
+    display: inline-block; /* Fallback for when JS sets display */
+}
 
 .unique-code {
     font-size: 0.9em;
