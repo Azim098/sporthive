@@ -45,8 +45,8 @@ section {
     background: linear-gradient(to left, #5881d8, #acd8fc); /* Gradient Background */
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 800px;
+    width: 95%;
+    max-width: 1000px;
     text-align: center;
 }
 
@@ -82,7 +82,7 @@ tr:nth-child(even) {
 }
 
 .status.confirmed {
-    background: #28a745;
+    background: #1e42b8;
     color: white;
 }
 
@@ -99,13 +99,12 @@ button {
     cursor: pointer;
     font-weight: bold;
 }
-
-.remove-btn {
+.reject-btn {
     background: #ff4d4d;
     color: white;
 }
 
-.remove-btn:hover {
+.reject-btn:hover {
     background: #e60000;
 }
 
