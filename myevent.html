@@ -36,6 +36,8 @@
                 <input type="text" id="edit-name" required><br>
                 <label for="edit-description">Description:</label>
                 <textarea id="edit-description" required></textarea><br>
+                <label for="edit-date">Date:</label> <!-- Added Date Field -->
+                <input type="date" id="edit-date" required><br>
                 <label for="edit-time">Time:</label>
                 <input type="time" id="edit-time" required><br>
                 <label for="edit-location">Location:</label>
@@ -53,7 +55,7 @@
         // Initialize Supabase
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // Fixed: Use a different variable name
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Get the authenticated user
         async function getUser() {
@@ -106,9 +108,10 @@
                 eventCard.innerHTML = `
                     <h3>${event.name}</h3>
                     <p>${event.description}</p>
+                    <p><strong>Date:</strong> ${event.date}</p> <!-- Added Date Display -->
                     <p><strong>Time:</strong> ${event.time}</p>
                     <p><strong>Location:</strong> ${event.location}</p>
-                    <button onclick="openEditModal('${event.id}', '${event.name}', '${event.description}', '${event.time}', '${event.location}')">Modify</button>
+                    <button onclick="openEditModal('${event.id}', '${event.name}', '${event.description}', '${event.date}', '${event.time}', '${event.location}')">Modify</button>
                     <button onclick="deleteEvent('${event.id}')">Delete</button>
                 `;
 
@@ -117,10 +120,11 @@
         }
 
         // Open the edit modal with event details
-        function openEditModal(eventId, name, description, time, location) {
+        function openEditModal(eventId, name, description, date, time, location) {
             document.getElementById("edit-event-id").value = eventId;
             document.getElementById("edit-name").value = name;
             document.getElementById("edit-description").value = description;
+            document.getElementById("edit-date").value = date; // Added Date
             document.getElementById("edit-time").value = time;
             document.getElementById("edit-location").value = location;
             document.getElementById("edit-modal").style.display = "block";
@@ -137,10 +141,11 @@
             const eventId = document.getElementById("edit-event-id").value;
             const newName = document.getElementById("edit-name").value;
             const newDescription = document.getElementById("edit-description").value;
+            const newDate = document.getElementById("edit-date").value; // Added Date
             const newTime = document.getElementById("edit-time").value;
             const newLocation = document.getElementById("edit-location").value;
 
-            if (!newName || !newDescription || !newTime || !newLocation) {
+            if (!newName || !newDescription || !newDate || !newTime || !newLocation) {
                 alert("All fields are required!");
                 return;
             }
@@ -151,6 +156,7 @@
                     .update({
                         name: newName,
                         description: newDescription,
+                        date: newDate, // Added Date
                         time: newTime,
                         location: newLocation
                     })
