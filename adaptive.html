@@ -75,8 +75,9 @@
         </div>
         <div class="container">
             <form>
-                <input type="text" placeholder="Search for adaptive sports events..." class="search-bar" aria-label="Search Adaptive Events">
-                <button type="submit" class="apply-filters">Search</button>
+                <input type="text" id="searchInput" placeholder="Search for adaptive sports events..." class="search-bar" aria-label="Search Adaptive Events">
+                <button type="submit" id="searchButton" class="apply-filters">Search</button>
+
             </form>
             <p>Discover accessible sports events tailored for different needs.</p>
             <div class="events-container">
@@ -85,21 +86,10 @@
         </div>
     </section>
 
-    <!-- Training & Support Section -->
-    <section id="resources">
-        <div class="container">
-            <h2>Training & Support</h2>
-            <p>Access guides, tutorials, and mentorship for adaptive athletes.</p>
-        </div>
-    </section>
+   <div class="events-container" id="eventsList">
+    <!-- Event Cards will be dynamically loaded here -->
+   </div>
 
-    <!-- Accessibility Features Section -->
-    <section id="accessibility-info">
-        <div class="container">
-            <h2>Accessibility Features</h2>
-            <p>Find venues with accessible parking, ramps, and restrooms.</p>
-        </div>
-    </section>
 
     <!-- Footer -->
     <footer>
