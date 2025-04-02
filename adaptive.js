@@ -1,6 +1,6 @@
 // Initialize Supabase
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY"; 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -9,9 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("s1-14").addEventListener("change", applyFilteredEvents);
     document.querySelector(".apply-filters").addEventListener("click", applyFilteredEvents);
     document.querySelector(".search-bar").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") applyFilteredEvents();
+        if (e.key === "Enter") {
+            e.preventDefault();
+            applyFilteredEvents();
+        }
     });
-    document.querySelector(".apply-filters").addEventListener("click", applyFilteredEvents);
 });
 
 async function loadEvents(searchQuery = "", filters = {}) {
@@ -21,16 +23,16 @@ async function loadEvents(searchQuery = "", filters = {}) {
         query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
     }
 
-    if (filters.skillLevel && filters.skillLevel !== "any") {
+    if (filters.skillLevel && filters.skillLevel !== "all") {
         query = query.eq("difficulty", filters.skillLevel);
     }
 
-    if (filters.eventTime && filters.eventTime !== "any") {
+    if (filters.eventTime && filters.eventTime !== "all") {
         const timeRange = getTimeRange(filters.eventTime);
         query = query.gte("time", timeRange.start).lt("time", timeRange.end);
     }
 
-    if (filters.sport && filters.sport !== "any") {
+    if (filters.sport && filters.sport !== "all") {
         query = query.ilike("sport", `%${filters.sport}%`);
     }
 
@@ -43,11 +45,10 @@ async function loadEvents(searchQuery = "", filters = {}) {
     displayEvents(events || []);
 }
 
-
 async function applyFilteredEvents() {
     const searchQuery = document.querySelector(".search-bar").value.trim();
     const filtersEnabled = document.getElementById("s1-14").checked;
-    
+
     let filters = {};
     if (filtersEnabled) {
         filters = {
@@ -135,7 +136,6 @@ async function registerForEvent(eventId, button, codeElement) {
         return;
     }
 
-    // Step 1: Fetch the current registrations and total capacity
     const { data: eventData, error: eventError } = await supabase
         .from("events")
         .select("current_registrations, total_registrations")
@@ -147,16 +147,13 @@ async function registerForEvent(eventId, button, codeElement) {
         return;
     }
 
-    // Step 2: Check if the event is full
     if (eventData.current_registrations >= eventData.total_registrations) {
         alert("This event is full. Registration is closed.");
         return;
     }
 
-    // Step 3: Generate a unique code for the user
     const uniqueCode = Math.random().toString(36).substr(2, 8).toUpperCase();
 
-    // Step 4: Insert the registration record
     const { error: insertError } = await supabase
         .from("register")
         .insert([{ participant_id: userId, event_id: eventId, unique_code: uniqueCode }]);
@@ -166,20 +163,16 @@ async function registerForEvent(eventId, button, codeElement) {
         return;
     }
 
-    // Step 5: Update the event's current_registrations count safely
-    const { error: updateError } = await supabase.from("events").update({
-        current_registrations: eventData.current_registrations + 1
-    }).eq("id", eventId);
+    // Atomic Increment using Supabase RPC
+    const { error: updateError } = await supabase.rpc("increment_registrations", { event_id: eventId });
 
     if (updateError) {
         console.error("Failed to update registration count:", updateError.message);
         return;
     }
 
-    // Step 6: Update UI to reflect registration
     button.textContent = "Registered";
     button.disabled = true;
     button.classList.add("registered");
     codeElement.textContent = `Your Code: ${uniqueCode}`;
 }
-
