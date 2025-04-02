@@ -3,39 +3,43 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM loaded, initializing...");
     loadEvents();
 
-    document.querySelector(".apply-filters").addEventListener("click", async () => {
-        const searchQuery = document.getElementById("searchInput").value.trim();
-        await applyFilteredEvents(searchQuery);
-    });
-
-    // Subscribe to real-time updates
-    supabase
-        .channel('events-changes')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, (payload) => {
-            updateEventCard(payload.new);
-        })
-        .subscribe();
+    const applyFiltersBtn = document.querySelector(".apply-filters");
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener("click", async () => {
+            const searchQuery = document.getElementById("searchInput").value.trim();
+            console.log("Applying filters with query:", searchQuery);
+            await applyFilteredEvents(searchQuery);
+        });
+    } else {
+        console.error("Apply filters button not found");
+    }
 });
 
 async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", sport = "") {
-    let query = supabase.from("events").select("*");
-    
-    if (searchQuery) query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
-    if (skillLevel) query = query.eq("difficulty", skillLevel);
-    if (eventTime) {
-        const { start, end } = getTimeRange(eventTime);
-        query = query.gte("time", start).lt("time", end);
-    }
-    if (sport) query = query.ilike("name", `%${sport}%`);
+    console.log("Loading events with filters:", { searchQuery, skillLevel, eventTime, sport });
+    try {
+        let query = supabase.from("events").select("*");
+        
+        if (searchQuery) query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+        if (skillLevel) query = query.eq("difficulty", skillLevel);
+        if (eventTime) {
+            const { start, end } = getTimeRange(eventTime);
+            query = query.gte("time", start).lt("time", end);
+        }
+        if (sport) query = query.ilike("name", `%${sport}%`);
 
-    const { data: events, error } = await query;
-    if (error) {
-        console.error("Error loading events:", error.message);
-        return;
+        const { data: events, error } = await query;
+        if (error) throw new Error(`Supabase error: ${error.message}`);
+        
+        console.log("Events fetched:", events);
+        displayEvents(events);
+    } catch (error) {
+        console.error("Error in loadEvents:", error);
+        document.getElementById("eventsList").innerHTML = `<p>Error loading events: ${error.message}</p>`;
     }
-    displayEvents(events);
 }
 
 async function applyFilteredEvents(searchQuery = "") {
@@ -57,9 +61,21 @@ function getTimeRange(slot) {
 
 function displayEvents(events) {
     const eventsList = document.getElementById("eventsList");
-    eventsList.innerHTML = events?.length ? "" : "<p>No events found.</p>";
+    if (!eventsList) {
+        console.error("eventsList element not found");
+        return;
+    }
+
+    console.log("Displaying events:", events);
+    eventsList.innerHTML = "";
+
+    if (!events || events.length === 0) {
+        eventsList.innerHTML = "<p>No events found.</p>";
+        return;
+    }
 
     events.forEach(event => {
+        console.log("Creating card for event:", event);
         const eventCard = createEventCard(event);
         eventsList.appendChild(eventCard);
     });
@@ -68,18 +84,18 @@ function displayEvents(events) {
 function createEventCard(event) {
     const eventCard = document.createElement("div");
     eventCard.classList.add("event-card");
-    eventCard.dataset.eventId = event.id; // Store event ID for updates
-    
+    eventCard.dataset.eventId = event.id;
+
     const isRegistrationFull = event.current_registrations >= event.total_registrations;
     const isVolunteerFull = event.current_volunteers >= event.total_volunteers;
 
     eventCard.innerHTML = `
-        <h3>${event.name}</h3>
-        <p>${event.description}</p>
-        <p><strong>Time:</strong> ${event.time}</p>
-        <p><strong>Location:</strong> ${event.location}</p>
-        <p class="participants-count"><strong>Participants:</strong> ${event.current_registrations} / ${event.total_registrations}</p>
-        <p class="volunteers-count"><strong>Volunteers:</strong> ${event.current_volunteers} / ${event.total_volunteers}</p>
+        <h3>${event.name || "Unnamed Event"}</h3>
+        <p>${event.description || "No description"}</p>
+        <p><strong>Time:</strong> ${event.time || "TBD"}</p>
+        <p><strong>Location:</strong> ${event.location || "TBD"}</p>
+        <p class="participants-count"><strong>Participants:</strong> ${event.current_registrations || 0} / ${event.total_registrations || 0}</p>
+        <p class="volunteers-count"><strong>Volunteers:</strong> ${event.current_volunteers || 0} / ${event.total_volunteers || 0}</p>
         ${isRegistrationFull ? '<p style="color: red;"><strong>Registration Full</strong></p>' : `
             <button class="register-button" data-event-id="${event.id}">Register</button>
         `}
@@ -102,15 +118,178 @@ function setupEventCardListeners(eventCard, event) {
     const participantsCount = eventCard.querySelector(".participants-count");
     const volunteersCount = eventCard.querySelector(".volunteers-count");
 
-    checkRegistration(event.id, registerButton, volunteerButton, codeElement);
-    checkVolunteerRegistration(event.id, registerButton, volunteerButton, volunteerCodeElement);
-
     if (registerButton) {
+        checkRegistration(event.id, registerButton, volunteerButton, codeElement);
         registerButton.addEventListener("click", async () => {
             await registerForEvent(event.id, registerButton, volunteerButton, codeElement, participantsCount);
         });
     }
 
     if (volunteerButton) {
+        checkVolunteerRegistration(event.id, registerButton, volunteerButton, volunteerCodeElement);
         volunteerButton.addEventListener("click", async () => {
-            await registerAsVolunteer
+            await registerAsVolunteer(event.id, registerButton, volunteerButton, volunteerCodeElement, volunteersCount);
+        });
+    }
+}
+
+async function getUserId() {
+    try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data.user) throw new Error("User not authenticated");
+        return data.user.id;
+    } catch (error) {
+        console.error("Error getting user ID:", error);
+        return null;
+    }
+}
+
+function generateUniqueCode() {
+    return Math.random().toString(36).substr(2, 8).toUpperCase();
+}
+
+async function checkRegistration(eventId, registerButton, volunteerButton, codeElement) {
+    const participantId = await getUserId();
+    if (!participantId || !registerButton) return;
+
+    try {
+        const { data, error } = await supabase
+            .from("register")
+            .select("unique_code")
+            .eq("participant_id", participantId)
+            .eq("event_id", eventId)
+            .single();
+
+        if (error && error.code !== "PGRST116") throw error;
+        if (data) {
+            registerButton.textContent = "Registered";
+            registerButton.disabled = true;
+            registerButton.classList.add("registered");
+            codeElement.textContent = `Your Registration Code: ${data.unique_code}`;
+            if (volunteerButton) volunteerButton.style.display = "none";
+        }
+    } catch (error) {
+        console.error("Error checking registration:", error);
+    }
+}
+
+async function checkVolunteerRegistration(eventId, registerButton, volunteerButton, codeElement) {
+    const participantId = await getUserId();
+    if (!participantId || !volunteerButton) return;
+
+    try {
+        const { data, error } = await supabase
+            .from("volunteers")
+            .select("unique_code")
+            .eq("participant_id", participantId)
+            .eq("event_id", eventId)
+            .single();
+
+        if (error && error.code !== "PGRST116") throw error;
+        if (data) {
+            volunteerButton.textContent = "Volunteered";
+            volunteerButton.disabled = true;
+            volunteerButton.classList.add("registered");
+            codeElement.textContent = `Your Volunteer Code: ${data.unique_code}`;
+            if (registerButton) registerButton.style.display = "none";
+        }
+    } catch (error) {
+        console.error("Error checking volunteer registration:", error);
+    }
+}
+
+async function registerForEvent(eventId, registerButton, volunteerButton, codeElement, participantsCount) {
+    const participantId = await getUserId();
+    if (!participantId) {
+        alert("You need to log in to register!");
+        return;
+    }
+
+    try {
+        const { data: event, error: fetchError } = await supabase
+            .from("events")
+            .select("current_registrations, total_registrations")
+            .eq("id", eventId)
+            .single();
+
+        if (fetchError) throw new Error(`Fetch error: ${fetchError.message}`);
+        if (event.current_registrations >= event.total_registrations) {
+            alert("Registration is full for this event!");
+            return;
+        }
+
+        const uniqueCode = generateUniqueCode();
+        const newCount = event.current_registrations + 1;
+
+        const { error: insertError } = await supabase
+            .from("register")
+            .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
+
+        if (insertError) throw new Error(`Insert error: ${insertError.message}`);
+
+        const { error: updateError } = await supabase
+            .from("events")
+            .update({ current_registrations: newCount })
+            .eq("id", eventId);
+
+        if (updateError) throw new Error(`Update error: ${updateError.message}`);
+
+        registerButton.textContent = "Registered";
+        registerButton.disabled = true;
+        registerButton.classList.add("registered");
+        codeElement.textContent = `Your Registration Code: ${uniqueCode}`;
+        if (volunteerButton) volunteerButton.style.display = "none";
+        participantsCount.innerHTML = `<strong>Participants:</strong> ${newCount} / ${event.total_registrations}`;
+    } catch (error) {
+        console.error("Error registering for event:", error);
+        alert(`Failed to register: ${error.message}`);
+    }
+}
+
+async function registerAsVolunteer(eventId, registerButton, volunteerButton, codeElement, volunteersCount) {
+    const participantId = await getUserId();
+    if (!participantId) {
+        alert("You need to log in to volunteer!");
+        return;
+    }
+
+    try {
+        const { data: event, error: fetchError } = await supabase
+            .from("events")
+            .select("current_volunteers, total_volunteers")
+            .eq("id", eventId)
+            .single();
+
+        if (fetchError) throw new Error(`Fetch error: ${fetchError.message}`);
+        if (event.current_volunteers >= event.total_volunteers) {
+            alert("Volunteer slots are full for this event!");
+            return;
+        }
+
+        const uniqueCode = generateUniqueCode();
+        const newCount = event.current_volunteers + 1;
+
+        const { error: insertError } = await supabase
+            .from("volunteers")
+            .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
+
+        if (insertError) throw new Error(`Insert error: ${insertError.message}`);
+
+        const { error: updateError } = await supabase
+            .from("events")
+            .update({ current_volunteers: newCount })
+            .eq("id", eventId);
+
+        if (updateError) throw new Error(`Update error: ${updateError.message}`);
+
+        volunteerButton.textContent = "Volunteered";
+        volunteerButton.disabled = true;
+        volunteerButton.classList.add("registered");
+        codeElement.textContent = `Your Volunteer Code: ${uniqueCode}`;
+        if (registerButton) registerButton.style.display = "none";
+        volunteersCount.innerHTML = `<strong>Volunteers:</strong> ${newCount} / ${event.total_volunteers}`;
+    } catch (error) {
+        console.error("Error registering as volunteer:", error);
+        alert(`Failed to volunteer: ${error.message}`);
+    }
+}
