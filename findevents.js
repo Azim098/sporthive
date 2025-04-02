@@ -244,11 +244,12 @@ async function registerForEvent(eventId, registerButton, volunteerButton, codeEl
         // Fetch current event state
         const { data: event, error: fetchError } = await supabase
             .from("events")
-            .select("current_registrations, total_registrations")
+            .select("id, current_registrations, total_registrations")
             .eq("id", eventId)
             .single();
 
         if (fetchError) throw new Error(`Fetch error: ${fetchError.message}`);
+        if (!event) throw new Error(`Event with ID ${eventId} not found`);
         console.log("Current event state:", event);
 
         if (event.current_registrations >= event.total_registrations) {
@@ -268,15 +269,15 @@ async function registerForEvent(eventId, registerButton, volunteerButton, codeEl
         console.log("Registration inserted:", { participantId, eventId, uniqueCode });
 
         // Update event table
-        const { data: updatedEvent, error: updateError } = await supabase
+        const { data: updatedEvents, error: updateError } = await supabase
             .from("events")
             .update({ current_registrations: newCount })
             .eq("id", eventId)
-            .select()
-            .single();
+            .select();
 
         if (updateError) throw new Error(`Update error: ${updateError.message}`);
-        console.log("Event table updated:", updatedEvent);
+        if (!updatedEvents || updatedEvents.length === 0) throw new Error("No rows updated in events table");
+        console.log("Event table updated:", updatedEvents);
 
         // Update UI
         registerButton.textContent = "Registered";
@@ -302,11 +303,12 @@ async function registerAsVolunteer(eventId, registerButton, volunteerButton, cod
         // Fetch current event state
         const { data: event, error: fetchError } = await supabase
             .from("events")
-            .select("current_volunteers, total_volunteers")
+            .select("id, current_volunteers, total_volunteers")
             .eq("id", eventId)
             .single();
 
         if (fetchError) throw new Error(`Fetch error: ${fetchError.message}`);
+        if (!event) throw new Error(`Event with ID ${eventId} not found`);
         console.log("Current event state:", event);
 
         if (event.current_volunteers >= event.total_volunteers) {
@@ -326,15 +328,15 @@ async function registerAsVolunteer(eventId, registerButton, volunteerButton, cod
         console.log("Volunteer registration inserted:", { participantId, eventId, uniqueCode });
 
         // Update event table
-        const { data: updatedEvent, error: updateError } = await supabase
+        const { data: updatedEvents, error: updateError } = await supabase
             .from("events")
             .update({ current_volunteers: newCount })
             .eq("id", eventId)
-            .select()
-            .single();
+            .select();
 
         if (updateError) throw new Error(`Update error: ${updateError.message}`);
-        console.log("Event table updated:", updatedEvent);
+        if (!updatedEvents || updatedEvents.length === 0) throw new Error("No rows updated in events table");
+        console.log("Event table updated:", updatedEvents);
 
         // Update UI
         volunteerButton.textContent = "Volunteered";
