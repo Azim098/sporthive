@@ -20,45 +20,46 @@
 
     <section id="registrations">
         <h2>Registered Participants</h2>
-       <table>
-    <thead>
-        <tr>
-            <th>Participant Name</th>
-            <th>Email</th>
-            <th>Event Name</th>
-            <th>Unique Code</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="registrations-table-body">
-        <tr><td colspan="6">Loading participants...</td></tr>
-    </tbody> <!-- Dynamic Data Here -->
-</table>
+        <table>
+            <thead>
+                <tr>
+                    <th>Participant Name</th>
+                    <th>Email</th>
+                    <th>Event Name</th>
+                    <th>Unique Code</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="registrations-table-body">
+                <tr><td colspan="6">Loading participants...</td></tr>
+            </tbody>
+        </table>
     </section>
 
     <section id="volunteers">
         <h2>Registered Volunteers</h2>
         <table>
-    <thead>
-        <tr>
-            <th>Volunteer Name</th>
-            <th>Email</th>
-            <th>Event Name</th>
-            <th>Unique Code</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="volunteers-table-body">
-        <tr><td colspan="6">Loading volunteers...</td></tr>
-    </tbody> <!-- Dynamic Data Here -->
-</table>
+            <thead>
+                <tr>
+                    <th>Volunteer Name</th>
+                    <th>Email</th>
+                    <th>Event Name</th>
+                    <th>Unique Code</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="volunteers-table-body">
+                <tr><td colspan="6">Loading volunteers...</td></tr>
+            </tbody>
+        </table>
     </section>
 
     <footer>
-        <p>&copy; 2025 SportsHive</p>
+        <p>© 2025 SportsHive</p>
     </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Initialize Supabase
@@ -101,7 +102,7 @@
                     .in("event_id", eventIds);
 
                 if (participantError) throw new Error("Error fetching participants: " + participantError.message);
-                console.log("Participants:", participants);
+                console.log("Participants Raw Data:", participants);
 
                 // Fetch volunteers
                 const { data: volunteers, error: volunteerError } = await supabaseClient
@@ -110,7 +111,7 @@
                     .in("event_id", eventIds);
 
                 if (volunteerError) throw new Error("Error fetching volunteers: " + volunteerError.message);
-                console.log("Volunteers:", volunteers);
+                console.log("Volunteers Raw Data:", volunteers);
 
                 // Display data
                 displayRegistrations(participants || [], "registrations-table-body");
@@ -136,6 +137,7 @@
             data.forEach(item => {
                 const row = document.createElement("tr");
                 const status = item.status || "Pending"; // Ensure status is never undefined
+                console.log(`Rendering item for ${tableId}:`, item); // Log each item to debug
                 row.innerHTML = `
                     <td>${item.users?.fullname || "N/A"}</td>
                     <td>${item.users?.email || "N/A"}</td>
@@ -163,16 +165,18 @@
         async function approveRegistration(id, tableId) {
             try {
                 const table = tableId.includes("volunteer") ? "volunteers" : "register";
-                const { error } = await supabaseClient
+                console.log(`Approving registration ID ${id} in table ${table}`);
+                const { data, error } = await supabaseClient
                     .from(table)
                     .update({ status: "Accepted" })
-                    .eq("id", id);
+                    .eq("id", id)
+                    .select(); // Return the updated record for confirmation
 
                 if (error) throw new Error("Error approving registration: " + error.message);
-                console.log(`Registration ${id} approved in table ${table}`);
-                fetchOrganizerRegistrations();
+                console.log(`Registration ${id} approved in table ${table}:`, data);
+                fetchOrganizerRegistrations(); // Refresh the table
             } catch (error) {
-                console.error(error.message);
+                console.error("Approve Error:", error.message);
                 alert("Failed to approve registration: " + error.message);
             }
         }
@@ -181,16 +185,18 @@
         async function rejectRegistration(id, tableId) {
             try {
                 const table = tableId.includes("volunteer") ? "volunteers" : "register";
-                const { error } = await supabaseClient
+                console.log(`Rejecting registration ID ${id} in table ${table}`);
+                const { data, error } = await supabaseClient
                     .from(table)
                     .delete()
-                    .eq("id", id);
+                    .eq("id", id)
+                    .select(); // Return the deleted record for confirmation
 
                 if (error) throw new Error("Error rejecting registration: " + error.message);
-                console.log(`Registration ${id} rejected from table ${table}`);
-                fetchOrganizerRegistrations();
+                console.log(`Registration ${id} rejected from table ${table}:`, data);
+                fetchOrganizerRegistrations(); // Refresh the table
             } catch (error) {
-                console.error(error.message);
+                console.error("Reject Error:", error.message);
                 alert("Failed to reject registration: " + error.message);
             }
         }
