@@ -17,7 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event listener for the apply filters button
     const applyFiltersButton = document.querySelector(".apply-filters");
     if (applyFiltersButton) {
-        applyFiltersButton.addEventListener("click", applyFilteredEvents);
+        applyFiltersButton.addEventListener("click", (e) => {
+            e.preventDefault(); // Prevent form submission/page reload
+            applyFilteredEvents();
+        });
     } else {
         console.error("Apply filters button not found");
     }
@@ -27,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (searchBar) {
         searchBar.addEventListener("keypress", (e) => {
             if (e.key === "Enter") {
-                e.preventDefault();
+                e.preventDefault(); // Prevent form submission/page reload
                 applyFilteredEvents();
             }
         });
@@ -155,6 +158,7 @@ async function checkRegistration(eventId, button, codeElement) {
     if (data) {
         button.textContent = "Unregister";
         button.classList.add("registered");
+        button.style.cursor = "pointer"; // Ensure cursor is pointer for Unregister state
         codeElement.textContent = `Your Code: ${data.unique_code}`;
     }
 }
@@ -220,6 +224,7 @@ async function registerForEvent(eventId, button, codeElement) {
     // Update UI
     button.textContent = "Unregister";
     button.classList.add("registered");
+    button.style.cursor = "pointer"; // Ensure cursor is pointer for Unregister state
     codeElement.textContent = `Your Code: ${uniqueCode}`;
 
     // Update registration count display
@@ -274,6 +279,7 @@ async function unregisterFromEvent(eventId, button, codeElement) {
     // Update UI
     button.textContent = "Register";
     button.classList.remove("registered");
+    button.style.cursor = "pointer"; // Ensure cursor is pointer for Register state
     codeElement.textContent = "";
 
     // Update registration count display
