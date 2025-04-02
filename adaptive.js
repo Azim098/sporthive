@@ -14,28 +14,42 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Filter toggle (s1-14) not found");
     }
 
-    // Event listener for the apply filters button
-    const applyFiltersButton = document.querySelector(".apply-filters");
-    if (applyFiltersButton) {
-        applyFiltersButton.addEventListener("click", (e) => {
+    // Event listener for the form submission
+    const searchForm = document.querySelector("form");
+    if (searchForm) {
+        searchForm.addEventListener("submit", (e) => {
             e.preventDefault(); // Prevent form submission/page reload
+            console.log("Form submission prevented");
             applyFilteredEvents();
         });
     } else {
-        console.error("Apply filters button not found");
+        console.error("Search form not found");
+    }
+
+    // Event listener for the search button (additional safeguard)
+    const searchButton = document.querySelector("#searchButton.apply-filters");
+    if (searchButton) {
+        searchButton.addEventListener("click", (e) => {
+            e.preventDefault(); // Prevent form submission/page reload
+            console.log("Search button clicked");
+            applyFilteredEvents();
+        });
+    } else {
+        console.error("Search button (#searchButton.apply-filters) not found");
     }
 
     // Event listener for the search bar (Enter key)
-    const searchBar = document.querySelector(".search-bar");
-    if (searchBar) {
-        searchBar.addEventListener("keypress", (e) => {
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) {
+        searchInput.addEventListener("keypress", (e) => {
             if (e.key === "Enter") {
                 e.preventDefault(); // Prevent form submission/page reload
+                console.log("Enter key pressed in search input");
                 applyFilteredEvents();
             }
         });
     } else {
-        console.error("Search bar not found");
+        console.error("Search input (#searchInput) not found");
     }
 });
 
@@ -43,6 +57,7 @@ async function loadEvents(searchQuery = "", filters = {}) {
     let query = supabase.from("events").select("*").eq("disabled_friendly", true);
 
     if (searchQuery) {
+        console.log("Applying search query:", searchQuery);
         query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
     }
 
@@ -69,8 +84,8 @@ async function loadEvents(searchQuery = "", filters = {}) {
 }
 
 async function applyFilteredEvents() {
-    const searchBar = document.querySelector(".search-bar");
-    const searchQuery = searchBar ? searchBar.value.trim() : "";
+    const searchInput = document.getElementById("searchInput");
+    const searchQuery = searchInput ? searchInput.value.trim() : "";
     const filtersEnabled = document.getElementById("s1-14")?.checked || false;
 
     let filters = {};
@@ -81,6 +96,7 @@ async function applyFilteredEvents() {
             sport: document.getElementById("sports")?.value || ""
         };
     }
+    console.log("Toggle switch state:", filtersEnabled ? "ON" : "OFF");
     console.log("Applying filters with query:", searchQuery, "and filters:", filters);
     await loadEvents(searchQuery, filters);
 }
@@ -158,7 +174,7 @@ async function checkRegistration(eventId, button, codeElement) {
     if (data) {
         button.textContent = "Unregister";
         button.classList.add("registered");
-        button.style.cursor = "pointer"; // Ensure cursor is pointer for Unregister state
+        button.style.cursor = "pointer";
         codeElement.textContent = `Your Code: ${data.unique_code}`;
     }
 }
@@ -224,7 +240,7 @@ async function registerForEvent(eventId, button, codeElement) {
     // Update UI
     button.textContent = "Unregister";
     button.classList.add("registered");
-    button.style.cursor = "pointer"; // Ensure cursor is pointer for Unregister state
+    button.style.cursor = "pointer";
     codeElement.textContent = `Your Code: ${uniqueCode}`;
 
     // Update registration count display
@@ -279,7 +295,7 @@ async function unregisterFromEvent(eventId, button, codeElement) {
     // Update UI
     button.textContent = "Register";
     button.classList.remove("registered");
-    button.style.cursor = "pointer"; // Ensure cursor is pointer for Register state
+    button.style.cursor = "pointer";
     codeElement.textContent = "";
 
     // Update registration count display
