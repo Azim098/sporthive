@@ -293,11 +293,10 @@ section {
 .register-button:hover {
     background: #0056b3;
 }
-
 .register-button.registered {
-    background: #28a745;
-    cursor: not-allowed;
+    cursor: pointer !important;
 }
+
 
 .unique-code {
     font-size: 0.9em;
