@@ -93,7 +93,6 @@ header {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) inset;
 }
 
-
 @supports (appearance: none) or (-webkit-appearance: none) or (-moz-appearance: none) {
     .checkbox-wrapper-14 input[type=checkbox] {
       --active: #275EFE;
@@ -203,17 +202,16 @@ header {
     .checkbox-wrapper-14 input[type=checkbox].switch:disabled:not(:checked):after {
       opacity: 0.6;
     }
-   
-    
-  }
+}
 
-  .checkbox-wrapper-14 * {
-    box-sizing: inherit;
-  }
-  .checkbox-wrapper-14 *:before,
-  .checkbox-wrapper-14 *:after {
+.checkbox-wrapper-14 * {
     box-sizing: inherit;
 }
+.checkbox-wrapper-14 *:before,
+.checkbox-wrapper-14 *:after {
+    box-sizing: inherit;
+}
+
 /* Sections */
 section {
     padding: 30px;
@@ -246,6 +244,7 @@ section {
 .high-contrast nav ul li a {
     color: black;
 }
+
 .events-container {
     display: flex;
     flex-wrap: wrap;
@@ -279,7 +278,7 @@ section {
     margin: 5px 0;
 }
 
-.register-button {
+.register-button, .volunteer-button {
     background: #007bff;
     color: white;
     border: none;
@@ -288,24 +287,23 @@ section {
     cursor: pointer;
     font-size: 1em;
     transition: background 0.2s;
+    display: inline-block; /* Ensure consistent display */
 }
 
-.register-button:hover {
+.register-button:hover, .volunteer-button:hover {
     background: #0056b3;
 }
-.register-button.registered {
+
+.register-button.registered, .volunteer-button.volunteered {
     cursor: pointer !important;
 }
+
 .button-container {
     display: flex;
     gap: 10px; /* Adjust spacing between buttons as needed */
 }
 
-.register-button, .volunteer-button {
-    display: inline-block; /* Fallback for when JS sets display */
-}
-
-.unique-code {
+.unique-code, .volunteer-code {
     font-size: 0.9em;
     font-weight: bold;
     color: #444;
