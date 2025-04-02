@@ -295,7 +295,6 @@ section {
 }
 .register-button.registered {
     cursor: pointer !important;
-    color: green;
 }
 .button-container {
     display: flex;
