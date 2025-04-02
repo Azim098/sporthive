@@ -9,6 +9,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const searchQuery = document.getElementById("searchInput").value.trim();
         await applyFilteredEvents(searchQuery);
     });
+
+    // Real-time subscription to events table updates
+    supabase
+        .channel('events-changes')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, (payload) => {
+            updateEventCard(payload.new);
+        })
+        .subscribe();
 });
 
 async function loadEvents(searchQuery = "", skillLevel = "", eventTime = "", sport = "") {
@@ -52,71 +60,71 @@ function displayEvents(events) {
     eventsList.innerHTML = events?.length ? "" : "<p>No events found.</p>";
 
     events.forEach(event => {
-        const eventCard = document.createElement("div");
-        eventCard.classList.add("event-card");
-        
-        const isRegistrationFull = event.current_registrations >= event.total_registrations;
-        const isVolunteerFull = event.current_volunteers >= event.total_volunteers;
-
-        eventCard.innerHTML = `
-            <h3>${event.name}</h3>
-            <p>${event.description}</p>
-            <p><strong>Time:</strong> ${event.time}</p>
-            <p><strong>Location:</strong> ${event.location}</p>
-            <p class="participants-count"><strong>Participants:</strong> ${event.current_registrations} / ${event.total_registrations}</p>
-            <p class="volunteers-count"><strong>Volunteers:</strong> ${event.current_volunteers} / ${event.total_volunteers}</p>
-            ${isRegistrationFull ? '<p style="color: red;"><strong>Registration Full</strong></p>' : `
-                <button class="register-button" data-event-id="${event.id}">Register</button>
-            `}
-            ${isVolunteerFull ? '<p style="color: red;"><strong>Volunteer Slots Full</strong></p>' : `
-                <button class="volunteer-button" data-event-id="${event.id}">Register as Volunteer</button>
-            `}
-            <p class="unique-code" style="font-weight: bold;"></p>
-            <p class="volunteer-code" style="font-weight: bold;"></p>
-        `;
-
+        const eventCard = createEventCard(event);
         eventsList.appendChild(eventCard);
-
-        if (!isRegistrationFull || !isVolunteerFull) {
-            const registerButton = eventCard.querySelector(".register-button");
-            const volunteerButton = eventCard.querySelector(".volunteer-button");
-            const codeElement = eventCard.querySelector(".unique-code");
-            const volunteerCodeElement = eventCard.querySelector(".volunteer-code");
-            const participantsCount = eventCard.querySelector(".participants-count");
-            const volunteersCount = eventCard.querySelector(".volunteers-count");
-
-            checkRegistration(event.id, registerButton, volunteerButton, codeElement);
-            checkVolunteerRegistration(event.id, registerButton, volunteerButton, volunteerCodeElement);
-
-            if (registerButton) {
-                registerButton.addEventListener("click", async () => {
-                    await registerForEvent(
-                        event.id, 
-                        event.total_registrations, 
-                        event.current_registrations, 
-                        registerButton, 
-                        volunteerButton, 
-                        codeElement,
-                        participantsCount
-                    );
-                });
-            }
-
-            if (volunteerButton) {
-                volunteerButton.addEventListener("click", async () => {
-                    await registerAsVolunteer(
-                        event.id, 
-                        event.total_volunteers, 
-                        event.current_volunteers, 
-                        registerButton, 
-                        volunteerButton, 
-                        volunteerCodeElement,
-                        volunteersCount
-                    );
-                });
-            }
-        }
     });
+}
+
+function createEventCard(event) {
+    const eventCard = document.createElement("div");
+    eventCard.classList.add("event-card");
+    eventCard.dataset.eventId = event.id;
+
+    updateEventCardContent(eventCard, event);
+    setupEventCardListeners(eventCard, event);
+    return eventCard;
+}
+
+function updateEventCardContent(eventCard, event) {
+    const isRegistrationFull = event.current_registrations >= event.total_registrations;
+    const isVolunteerFull = event.current_volunteers >= event.total_volunteers;
+
+    eventCard.innerHTML = `
+        <h3>${event.name}</h3>
+        <p>${event.description}</p>
+        <p><strong>Time:</strong> ${event.time}</p>
+        <p><strong>Location:</strong> ${event.location}</p>
+        <p class="participants-count"><strong>Participants:</strong> ${event.current_registrations} / ${event.total_registrations}</p>
+        <p class="volunteers-count"><strong>Volunteers:</strong> ${event.current_volunteers} / ${event.total_volunteers}</p>
+        ${isRegistrationFull ? '<p style="color: red;"><strong>Registration Full</strong></p>' : `
+            <button class="register-button" data-event-id="${event.id}">Register</button>
+        `}
+        ${isVolunteerFull ? '<p style="color: red;"><strong>Volunteer Slots Full</strong></p>' : `
+            <button class="volunteer-button" data-event-id="${event.id}">Register as Volunteer</button>
+        `}
+        <p class="unique-code" style="font-weight: bold;"></p>
+        <p class="volunteer-code" style="font-weight: bold;"></p>
+    `;
+}
+
+function updateEventCard(updatedEvent) {
+    const eventCard = document.querySelector(`.event-card[data-event-id="${updatedEvent.id}"]`);
+    if (eventCard) {
+        updateEventCardContent(eventCard, updatedEvent);
+        setupEventCardListeners(eventCard, updatedEvent);
+    }
+}
+
+function setupEventCardListeners(eventCard, event) {
+    const registerButton = eventCard.querySelector(".register-button");
+    const volunteerButton = eventCard.querySelector(".volunteer-button");
+    const codeElement = eventCard.querySelector(".unique-code");
+    const volunteerCodeElement = eventCard.querySelector(".volunteer-code");
+
+    checkRegistration(event.id, registerButton, volunteerButton, codeElement);
+    checkVolunteerRegistration(event.id, registerButton, volunteerButton, volunteerCodeElement);
+
+    if (registerButton) {
+        registerButton.addEventListener("click", async () => {
+            await registerForEvent(event.id, registerButton, volunteerButton, codeElement);
+        });
+    }
+
+    if (volunteerButton) {
+        volunteerButton.addEventListener("click", async () => {
+            await registerAsVolunteer(event.id, registerButton, volunteerButton, volunteerCodeElement);
+        });
+    }
 }
 
 async function getUserId() {
@@ -131,7 +139,7 @@ function generateUniqueCode() {
 
 async function checkRegistration(eventId, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
-    if (!participantId) return;
+    if (!participantId || !registerButton) return;
 
     const { data, error } = await supabase
         .from("register")
@@ -145,13 +153,13 @@ async function checkRegistration(eventId, registerButton, volunteerButton, codeE
         registerButton.disabled = true;
         registerButton.classList.add("registered");
         codeElement.textContent = `Your Registration Code: ${data.unique_code}`;
-        volunteerButton.style.display = "none";
+        if (volunteerButton) volunteerButton.style.display = "none";
     }
 }
 
 async function checkVolunteerRegistration(eventId, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
-    if (!participantId) return;
+    if (!participantId || !volunteerButton) return;
 
     const { data, error } = await supabase
         .from("volunteers")
@@ -165,25 +173,37 @@ async function checkVolunteerRegistration(eventId, registerButton, volunteerButt
         volunteerButton.disabled = true;
         volunteerButton.classList.add("registered");
         codeElement.textContent = `Your Volunteer Code: ${data.unique_code}`;
-        registerButton.style.display = "none";
+        if (registerButton) registerButton.style.display = "none";
     }
 }
 
-async function registerForEvent(eventId, totalRegistrations, currentRegistrations, registerButton, volunteerButton, codeElement, participantsCount) {
+async function registerForEvent(eventId, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
     if (!participantId) {
         alert("You need to log in to register!");
         return;
     }
 
-    if (currentRegistrations >= totalRegistrations) {
+    // Fetch current event state
+    const { data: event, error: fetchError } = await supabase
+        .from("events")
+        .select("current_registrations, total_registrations")
+        .eq("id", eventId)
+        .single();
+
+    if (fetchError) {
+        alert(`Error fetching event: ${fetchError.message}`);
+        return;
+    }
+
+    if (event.current_registrations >= event.total_registrations) {
         alert("Registration is full for this event!");
         return;
     }
 
     const uniqueCode = generateUniqueCode();
-    const newCount = currentRegistrations + 1;
 
+    // Insert registration
     const { error: insertError } = await supabase
         .from("register")
         .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
@@ -193,9 +213,10 @@ async function registerForEvent(eventId, totalRegistrations, currentRegistration
         return;
     }
 
+    // Update event count
     const { error: updateError } = await supabase
         .from("events")
-        .update({ current_registrations: newCount })
+        .update({ current_registrations: event.current_registrations + 1 })
         .eq("id", eventId);
 
     if (updateError) {
@@ -203,29 +224,41 @@ async function registerForEvent(eventId, totalRegistrations, currentRegistration
         return;
     }
 
+    // UI updates will happen via real-time subscription
     registerButton.textContent = "Registered";
     registerButton.disabled = true;
     registerButton.classList.add("registered");
     codeElement.textContent = `Your Registration Code: ${uniqueCode}`;
-    volunteerButton.style.display = "none";
-    participantsCount.innerHTML = `<strong>Participants:</strong> ${newCount} / ${totalRegistrations}`;
+    if (volunteerButton) volunteerButton.style.display = "none";
 }
 
-async function registerAsVolunteer(eventId, totalVolunteers, currentVolunteers, registerButton, volunteerButton, codeElement, volunteersCount) {
+async function registerAsVolunteer(eventId, registerButton, volunteerButton, codeElement) {
     const participantId = await getUserId();
     if (!participantId) {
         alert("You need to log in to volunteer!");
         return;
     }
 
-    if (currentVolunteers >= totalVolunteers) {
+    // Fetch current event state
+    const { data: event, error: fetchError } = await supabase
+        .from("events")
+        .select("current_volunteers, total_volunteers")
+        .eq("id", eventId)
+        .single();
+
+    if (fetchError) {
+        alert(`Error fetching event: ${fetchError.message}`);
+        return;
+    }
+
+    if (event.current_volunteers >= event.total_volunteers) {
         alert("Volunteer slots are full for this event!");
         return;
     }
 
     const uniqueCode = generateUniqueCode();
-    const newCount = currentVolunteers + 1;
 
+    // Insert volunteer registration
     const { error: insertError } = await supabase
         .from("volunteers")
         .insert([{ participant_id: participantId, event_id: eventId, unique_code: uniqueCode }]);
@@ -235,9 +268,10 @@ async function registerAsVolunteer(eventId, totalVolunteers, currentVolunteers, 
         return;
     }
 
+    // Update event count
     const { error: updateError } = await supabase
         .from("events")
-        .update({ current_volunteers: newCount })
+        .update({ current_volunteers: event.current_volunteers + 1 })
         .eq("id", eventId);
 
     if (updateError) {
@@ -245,10 +279,10 @@ async function registerAsVolunteer(eventId, totalVolunteers, currentVolunteers, 
         return;
     }
 
+    // UI updates will happen via real-time subscription
     volunteerButton.textContent = "Volunteered";
     volunteerButton.disabled = true;
     volunteerButton.classList.add("registered");
     codeElement.textContent = `Your Volunteer Code: ${uniqueCode}`;
-    registerButton.style.display = "none";
-    volunteersCount.innerHTML = `<strong>Volunteers:</strong> ${newCount} / ${totalVolunteers}`;
+    if (registerButton) registerButton.style.display = "none";
 }
