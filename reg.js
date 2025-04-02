@@ -40,9 +40,9 @@ async function fetchOrganizerRegistrations() {
 
     // Fetch registered participants
     const { data: participants, error: participantError } = await supabaseClient
-        .from("register")
-        .select("id, status, unique_code, users(fullname, email), events(name)")
-        .in("event_id", eventIds);
+    .from("register")
+    .select("id, status, unique_code, users:participant_id(fullname, email), events:event_id(name)")
+    .in("event_id", eventIds);
 
     if (participantError) {
         console.error("Error fetching participants:", participantError);
@@ -53,9 +53,9 @@ async function fetchOrganizerRegistrations() {
 
     // Fetch registered volunteers
     const { data: volunteers, error: volunteerError } = await supabaseClient
-        .from("volunteers")
-        .select("id, status, unique_code, users(fullname, email), events(name)")
-        .in("event_id", eventIds);
+    .from("volunteers")
+    .select("id, status, unique_code, users:participant_id(fullname, email), events:event_id(name)")
+    .in("event_id", eventIds);
 
     if (volunteerError) {
         console.error("Error fetching volunteers:", volunteerError);
@@ -76,17 +76,19 @@ function displayRegistrations(data, tableId) {
 
     data.forEach(item => {
         const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${item.users.fullname}</td>
-            <td>${item.users.email}</td>
-            <td>${item.events.name}</td>
-            <td>${item.unique_code}</td>
-            <td class="status ${item.status === 'Accepted' ? 'confirmed' : 'pending'}">${item.status || 'Pending'}</td>
-            <td>
-                <button class="approve-btn" onclick="approveRegistration('${item.id}', '${tableId}')">Approve</button>
-                <button class="reject-btn" onclick="rejectRegistration('${item.id}', '${tableId}')">Reject</button>
-            </td>
-        `;
+       row.innerHTML = `
+    <td>${item.users?.fullname || "N/A"}</td>
+    <td>${item.users?.email || "N/A"}</td>
+    <td>${item.events?.name || "N/A"}</td>
+    <td>${item.unique_code || "N/A"}</td>
+    <td class="status ${item.status === 'Accepted' ? 'confirmed' : 'pending'}">
+        ${item.status || 'Pending'}
+    </td>
+    <td>
+        <button class="approve-btn" onclick="approveRegistration('${item.id}', '${tableId}')">Approve</button>
+        <button class="reject-btn" onclick="rejectRegistration('${item.id}', '${tableId}')">Reject</button>
+    </td>
+`;
         tableBody.appendChild(row);
     });
 }
