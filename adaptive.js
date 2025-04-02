@@ -135,21 +135,36 @@ function displayEvents(events) {
             <p><strong>Time:</strong> ${event.time}</p>
             <p><strong>Location:</strong> ${event.location}</p>
             <p class="registrations-count"><strong>Registrations:</strong> ${event.current_registrations}/${event.total_registrations}</p>
+            <p class="volunteers-count"><strong>Volunteers:</strong> ${event.current_volunteers}/${event.total_volunteers}</p>
             <button class="register-button" data-event-id="${event.id}">Register</button>
+            <button class="volunteer-button" data-event-id="${event.id}">Register as Volunteer</button>
             <p class="unique-code"></p>
+            <p class="volunteer-code"></p>
         `;
 
         eventsContainer.appendChild(eventCard);
 
-        const button = eventCard.querySelector(".register-button");
+        const registerButton = eventCard.querySelector(".register-button");
+        const volunteerButton = eventCard.querySelector(".volunteer-button");
         const codeElement = eventCard.querySelector(".unique-code");
-        checkRegistration(event.id, button, codeElement);
+        const volunteerCodeElement = eventCard.querySelector(".volunteer-code");
 
-        button.addEventListener("click", async () => {
-            if (button.textContent === "Register") {
-                await registerForEvent(event.id, button, codeElement);
-            } else if (button.textContent === "Unregister") {
-                await unregisterFromEvent(event.id, button, codeElement);
+        checkRegistration(event.id, registerButton, codeElement);
+        checkVolunteerRegistration(event.id, volunteerButton, volunteerCodeElement);
+
+        registerButton.addEventListener("click", async () => {
+            if (registerButton.textContent === "Register") {
+                await registerForEvent(event.id, registerButton, codeElement);
+            } else if (registerButton.textContent === "Unregister") {
+                await unregisterFromEvent(event.id, registerButton, codeElement);
+            }
+        });
+
+        volunteerButton.addEventListener("click", async () => {
+            if (volunteerButton.textContent === "Register as Volunteer") {
+                await registerAsVolunteer(event.id, volunteerButton, volunteerCodeElement);
+            } else if (volunteerButton.textContent === "Unregister as Volunteer") {
+                await unregisterAsVolunteer(event.id, volunteerButton, volunteerCodeElement);
             }
         });
     });
@@ -176,6 +191,25 @@ async function checkRegistration(eventId, button, codeElement) {
         button.classList.add("registered");
         button.style.cursor = "pointer";
         codeElement.textContent = `Your Code: ${data.unique_code}`;
+    }
+}
+
+async function checkVolunteerRegistration(eventId, button, codeElement) {
+    const userId = await getUserId();
+    if (!userId) return;
+
+    const { data, error } = await supabase
+        .from("volunteers")
+        .select("unique_code")
+        .eq("participant_id", userId)
+        .eq("event_id", eventId)
+        .single();
+
+    if (data) {
+        button.textContent = "Unregister as Volunteer";
+        button.classList.add("volunteered");
+        button.style.cursor = "pointer";
+        codeElement.textContent = `Your Volunteer Code: ${data.unique_code}`;
     }
 }
 
@@ -249,6 +283,76 @@ async function registerForEvent(eventId, button, codeElement) {
     registrationsCount.innerHTML = `<strong>Registrations:</strong> ${newCount}/${event.total_registrations}`;
 }
 
+async function registerAsVolunteer(eventId, button, codeElement) {
+    const userId = await getUserId();
+    if (!userId) {
+        alert("You need to log in to volunteer!");
+        return;
+    }
+
+    const { data: eventData, error: eventError } = await supabase
+        .from("events")
+        .select("current_volunteers, total_volunteers")
+        .eq("id", eventId)
+        .single();
+
+    if (eventError || !eventData) {
+        console.error("Failed to fetch event data:", eventError?.message);
+        return;
+    }
+
+    if (eventData.current_volunteers >= eventData.total_volunteers) {
+        alert("Volunteer slots for this event are full.");
+        return;
+    }
+
+    const uniqueCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+
+    const { error: insertError } = await supabase
+        .from("volunteers")
+        .insert([{ participant_id: userId, event_id: eventId, unique_code: uniqueCode }]);
+
+    if (insertError) {
+        console.error("Volunteer registration failed:", insertError.message);
+        return;
+    }
+
+    // Update event table with new volunteer count
+    const { data: event, error: fetchError } = await supabase
+        .from("events")
+        .select("id, current_volunteers, total_volunteers")
+        .eq("id", eventId)
+        .single();
+
+    if (fetchError) {
+        console.error("Fetch error:", fetchError.message);
+        return;
+    }
+
+    const newCount = event.current_volunteers + 1;
+
+    const { error: updateError } = await supabase
+        .from("events")
+        .update({ current_volunteers: newCount })
+        .eq("id", eventId);
+
+    if (updateError) {
+        console.error("Failed to update volunteer count:", updateError.message);
+        return;
+    }
+
+    // Update UI
+    button.textContent = "Unregister as Volunteer";
+    button.classList.add("volunteered");
+    button.style.cursor = "pointer";
+    codeElement.textContent = `Your Volunteer Code: ${uniqueCode}`;
+
+    // Update volunteer count display
+    const eventCard = button.closest(".event-card");
+    const volunteersCount = eventCard.querySelector(".volunteers-count");
+    volunteersCount.innerHTML = `<strong>Volunteers:</strong> ${newCount}/${event.total_volunteers}`;
+}
+
 async function unregisterFromEvent(eventId, button, codeElement) {
     const userId = await getUserId();
     if (!userId) {
@@ -256,7 +360,7 @@ async function unregisterFromEvent(eventId, button, codeElement) {
         return;
     }
 
-    // Delete the registration
+    // Delete the registration from the register table
     const { error: deleteError } = await supabase
         .from("register")
         .delete()
@@ -302,4 +406,59 @@ async function unregisterFromEvent(eventId, button, codeElement) {
     const eventCard = button.closest(".event-card");
     const registrationsCount = eventCard.querySelector(".registrations-count");
     registrationsCount.innerHTML = `<strong>Registrations:</strong> ${newCount}/${event.total_registrations}`;
+}
+
+async function unregisterAsVolunteer(eventId, button, codeElement) {
+    const userId = await getUserId();
+    if (!userId) {
+        alert("You need to log in to unregister as a volunteer!");
+        return;
+    }
+
+    // Delete the volunteer registration from the volunteers table
+    const { error: deleteError } = await supabase
+        .from("volunteers")
+        .delete()
+        .eq("participant_id", userId)
+        .eq("event_id", eventId);
+
+    if (deleteError) {
+        console.error("Failed to unregister as volunteer:", deleteError.message);
+        return;
+    }
+
+    // Fetch current event state and decrement
+    const { data: event, error: fetchError } = await supabase
+        .from("events")
+        .select("id, current_volunteers, total_volunteers")
+        .eq("id", eventId)
+        .single();
+
+    if (fetchError) {
+        console.error("Fetch error:", fetchError.message);
+        return;
+    }
+
+    const newCount = Math.max(0, event.current_volunteers - 1); // Ensure it doesn't go below 0
+
+    const { error: updateError } = await supabase
+        .from("events")
+        .update({ current_volunteers: newCount })
+        .eq("id", eventId);
+
+    if (updateError) {
+        console.error("Failed to update volunteer count:", updateError.message);
+        return;
+    }
+
+    // Update UI
+    button.textContent = "Register as Volunteer";
+    button.classList.remove("volunteered");
+    button.style.cursor = "pointer";
+    codeElement.textContent = "";
+
+    // Update volunteer count display
+    const eventCard = button.closest(".event-card");
+    const volunteersCount = eventCard.querySelector(".volunteers-count");
+    volunteersCount.innerHTML = `<strong>Volunteers:</strong> ${newCount}/${event.total_volunteers}`;
 }
