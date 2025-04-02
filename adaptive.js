@@ -149,22 +149,22 @@ function displayEvents(events) {
         const codeElement = eventCard.querySelector(".unique-code");
         const volunteerCodeElement = eventCard.querySelector(".volunteer-code");
 
-        checkRegistration(event.id, registerButton, codeElement);
-        checkVolunteerRegistration(event.id, volunteerButton, volunteerCodeElement);
+        checkRegistration(event.id, registerButton, codeElement, volunteerButton);
+        checkVolunteerRegistration(event.id, volunteerButton, volunteerCodeElement, registerButton);
 
         registerButton.addEventListener("click", async () => {
             if (registerButton.textContent === "Register") {
-                await registerForEvent(event.id, registerButton, codeElement);
+                await registerForEvent(event.id, registerButton, codeElement, volunteerButton);
             } else if (registerButton.textContent === "Unregister") {
-                await unregisterFromEvent(event.id, registerButton, codeElement);
+                await unregisterFromEvent(event.id, registerButton, codeElement, volunteerButton);
             }
         });
 
         volunteerButton.addEventListener("click", async () => {
             if (volunteerButton.textContent === "Register as Volunteer") {
-                await registerAsVolunteer(event.id, volunteerButton, volunteerCodeElement);
+                await registerAsVolunteer(event.id, volunteerButton, volunteerCodeElement, registerButton);
             } else if (volunteerButton.textContent === "Unregister as Volunteer") {
-                await unregisterAsVolunteer(event.id, volunteerButton, volunteerCodeElement);
+                await unregisterAsVolunteer(event.id, volunteerButton, volunteerCodeElement, registerButton);
             }
         });
     });
@@ -175,7 +175,7 @@ async function getUserId() {
     return error || !data.user ? null : data.user.id;
 }
 
-async function checkRegistration(eventId, button, codeElement) {
+async function checkRegistration(eventId, button, codeElement, volunteerButton) {
     const userId = await getUserId();
     if (!userId) return;
 
@@ -191,10 +191,11 @@ async function checkRegistration(eventId, button, codeElement) {
         button.classList.add("registered");
         button.style.cursor = "pointer";
         codeElement.textContent = `Your Code: ${data.unique_code}`;
+        volunteerButton.style.display = "none"; // Hide volunteer button if registered
     }
 }
 
-async function checkVolunteerRegistration(eventId, button, codeElement) {
+async function checkVolunteerRegistration(eventId, button, codeElement, registerButton) {
     const userId = await getUserId();
     if (!userId) return;
 
@@ -210,10 +211,11 @@ async function checkVolunteerRegistration(eventId, button, codeElement) {
         button.classList.add("volunteered");
         button.style.cursor = "pointer";
         codeElement.textContent = `Your Volunteer Code: ${data.unique_code}`;
+        registerButton.style.display = "none"; // Hide register button if volunteered
     }
 }
 
-async function registerForEvent(eventId, button, codeElement) {
+async function registerForEvent(eventId, button, codeElement, volunteerButton) {
     const userId = await getUserId();
     if (!userId) {
         alert("You need to log in to register!");
@@ -276,6 +278,7 @@ async function registerForEvent(eventId, button, codeElement) {
     button.classList.add("registered");
     button.style.cursor = "pointer";
     codeElement.textContent = `Your Code: ${uniqueCode}`;
+    volunteerButton.style.display = "none"; // Hide volunteer button
 
     // Update registration count display
     const eventCard = button.closest(".event-card");
@@ -283,7 +286,7 @@ async function registerForEvent(eventId, button, codeElement) {
     registrationsCount.innerHTML = `<strong>Registrations:</strong> ${newCount}/${event.total_registrations}`;
 }
 
-async function registerAsVolunteer(eventId, button, codeElement) {
+async function registerAsVolunteer(eventId, button, codeElement, registerButton) {
     const userId = await getUserId();
     if (!userId) {
         alert("You need to log in to volunteer!");
@@ -346,6 +349,7 @@ async function registerAsVolunteer(eventId, button, codeElement) {
     button.classList.add("volunteered");
     button.style.cursor = "pointer";
     codeElement.textContent = `Your Volunteer Code: ${uniqueCode}`;
+    registerButton.style.display = "none"; // Hide register button
 
     // Update volunteer count display
     const eventCard = button.closest(".event-card");
@@ -353,7 +357,7 @@ async function registerAsVolunteer(eventId, button, codeElement) {
     volunteersCount.innerHTML = `<strong>Volunteers:</strong> ${newCount}/${event.total_volunteers}`;
 }
 
-async function unregisterFromEvent(eventId, button, codeElement) {
+async function unregisterFromEvent(eventId, button, codeElement, volunteerButton) {
     const userId = await getUserId();
     if (!userId) {
         alert("You need to log in to unregister!");
@@ -361,16 +365,18 @@ async function unregisterFromEvent(eventId, button, codeElement) {
     }
 
     // Delete the registration from the register table
-    const { error: deleteError } = await supabase
+    const { data: deletedData, error: deleteError } = await supabase
         .from("register")
         .delete()
         .eq("participant_id", userId)
         .eq("event_id", eventId);
 
     if (deleteError) {
-        console.error("Failed to unregister:", deleteError.message);
+        console.error("Failed to unregister from register table:", deleteError.message);
         return;
     }
+
+    console.log("Deleted from register table:", deletedData);
 
     // Fetch current event state and decrement
     const { data: event, error: fetchError } = await supabase
@@ -401,6 +407,7 @@ async function unregisterFromEvent(eventId, button, codeElement) {
     button.classList.remove("registered");
     button.style.cursor = "pointer";
     codeElement.textContent = "";
+    volunteerButton.style.display = "block"; // Show volunteer button
 
     // Update registration count display
     const eventCard = button.closest(".event-card");
@@ -408,7 +415,7 @@ async function unregisterFromEvent(eventId, button, codeElement) {
     registrationsCount.innerHTML = `<strong>Registrations:</strong> ${newCount}/${event.total_registrations}`;
 }
 
-async function unregisterAsVolunteer(eventId, button, codeElement) {
+async function unregisterAsVolunteer(eventId, button, codeElement, registerButton) {
     const userId = await getUserId();
     if (!userId) {
         alert("You need to log in to unregister as a volunteer!");
@@ -416,16 +423,18 @@ async function unregisterAsVolunteer(eventId, button, codeElement) {
     }
 
     // Delete the volunteer registration from the volunteers table
-    const { error: deleteError } = await supabase
+    const { data: deletedData, error: deleteError } = await supabase
         .from("volunteers")
         .delete()
         .eq("participant_id", userId)
         .eq("event_id", eventId);
 
     if (deleteError) {
-        console.error("Failed to unregister as volunteer:", deleteError.message);
+        console.error("Failed to unregister from volunteers table:", deleteError.message);
         return;
     }
+
+    console.log("Deleted from volunteers table:", deletedData);
 
     // Fetch current event state and decrement
     const { data: event, error: fetchError } = await supabase
@@ -456,6 +465,7 @@ async function unregisterAsVolunteer(eventId, button, codeElement) {
     button.classList.remove("volunteered");
     button.style.cursor = "pointer";
     codeElement.textContent = "";
+    registerButton.style.display = "block"; // Show register button
 
     // Update volunteer count display
     const eventCard = button.closest(".event-card");
