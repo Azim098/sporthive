@@ -1,8 +1,8 @@
 // Initialize Supabase
-const { createClient } = supabase;
+
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-const supabaseClient = createClient(supabaseUrl, supabaseKey);
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Function to fetch and display registrations for the logged-in organizer
 async function fetchOrganizerRegistrations() {
