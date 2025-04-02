@@ -53,11 +53,11 @@
         // Initialize Supabase
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // Fixed: Use supabase.createClient directly
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // Fixed: Use a different variable name
 
         // Get the authenticated user
         async function getUser() {
-            const { data, error } = await supabase.auth.getUser();
+            const { data, error } = await supabaseClient.auth.getUser();
             if (error || !data?.user) {
                 console.error("User not authenticated. Redirecting to login.");
                 window.location.href = "login.html";
@@ -74,7 +74,7 @@
 
             console.log("Fetching events for user:", userId);
 
-            const { data: events, error } = await supabase
+            const { data: events, error } = await supabaseClient
                 .from('events')
                 .select('*')
                 .eq('organizer_id', userId);
@@ -146,7 +146,7 @@
             }
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('events')
                     .update({
                         name: newName,
@@ -174,7 +174,7 @@
             if (!confirm("Are you sure you want to delete this event?")) return;
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('events')
                     .delete()
                     .eq('id', eventId)
