@@ -6,13 +6,17 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
 // Function to fetch and display registrations for the logged-in organizer
 async function fetchOrganizerRegistrations() {
+    console.log("Fetching registrations...");
+
     // Get logged-in organizer
     const { data: user, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user.user) {
         console.error("Error fetching user:", userError);
         return;
     }
-    const organizerId = user.user.id; // Organizer's unique ID
+    console.log("Logged-in Organizer ID:", user.user.id);
+
+    const organizerId = user.user.id;
 
     // Fetch events created by this organizer
     const { data: events, error: eventError } = await supabaseClient
@@ -24,35 +28,39 @@ async function fetchOrganizerRegistrations() {
         console.error("Error fetching events:", eventError);
         return;
     }
+    console.log("Organizer's Events:", events);
 
-    const eventIds = events.map(event => event.id); // Get event IDs created by organizer
+    const eventIds = events.map(event => event.id);
 
-    // Fetch participants for these events
+    // Fetch participants
     const { data: participants, error: participantError } = await supabaseClient
         .from("register")
-        .select("id, participant_id, event_id, unique_code, registered_at, users(fullname, email), events(name)")
+        .select("id, participant_id, event_id, unique_code, users(fullname, email), events(name)")
         .in("event_id", eventIds);
 
     if (participantError) {
         console.error("Error fetching participants:", participantError);
         return;
     }
+    console.log("Participants:", participants);
 
-    // Fetch volunteers for these events
+    // Fetch volunteers
     const { data: volunteers, error: volunteerError } = await supabaseClient
         .from("volunteers")
-        .select("id, participant_id, event_id, unique_code, registered_at, users(fullname, email), events(name)")
+        .select("id, participant_id, event_id, unique_code, users(fullname, email), events(name)")
         .in("event_id", eventIds);
 
     if (volunteerError) {
         console.error("Error fetching volunteers:", volunteerError);
         return;
     }
+    console.log("Volunteers:", volunteers);
 
     // Display data
     displayRegistrations(participants, "registrations-table-body");
     displayRegistrations(volunteers, "volunteers-table-body");
 }
+
 
 // Function to display registrations in table
 function displayRegistrations(data, tableId) {
