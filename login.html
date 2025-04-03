@@ -101,10 +101,12 @@
         function googleTranslateElementInit() {
             translateElement = new google.translate.TranslateElement({
                 pageLanguage: 'en',
+                includedLanguages: 'en,es,fr,de,it,zh-CN', // Specify supported languages
                 autoDisplay: false
             }, 'google_translate_element');
             // Apply saved language if exists
             let savedLang = localStorage.getItem('selectedLanguage') || 'en';
+            document.getElementById('language-select').value = savedLang;
             if (savedLang !== 'en') {
                 translatePage(savedLang);
             }
@@ -113,9 +115,12 @@
         function translatePage(lang) {
             localStorage.setItem('selectedLanguage', lang);
             if (translateElement && window.google && window.google.translate) {
-                window.google.translate.TranslateElement.getInstance().setLanguagePair('en', lang); // Switch language
+                // Use the widget's internal method to change language (limited support)
+                // Note: Direct language switching is not fully supported via script; user interaction may be required
+                console.log('Attempting to set language to:', lang);
+                // Fallback: Reload page with language parameter if needed
+                window.location.search = `?lang=${lang}`;
             }
-            document.getElementById('language-select').value = lang; // Sync dropdown
         }
 
         // Load Google Translate script once
