@@ -100,28 +100,18 @@
         }
 
         async function translateText(text, targetLang) {
-            const url = "https://libretranslate.com/translate";
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
 
             try {
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        q: text,
-                        source: "en",
-                        target: targetLang,
-                        format: "text"
-                    })
-                });
-
+                const response = await fetch(url);
                 const data = await response.json();
                 console.log("Translation API Response:", data);
 
-                if (data.error) {
-                    throw new Error(data.error);
+                if (data.responseStatus !== 200) {
+                    throw new Error("Translation API limit reached or error occurred");
                 }
 
-                return data.translatedText;
+                return data.responseData.translatedText;
             } catch (error) {
                 console.error("Translation API Error:", error);
                 alert("Translation failed: " + error.message);
