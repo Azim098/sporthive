@@ -52,15 +52,8 @@
         </div>
     </div>
 
-    <!-- Load Supabase -->
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <!-- Load Google Translate API (replace YOUR_API_KEY with your actual key) -->
-    <script src="https://apis.google.com/js/api.js"></script>
-
     <script>
-        // Initialize Google Translate API (you'll need an API key)
-        const GOOGLE_API_KEY = 'YOUR_API_KEY'; // Replace with your Google Cloud API key
-
         // Store original texts
         const originalTexts = {};
         document.querySelectorAll('[data-translate]').forEach(element => {
@@ -70,8 +63,15 @@
             originalTexts[element.dataset.translatePlaceholder] = element.placeholder;
         });
 
+        // Persist language selection using localStorage
+        const languageSelect = document.getElementById('languageSelect');
+        let currentLang = localStorage.getItem('selectedLanguage') || 'en';
+        languageSelect.value = currentLang;
+
         async function translatePage() {
-            const targetLang = document.getElementById('languageSelect').value;
+            const targetLang = languageSelect.value;
+            localStorage.setItem('selectedLanguage', targetLang); // Persist selection
+
             if (targetLang === 'en') {
                 // Reset to original English
                 document.querySelectorAll('[data-translate]').forEach(element => {
@@ -83,39 +83,42 @@
                 return;
             }
 
-            // Translate using Google Translate API
-            const elements = document.querySelectorAll('[data-translate]');
-            const placeholders = document.querySelectorAll('[data-translate-placeholder]');
+            // Simulate translation (replace with actual API call)
+            try {
+                const elements = document.querySelectorAll('[data-translate]');
+                const placeholders = document.querySelectorAll('[data-translate-placeholder]');
 
-            for (let element of elements) {
-                const text = originalTexts[element.dataset.translate];
-                const translated = await translateText(text, targetLang);
-                element.textContent = translated;
-            }
+                for (let element of elements) {
+                    const text = originalTexts[element.dataset.translate];
+                    const translated = await translateText(text, targetLang);
+                    element.textContent = translated;
+                }
 
-            for (let element of placeholders) {
-                const text = originalTexts[element.dataset.translatePlaceholder];
-                const translated = await translateText(text, targetLang);
-                element.placeholder = translated;
+                for (let element of placeholders) {
+                    const text = originalTexts[element.dataset.translatePlaceholder];
+                    const translated = await translateText(text, targetLang);
+                    element.placeholder = translated;
+                }
+            } catch (error) {
+                console.error('Translation error:', error);
+                alert('Translation failed. Please check your API key or internet connection.');
             }
         }
 
+        // Placeholder for translateText (replace with Google Translate API)
         async function translateText(text, targetLang) {
-            const url = `https://translation.googleapis.com/language/translate/v2?key=${GOOGLE_API_KEY}`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    q: text,
-                    target: targetLang,
-                    format: 'text'
-                })
-            });
-            const data = await response.json();
-            return data.data.translations[0].translatedText;
+            // Note: This is a mock implementation. Replace with real API call.
+            console.log(`Translating "${text}" to ${targetLang}`);
+            // Replace with actual Google Translate API call
+            // Example: https://translation.googleapis.com/language/translate/v2
+            // Requires a valid API key
+            return text; // Fallback to original text if API fails
         }
 
-        // Supabase Login Logic (unchanged)
+        // Set initial translation on page load
+        translatePage();
+
+        // Supabase Login Logic
         document.addEventListener("DOMContentLoaded", () => {
             const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
             const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
