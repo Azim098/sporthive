@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function loadEvents(searchQuery = "", filters = {}) {
-    let query = supabase.from("events").select("*").eq("disabled_friendly", true);
+    let query = supabase.from("events").select("*").eq("disabled_friendly", false);
 
     if (searchQuery) {
         console.log("Applying search query:", searchQuery);
