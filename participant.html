@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Hive</title>
     <link rel="stylesheet" href="participant.css">
-    
 </head>
 <body>
     <div class="page-wrapper">
@@ -20,15 +19,14 @@
                 <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
                 <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
             </ul>
-             <!-- Logout Button -->
-        <button id="logout-btn" class="logout-btn">Logout</button>
-
+            <!-- Logout Button -->
+            <button id="logout-btn" class="logout-btn">Logout</button>
         </nav>
         
         <header class="hero-section">
             <div class="overlay"></div>
             <div class="header-content">
-                <h1>Welcome, <span id="events-name">Participant!</h1>
+                <h1>Welcome, <span id="events-name">Participant!</span></h1>
                 <p>Discover sports events, earn rewards, and stay active.</p>
                 <button class="cta-button">Get Started <i class="fas fa-arrow-right"></i></button>
             </div>
@@ -166,25 +164,26 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Sports Hive | All Rights Reserved</p>
+                <p>© 2025 Sports Hive | All Rights Reserved</p>
             </div>
         </footer>
     </div>
-      <!-- ✅ Load Supabase script first -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    <!-- ✅ JavaScript Code -->
+    <!-- Load Supabase script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- JavaScript Code -->
     <script>
-        document.addEventListener("DOMContentLoaded", async function () {
-            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-            
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialize Supabase client globally
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        document.addEventListener("DOMContentLoaded", async function () {
             async function fetchOrganizerName() {
                 document.getElementById("events-name").textContent = "Loading...";
 
-                // ✅ Fetch the logged-in user session
+                // Fetch the logged-in user session
                 const { data, error } = await supabase.auth.getSession();
                 if (error || !data.session || !data.session.user) {
                     console.error("Error fetching user session:", error);
@@ -192,9 +191,9 @@
                     return;
                 }
 
-                const userEmail = data.session.user.email; // ✅ Get email from session
+                const userEmail = data.session.user.email;
 
-                // ✅ Fetch user details from "users" table
+                // Fetch user details from "users" table
                 const { data: userData, error: fetchError } = await supabase
                     .from("users")
                     .select("fullname")
@@ -209,28 +208,39 @@
                 }
             }
 
-            fetchOrganizerName();
-        });
-         async function logout() {
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                    console.error("Error logging out:", error);
-                } else {
-                    window.location.href = "index.html"; // ✅ Redirect to login page after logout
-                }
-            }
-
-            // ✅ Attach logout function to button
+            // Attach logout function to button
             document.getElementById("logout-btn").addEventListener("click", logout);
 
+            // Call fetchOrganizerName once
             fetchOrganizerName();
         });
-           function scrollToSection() {
-            document.getElementById("about").scrollIntoView({ behavior: "smooth" });
+
+        // Logout function
+        async function logout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error("Error logging out:", error);
+                alert("Failed to log out. Please try again.");
+            } else {
+                console.log("User logged out successfully");
+                window.location.href = "index.html"; // Redirect to login page after logout
+            }
         }
-    </script
-        <script>
-(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="Ic2ToRUs6CCafgHbNiHi-";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-</script>
+
+        // Scroll to section function (if needed)
+        function scrollToSection() {
+            const aboutSection = document.getElementById("about");
+            if (aboutSection) {
+                aboutSection.scrollIntoView({ behavior: "smooth" });
+            } else {
+                console.warn("About section not found");
+            }
+        }
+    </script>
+
+    <!-- Chatbase Chatbot Embed Code -->
+    <script>
+        (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="Ic2ToRUs6CCafgHbNiHi-";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+    </script>
 </body>
 </html>
