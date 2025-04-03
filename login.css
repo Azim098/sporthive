@@ -146,3 +146,48 @@ p {
         object-fit: cover;
     }
 }
+#language-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.lang-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.lang-btn:hover {
+  background-color: #45a049;
+}
+
+.lang-dropdown {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-radius: 4px;
+}
+
+#language-selector:hover .lang-dropdown {
+  display: block;
+}
+
+#language-select {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background-color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#language-select:hover {
+  background-color: #ddd;
+}
