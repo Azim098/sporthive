@@ -95,25 +95,38 @@
                 }
             } catch (error) {
                 console.error('Translation error:', error);
-                alert('Translation failed. Please check your API key or internet connection.');
+                alert('Translation failed. Please check your internet connection.');
             }
         }
 
         async function translateText(text, targetLang) {
-            const apiKey = "YOUR_GOOGLE_TRANSLATE_API_KEY"; // Replace with your actual API key
-            const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
+            const url = "https://libretranslate.com/translate";
 
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    q: text,
-                    target: targetLang
-                })
-            });
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        q: text,
+                        source: "en",
+                        target: targetLang,
+                        format: "text"
+                    })
+                });
 
-            const data = await response.json();
-            return data.data.translations[0].translatedText;
+                const data = await response.json();
+                console.log("Translation API Response:", data);
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                return data.translatedText;
+            } catch (error) {
+                console.error("Translation API Error:", error);
+                alert("Translation failed: " + error.message);
+                return text;
+            }
         }
 
         translatePage();
