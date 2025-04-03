@@ -41,7 +41,7 @@
                     <label for="password" data-translate="Password">Password</label>
                     <input type="password" id="password" placeholder="Enter your password" data-translate-placeholder="Enter your password" required>
 
-                    <button type="submit" data-translate="Login">Login</button>
+                    <button type="submit" id="loginButton" data-translate="Login">Login</button>
                 </form>
                 <p data-translate="Don't have an account?">
                     Don't have an account? <a href="signup.html" data-translate="Sign up">Sign up</a>
@@ -100,15 +100,15 @@
         }
 
         async function translateText(text, targetLang) {
-            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
+            const url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(text) + "&langpair=en|" + targetLang;
 
             try {
                 const response = await fetch(url);
                 const data = await response.json();
                 console.log("Translation API Response:", data);
 
-                if (data.responseStatus !== 200) {
-                    throw new Error("Translation API limit reached or error occurred");
+                if (!data.responseData || !data.responseData.translatedText) {
+                    throw new Error("Invalid translation response");
                 }
 
                 return data.responseData.translatedText;
@@ -121,22 +121,9 @@
 
         translatePage();
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const loginForm = document.getElementById("loginForm");
-            loginForm.addEventListener("submit", async (event) => {
-                event.preventDefault(); // Prevent page refresh
-                console.log("Login button clicked, preventing refresh.");
-
-                const email = document.getElementById("email").value;
-                const password = document.getElementById("password").value;
-
-                if (!email || !password) {
-                    alert("Please enter both email and password.");
-                    return;
-                }
-
-                alert(`Login attempted with email: ${email}`);
-            });
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            alert("Login button clicked! Processing login...");
         });
     </script>
 </body>
