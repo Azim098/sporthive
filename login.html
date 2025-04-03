@@ -28,6 +28,53 @@
         </div>
     </div>
 
+<div id="language-selector">
+  <button class="lang-btn">Select Language</button>
+  <div class="lang-dropdown">
+    <select id="language-select" onchange="translatePage()">
+      <option value="en">English</option>
+      <option value="es">Spanish</option>
+      <option value="fr">French</option>
+      <option value="de">German</option>
+      <option value="it">Italian</option>
+      <option value="zh-CN">Chinese (Simplified)</option>
+      <!-- Add more languages as needed -->
+    </select>
+  </div>
+</div>
+
+<!-- Google Translate Script -->
+<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
+  }
+
+  function translatePage() {
+    let lang = document.getElementById('language-select').value;
+    localStorage.setItem('selectedLanguage', lang); // Save the selected language
+    applyTranslation(lang); // Apply it immediately
+  }
+
+  function applyTranslation(lang) {
+    let script = document.createElement('script');
+    script.src = `https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=${lang}`;
+    document.body.appendChild(script);
+  }
+
+  // Apply saved language on page load
+  window.onload = function() {
+    let savedLang = localStorage.getItem('selectedLanguage') || 'en'; // Default to English if none saved
+    document.getElementById('language-select').value = savedLang; // Sync dropdown
+    if (savedLang !== 'en') { // Only translate if not default
+      applyTranslation(savedLang);
+    }
+  };
+</script>
+<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<!-- Hidden div for Google Translate -->
+<div id="google_translate_element" style="display:none;"></div>
+    
     <!-- ✅ Load Supabase (with defer to ensure it loads before script execution) -->
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
