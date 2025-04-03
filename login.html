@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sports Hive</title>
     <link rel="stylesheet" href="login.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
         .language-dropdown {
             position: absolute;
@@ -54,7 +55,6 @@
 
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script>
-        // Store original texts
         const originalTexts = {};
         document.querySelectorAll('[data-translate]').forEach(element => {
             originalTexts[element.dataset.translate] = element.textContent.trim();
@@ -63,17 +63,15 @@
             originalTexts[element.dataset.translatePlaceholder] = element.placeholder;
         });
 
-        // Persist language selection using localStorage
         const languageSelect = document.getElementById('languageSelect');
         let currentLang = localStorage.getItem('selectedLanguage') || 'en';
         languageSelect.value = currentLang;
 
         async function translatePage() {
             const targetLang = languageSelect.value;
-            localStorage.setItem('selectedLanguage', targetLang); // Persist selection
+            localStorage.setItem('selectedLanguage', targetLang);
 
             if (targetLang === 'en') {
-                // Reset to original English
                 document.querySelectorAll('[data-translate]').forEach(element => {
                     element.textContent = originalTexts[element.dataset.translate];
                 });
@@ -83,21 +81,17 @@
                 return;
             }
 
-            // Simulate translation (replace with actual API call)
             try {
                 const elements = document.querySelectorAll('[data-translate]');
                 const placeholders = document.querySelectorAll('[data-translate-placeholder]');
 
                 for (let element of elements) {
                     const text = originalTexts[element.dataset.translate];
-                    const translated = await translateText(text, targetLang);
-                    element.textContent = translated;
+                    element.textContent = await translateText(text, targetLang);
                 }
-
                 for (let element of placeholders) {
                     const text = originalTexts[element.dataset.translatePlaceholder];
-                    const translated = await translateText(text, targetLang);
-                    element.placeholder = translated;
+                    element.placeholder = await translateText(text, targetLang);
                 }
             } catch (error) {
                 console.error('Translation error:', error);
@@ -105,71 +99,24 @@
             }
         }
 
-        // Placeholder for translateText (replace with Google Translate API)
         async function translateText(text, targetLang) {
-            // Note: This is a mock implementation. Replace with real API call.
-            console.log(`Translating "${text}" to ${targetLang}`);
-            // Replace with actual Google Translate API call
-            // Example: https://translation.googleapis.com/language/translate/v2
-            // Requires a valid API key
-            return text; // Fallback to original text if API fails
+            const apiKey = "YOUR_GOOGLE_TRANSLATE_API_KEY"; // Replace with your actual API key
+            const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    q: text,
+                    target: targetLang
+                })
+            });
+
+            const data = await response.json();
+            return data.data.translations[0].translatedText;
         }
 
-        // Set initial translation on page load
         translatePage();
-
-        // Supabase Login Logic
-        document.addEventListener("DOMContentLoaded", () => {
-            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-            document.getElementById("loginForm").addEventListener("submit", async (event) => {
-                event.preventDefault();
-
-                const email = document.getElementById("email").value.toLowerCase();
-                const password = document.getElementById("password").value;
-
-                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-                    email,
-                    password
-                });
-
-                if (authError) {
-                    alert("Login failed: " + authError.message);
-                    return;
-                }
-
-                if (!authData || !authData.user) {
-                    alert("Error: No user data received.");
-                    return;
-                }
-
-                const userId = authData.user.id;
-                console.log("Authenticated User ID:", userId);
-
-                const { data: userData, error: userError } = await supabase
-                    .from("users")
-                    .select("role")
-                    .eq("id", userId)
-                    .single();
-
-                console.log("User Data:", userData);
-
-                if (userError || !userData) {
-                    alert("Error fetching user data. Please check your database setup.");
-                    return;
-                }
-
-                if (userData.role === "participant") {
-                    window.location.href = "participant.html";
-                } else if (userData.role === "organizer") {
-                    window.location.href = "organizer.html";
-                } else {
-                    alert("Invalid user role.");
-                }
-            });
-        });
     </script>
 </body>
 </html>
