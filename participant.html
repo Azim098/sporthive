@@ -20,6 +20,9 @@
                 <li><a href="leaderboard.html"><i class="fas fa-trophy"></i> Leaderboard</a></li>
                 <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
             </ul>
+             <!-- Logout Button -->
+        <button id="logout-btn" class="logout-btn">Logout</button>
+
         </nav>
         
         <header class="hero-section">
@@ -208,6 +211,23 @@
 
             fetchOrganizerName();
         });
-    </script>
+         async function logout() {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error("Error logging out:", error);
+                } else {
+                    window.location.href = "login.html"; // ✅ Redirect to login page after logout
+                }
+            }
+
+            // ✅ Attach logout function to button
+            document.getElementById("logout-btn").addEventListener("click", logout);
+
+            fetchOrganizerName();
+        });
+    </script
+        <script>
+(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="Ic2ToRUs6CCafgHbNiHi-";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+</script>
 </body>
 </html>
