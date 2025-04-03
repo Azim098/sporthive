@@ -5,23 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sports Hive</title>
     <link rel="stylesheet" href="login.css">
+    <style>
+        /* Inline CSS for language selector to integrate with your design */
+        #language-selector {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .lang-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .lang-btn:hover {
+            background-color: #45a049;
+        }
+
+        .lang-dropdown {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+            right: 0;
+        }
+
+        #language-selector:hover .lang-dropdown {
+            display: block;
+        }
+
+        #language-select {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            background-color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        #language-select:hover {
+            background-color: #ddd;
+        }
+    </style>
 </head>
 <body>
-    <header style="text-align: right; padding: 10px;">
-    <div id="language-selector">
-      <button class="lang-btn">Language</button>
-      <div class="lang-dropdown">
-        <select id="language-select" onchange="translatePage()">
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-          <option value="fr">French</option>
-          <option value="de">German</option>
-          <option value="it">Italian</option>
-          <option value="zh-CN">Chinese (Simplified)</option>
-        </select>
-      </div>
-    </div>
-  </header>
+    <header style="text-align: right; padding: 10px; background-color: #4B0082; color: white;">
+        <div id="language-selector">
+            <button class="lang-btn">Language</button>
+            <div class="lang-dropdown">
+                <select id="language-select" onchange="translatePage()">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="it">Italian</option>
+                    <option value="zh-CN">Chinese (Simplified)</option>
+                </select>
+            </div>
+        </div>
+    </header>
     
     <div class="container">
         <div class="login-box">
@@ -44,44 +94,48 @@
         </div>
     </div>
 
+    <!-- Scripts section -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
+        }
 
-<script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
-    }
+        function translatePage() {
+            let lang = document.getElementById('language-select').value;
+            localStorage.setItem('selectedLanguage', lang);
+            applyTranslation(lang);
+        }
 
-    function translatePage() {
-      let lang = document.getElementById('language-select').value;
-      localStorage.setItem('selectedLanguage', lang);
-      applyTranslation(lang);
-    }
+        function applyTranslation(lang) {
+            // Remove any existing script to avoid duplicates
+            let existingScript = document.querySelector('script[src*="translate.google.com"]');
+            if (existingScript) existingScript.remove();
+            let script = document.createElement('script');
+            script.onload = function() {
+                // Ensure the element is initialized after script load
+                if (typeof google.translate.TranslateElement !== 'undefined') {
+                    new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');
+                }
+            };
+            script.src = `https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=${lang}`;
+            document.body.appendChild(script);
+        }
 
-    function applyTranslation(lang) {
-      // Remove any existing script to avoid duplicates
-      let existingScript = document.querySelector('script[src*="translate.google.com"]');
-      if (existingScript) existingScript.remove();
-      let script = document.createElement('script');
-      script.src = `https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=${lang}`;
-      document.body.appendChild(script);
-    }
+        window.onload = function() {
+            let savedLang = localStorage.getItem('selectedLanguage') || 'en';
+            document.getElementById('language-select').value = savedLang;
+            if (savedLang !== 'en') {
+                applyTranslation(savedLang);
+            }
+        };
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <div id="google_translate_element" style="display:none;"></div>
 
-    window.onload = function() {
-      let savedLang = localStorage.getItem('selectedLanguage') || 'en';
-      document.getElementById('language-select').value = savedLang;
-      if (savedLang !== 'en') {
-        applyTranslation(savedLang);
-      }
-    };
-  </script>
-  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-  <div id="google_translate_element" style="display:none;"></div>
- 
-    <!-- ✅ Load Supabase (with defer to ensure it loads before script execution) -->
+    <!-- Supabase and Login Logic -->
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // ✅ Initialize Supabase
             const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
             const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -92,7 +146,6 @@
                 const email = document.getElementById("email").value.toLowerCase();
                 const password = document.getElementById("password").value;
 
-                // ✅ Step 1: Authenticate User
                 const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                     email,
                     password
@@ -108,24 +161,22 @@
                     return;
                 }
 
-                const userId = authData.user.id;  // ✅ Get Authenticated User ID
-                console.log("Authenticated User ID:", userId); // Debugging
+                const userId = authData.user.id;
+                console.log("Authenticated User ID:", userId);
 
-                // ✅ Step 2: Fetch User Role Securely
                 const { data: userData, error: userError } = await supabase
                     .from("users")
                     .select("role")
                     .eq("id", userId)
                     .single();
 
-                console.log("User Data:", userData);  // Debugging
+                console.log("User Data:", userData);
 
                 if (userError || !userData) {
                     alert("Error fetching user data. Please check your database setup.");
                     return;
                 }
 
-                // ✅ Step 3: Redirect Based on Role
                 if (userData.role === "participant") {
                     window.location.href = "participant.html";
                 } else if (userData.role === "organizer") {
