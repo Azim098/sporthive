@@ -216,7 +216,7 @@
                 if (error) {
                     console.error("Error logging out:", error);
                 } else {
-                    window.location.href = "login.html"; // ✅ Redirect to login page after logout
+                    window.location.href = "index.html"; // ✅ Redirect to login page after logout
                 }
             }
 
@@ -225,6 +225,9 @@
 
             fetchOrganizerName();
         });
+           function scrollToSection() {
+            document.getElementById("about").scrollIntoView({ behavior: "smooth" });
+        }
     </script
         <script>
 (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="Ic2ToRUs6CCafgHbNiHi-";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
