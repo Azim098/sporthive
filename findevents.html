@@ -3,79 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find Events - SportsConnect</title>
-    <link rel="stylesheet" href="findevents.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script defer src="findevents.js"></script>
+    <title>Adaptive Arena | Sports Hive</title>
+    <link rel="stylesheet" href="adaptive.css">
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script defer src="adaptive.js"></script>
 </head>
 <body>
+    <!-- Navbar -->
     <nav>
         <div class="logo">
-            <img src="logo.png" alt="Sports Hive Logo">
+            <a href="index.html">
+                <img src="logo.png" alt="Sports Hive Logo">
+            </a>
         </div>
         <ul>
             <li><a href="participant.html">Home</a></li>
-            <li><a href="findevents.html" class="find">Find Events</a></li>
-            <li><a href="adaptive.html">Adaptive Arena</a></li>
+            <li><a href="findevents.html">Find Events</a></li>
+            <li><a href="adaptive.html" class="active">Adaptive Arena</a></li>
             <li><a href="leaderboard.html">Leaderboard</a></li>
             <li><a href="profile.html">Profile</a></li>
         </ul>
     </nav>
-    
+
+    <!-- Header -->
     <header>
         <div class="header-content">
-            <h1>Find Events</h1>
-            <p>Search and register for your favorite sports events.</p>
+            <h1>Adaptive Arena</h1>
+            <p>Find sports events and resources designed for differently-abled athletes.</p>
         </div>
     </header>
-    
-    <section id="search-filters">
-        <h2>Filter Events</h2>
-        <div class="filters">
-            <label for="searchInput">Search:</label>
-            <input type="text" id="searchInput" placeholder="Search for sports events..." aria-label="Search Events">
 
-            <label for="skill-level">Skill Level:</label>
-            <select id="skill-level">
-                <option value="">All</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="professional">Professional</option>
-            </select>
-            
-            <label for="event-time">Event Time:</label>
-            <select id="event-time">
-                <option value="">All</option>
-                <option value="morning">Morning</option>
-                <option value="afternoon">Afternoon</option>
-                <option value="evening">Evening</option>
-                <option value="night">Night</option>
-            </select>
-            
-            <label for="sports">Sports:</label>
-            <select id="sports">
-                <option value="">All</option>
-                <option value="running">Running</option>
-                <option value="cycling">Cycling</option>
-                <option value="swimming">Swimming</option>
-                <option value="football">Football</option>
-                <option value="cricket">Cricket</option>
-                <option value="volleyball">Volleyball</option>
-                <option value="basketball">Basketball</option>
-                <option value="javelin">Javelin Throw</option>
-            </select>
-            
-            <button id="searchBtn" type="submit" class="apply-filters">Search</button>
+    <!-- Adaptive Events Section -->
+    <section id="adaptive-events">
+        <h2>Find Adaptive Events</h2>
+        <div id="search-filters">
+            <div class="filters">
+                <div class="filter-item">
+                    <label for="skill-level">Skill Level:</label>
+                    <select id="skill-level">
+                        <option value="all">All</option>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="professional">Professional</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="event-time">Event Time:</label>
+                    <select id="event-time">
+                        <option value="all">All</option>
+                        <option value="morning">Morning</option>
+                        <option value="afternoon">Afternoon</option>
+                        <option value="evening">Evening</option>
+                        <option value="night">Night</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="sports">Sports:</label>
+                    <select id="sports">
+                        <option value="all">All</option>
+                        <option value="wheelchair">Wheelchair Sprint</option>
+                        <option value="swimming">Para Swimming</option>
+                        <option value="judp">Blind Judo</option>
+                        <option value="handcycling">Handcycling</option>
+                        <option value="longjump">Long Jump (T63 Category)</option>
+                        <option value="powerlifting">Para Powerlifting</option>
+                    </select>
+                </div>
+                <div class="checkbox-wrapper-14">
+                    <input id="s1-14" type="checkbox" class="switch">
+                    <label for="s1-14">Apply Filters</label> 
+                </div>
+                <!--<button class="apply-filters">Apply Filters</button>-->
+            </div>
+        </div>
+        <div class="container">
+            <form>
+                <input type="text" id="searchInput" placeholder="Search for adaptive sports events..." class="search-bar" aria-label="Search Adaptive Events">
+                <button type="submit" id="searchButton" class="apply-filters">Search</button>
+
+            </form>
+            <p>Discover accessible sports events tailored for different needs.</p>
+            <div class="events-container">
+                <!-- Event Cards will be dynamically loaded here -->
+            </div>
         </div>
     </section>
-    
-    <section id="events">
-        <h2>Upcoming Events</h2>
-        <div id="eventsList" class="event-list">
-            <!-- Events will be dynamically inserted here -->
-        </div>
-    </section>
-    
+    <!-- Footer -->
     <footer>
         <p>&copy; 2025 Sports Hive | All Rights Reserved</p>
     </footer>
