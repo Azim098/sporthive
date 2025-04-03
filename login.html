@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sports Hive</title>
     <link rel="stylesheet" href="login.css">
-    <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
     <style>
         .language-dropdown {
             position: absolute;
@@ -121,9 +120,55 @@
 
         translatePage();
 
-        document.getElementById("loginForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            alert("Login button clicked! Processing login...");
+        document.getElementById("loginForm").addEventListener("submit", async function(event) {
+            event.preventDefault(); // Prevent form refresh
+
+            const email = document.getElementById("email").value.trim().toLowerCase();
+            const password = document.getElementById("password").value;
+
+            if (!email || !password) {
+                alert("Please enter both email and password.");
+                return;
+            }
+
+            const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+            const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (authError) {
+                alert("Login failed: " + authError.message);
+                return;
+            }
+
+            if (!authData || !authData.user) {
+                alert("Error: No user data received.");
+                return;
+            }
+
+            const userId = authData.user.id;
+            const { data: userData, error: userError } = await supabase
+                .from("users")
+                .select("role")
+                .eq("id", userId)
+                .single();
+
+            if (userError || !userData) {
+                alert("Error fetching user data. Please check your database.");
+                return;
+            }
+
+            if (userData.role === "participant") {
+                window.location.href = "participant.html";
+            } else if (userData.role === "organizer") {
+                window.location.href = "organizer.html";
+            } else {
+                alert("Invalid user role.");
+            }
         });
     </script>
 </body>
