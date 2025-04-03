@@ -1,33 +1,31 @@
-/* General Styles */
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(15px);
-    color: #fff;
+    background: #f8f9fa;
+    color: #333;
 }
 
 /* Navbar */
 nav {
-    background: rgba(0, 123, 255, 0.3);
+    background: #007bff;
     padding: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: white;
-    border-radius: 15px;
-    margin: 10px;
 }
 
 nav .logo img {
-    height: 70px;
+    height: 90px;
+    width: auto;
 }
 
 nav ul {
     list-style: none;
     display: flex;
     padding: 0;
+    margin: 0;
 }
 
 nav ul li {
@@ -40,109 +38,285 @@ nav ul li a {
     font-size: 1.2em;
 }
 
+nav ul li .active {
+    text-decoration: underline;
+}
+
 /* Header */
 header {
     text-align: center;
     padding: 50px 20px;
-    background: rgba(0, 123, 255, 0.4);
+    background: #007bff;
     color: white;
-    border-radius: 15px;
-    margin: 10px;
 }
 
-/* Filters Section */
-#search-filters {
-    background: rgba(0, 123, 255, 0.2);
-    padding: 20px;
-    border-radius: 15px;
-    margin: 10px;
-    text-align: center;
-}
-
-.filters {
+/* Filters Section - Adjusted to match Find Events Page */
+#search-filters .filters {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-between;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
-.filters select,
-.filters input {
+.filter-item {
+    display: flex;
+    flex-direction: column;
+}
+
+#search-filters label {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#search-filters select, .apply-filters {
     padding: 10px;
     font-size: 1em;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+    width: 180px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
 
 .apply-filters {
     background-color: #007bff;
     color: white;
-    font-weight: bold;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
     cursor: pointer;
-    transition: 0.3s;
+    font-weight: bold;
+    width: auto; /* Makes the button fit content */
+    padding: 10px 20px;
+    transition: transform 0.1s, box-shadow 0.1s;
 }
 
-.apply-filters:hover {
-    background: #0056b3;
+.apply-filters:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) inset;
 }
 
-/* Events Section */
-#events {
-    background: rgba(255, 255, 255, 0.2);
+@supports (appearance: none) or (-webkit-appearance: none) or (-moz-appearance: none) {
+    .checkbox-wrapper-14 input[type=checkbox] {
+      --active: #275EFE;
+      --active-inner: #fff;
+      --focus: 2px rgba(39, 94, 254, .3);
+      --border: #BBC1E1;
+      --border-hover: #275EFE;
+      --background: #fff;
+      --disabled: #F6F8FF;
+      --disabled-inner: #E1E6F9;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      height: 21px;
+      outline: none;
+      display: inline-block;
+      vertical-align: top;
+      position: relative;
+      margin: 0;
+      cursor: pointer;
+      border: 1px solid var(--bc, var(--border));
+      background: var(--b, var(--background));
+      transition:  0.3s, border-color 0.3s, box-shadow 0.2s;
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:after {
+      content: "";
+      display: block;
+      left: 0;
+      top: 0;
+      position: absolute;
+      transition: transform var(--d-t, 0.3s) var(--d-t-e, ease), opacity var(--d-o, 0.2s);
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:checked {
+      --b: var(--active);
+      --bc: var(--active);
+      --d-o: .3s;
+      --d-t: .6s;
+      --d-t-e: cubic-bezier(.2, .85, .32, 1.2);
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:disabled {
+      --b: var(--disabled);
+      cursor: not-allowed;
+      opacity: 0.9;
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:disabled:checked {
+      --b: var(--disabled-inner);
+      --bc: var(--border);
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:disabled + label {
+      cursor: not-allowed;
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:hover:not(:checked):not(:disabled) {
+      --bc: var(--border-hover);
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:focus {
+      box-shadow: 0 0 0 var(--focus);
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:not(.switch) {
+      width: 21px;
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:not(.switch):after {
+      opacity: var(--o, 0);
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:not(.switch):checked {
+      --o: 1;
+    }
+    .checkbox-wrapper-14 input[type=checkbox] + label {
+      display: inline-block;
+      vertical-align: middle;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+
+    .checkbox-wrapper-14 input[type=checkbox]:not(.switch) {
+      border-radius: 7px;
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:not(.switch):after {
+      width: 5px;
+      height: 9px;
+      border: 2px solid var(--active-inner);
+      border-top: 0;
+      border-left: 0;
+      left: 7px;
+      top: 4px;
+      transform: rotate(var(--r, 20deg));
+    }
+    .checkbox-wrapper-14 input[type=checkbox]:not(.switch):checked {
+      --r: 43deg;
+    }
+    .checkbox-wrapper-14 input[type=checkbox].switch {
+      width: 38px;
+      border-radius: 11px;
+    }
+    .checkbox-wrapper-14 input[type=checkbox].switch:after {
+      left: 2px;
+      top: 2px;
+      border-radius: 50%;
+      width: 17px;
+      height: 17px;
+      background: var(--ab, var(--border));
+      transform: translateX(var(--x, 0));
+    }
+    .checkbox-wrapper-14 input[type=checkbox].switch:checked {
+      --ab: var(--active-inner);
+      --x: 17px;
+    }
+    .checkbox-wrapper-14 input[type=checkbox].switch:disabled:not(:checked):after {
+      opacity: 0.6;
+    }
+}
+
+.checkbox-wrapper-14 * {
+    box-sizing: inherit;
+}
+.checkbox-wrapper-14 *:before,
+.checkbox-wrapper-14 *:after {
+    box-sizing: inherit;
+}
+
+/* Sections */
+section {
     padding: 30px;
-    border-radius: 15px;
-    margin: 10px;
+    margin: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.event-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+/* Search Bar */
+.search-bar {
+    width: 50%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* High Contrast Mode */
+.high-contrast {
+    background: black;
+    color: yellow;
+}
+
+.high-contrast nav {
+    background: yellow;
+    color: black;
+}
+
+.high-contrast nav ul li a {
+    color: black;
+}
+
+.events-container {
+    display: flex;
+    flex-wrap: wrap;
     gap: 20px;
+    justify-content: center;
+    padding: 20px;
 }
 
 .event-card {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    text-align: center;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    width: 300px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.event-card:hover {
+    transform: scale(1.05);
 }
 
 .event-card h3 {
     font-size: 1.5em;
+    color: #333;
+    margin-bottom: 10px;
 }
 
 .event-card p {
     font-size: 1em;
+    color: #666;
+    margin: 5px 0;
 }
 
-.event-card button {
-    background-color: #007bff;
+.register-button, .volunteer-button {
+    background: #007bff;
     color: white;
     border: none;
-    padding: 10px;
-    width: 100%;
-    border-radius: 10px;
+    padding: 10px 15px;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 1.1em;
-    margin-top: 10px;
+    font-size: 1em;
+    transition: background 0.2s;
+    display: inline-block; /* Ensure consistent display */
 }
 
-.event-card button:hover {
+.register-button:hover, .volunteer-button:hover {
     background: #0056b3;
+}
+
+.register-button.registered, .volunteer-button.volunteered {
+    cursor: pointer !important;
+}
+
+.button-container {
+    display: flex;
+    gap: 10px; /* Adjust spacing between buttons as needed */
+}
+
+.unique-code, .volunteer-code {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #444;
+    margin-top: 10px;
 }
 
 /* Footer */
 footer {
     text-align: center;
     padding: 15px;
-    background: rgba(0, 123, 255, 0.3);
+    background: #007bff;
     color: white;
-    border-radius: 15px;
-    margin: 10px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
 }
