@@ -5,22 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sports Hive</title>
     <link rel="stylesheet" href="login.css">
+    <style>
+        .language-dropdown {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+        .language-dropdown select {
+            padding: 5px;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
+    <div class="language-dropdown">
+        <select id="languageSelect" onchange="translatePage()">
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+        </select>
+    </div>
+
     <div class="container">
         <div class="login-box">
             <div class="form-container">
-                <h2>Login</h2>
+                <h2 data-translate="Login">Login</h2>
                 <form id="loginForm">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="Enter your email" required>
+                    <label for="email" data-translate="Email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" data-translate-placeholder="Enter your email" required>
 
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter your password" required>
+                    <label for="password" data-translate="Password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" data-translate-placeholder="Enter your password" required>
 
-                    <button type="submit">Login</button>
+                    <button type="submit" data-translate="Login">Login</button>
                 </form>
-                <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+                <p data-translate="Don't have an account?">
+                    Don't have an account? <a href="signup.html" data-translate="Sign up">Sign up</a>
+                </p>
             </div>
         </div>
         <div class="image-box">
@@ -28,12 +52,71 @@
         </div>
     </div>
 
-    <!-- ✅ Load Supabase (with defer to ensure it loads before script execution) -->
+    <!-- Load Supabase -->
     <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <!-- Load Google Translate API (replace YOUR_API_KEY with your actual key) -->
+    <script src="https://apis.google.com/js/api.js"></script>
 
     <script>
+        // Initialize Google Translate API (you'll need an API key)
+        const GOOGLE_API_KEY = 'YOUR_API_KEY'; // Replace with your Google Cloud API key
+
+        // Store original texts
+        const originalTexts = {};
+        document.querySelectorAll('[data-translate]').forEach(element => {
+            originalTexts[element.dataset.translate] = element.textContent.trim();
+        });
+        document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
+            originalTexts[element.dataset.translatePlaceholder] = element.placeholder;
+        });
+
+        async function translatePage() {
+            const targetLang = document.getElementById('languageSelect').value;
+            if (targetLang === 'en') {
+                // Reset to original English
+                document.querySelectorAll('[data-translate]').forEach(element => {
+                    element.textContent = originalTexts[element.dataset.translate];
+                });
+                document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
+                    element.placeholder = originalTexts[element.dataset.translatePlaceholder];
+                });
+                return;
+            }
+
+            // Translate using Google Translate API
+            const elements = document.querySelectorAll('[data-translate]');
+            const placeholders = document.querySelectorAll('[data-translate-placeholder]');
+
+            for (let element of elements) {
+                const text = originalTexts[element.dataset.translate];
+                const translated = await translateText(text, targetLang);
+                element.textContent = translated;
+            }
+
+            for (let element of placeholders) {
+                const text = originalTexts[element.dataset.translatePlaceholder];
+                const translated = await translateText(text, targetLang);
+                element.placeholder = translated;
+            }
+        }
+
+        async function translateText(text, targetLang) {
+            const url = `https://translation.googleapis.com/language/translate/v2?key=${GOOGLE_API_KEY}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    q: text,
+                    target: targetLang,
+                    format: 'text'
+                })
+            });
+            const data = await response.json();
+            return data.data.translations[0].translatedText;
+        }
+
+        // Supabase Login Logic (unchanged)
         document.addEventListener("DOMContentLoaded", () => {
-            // ✅ Initialize Supabase
             const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
             const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -44,7 +127,6 @@
                 const email = document.getElementById("email").value.toLowerCase();
                 const password = document.getElementById("password").value;
 
-                // ✅ Step 1: Authenticate User
                 const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                     email,
                     password
@@ -60,24 +142,22 @@
                     return;
                 }
 
-                const userId = authData.user.id;  // ✅ Get Authenticated User ID
-                console.log("Authenticated User ID:", userId); // Debugging
+                const userId = authData.user.id;
+                console.log("Authenticated User ID:", userId);
 
-                // ✅ Step 2: Fetch User Role Securely
                 const { data: userData, error: userError } = await supabase
                     .from("users")
                     .select("role")
                     .eq("id", userId)
                     .single();
 
-                console.log("User Data:", userData);  // Debugging
+                console.log("User Data:", userData);
 
                 if (userError || !userData) {
                     alert("Error fetching user data. Please check your database setup.");
                     return;
                 }
 
-                // ✅ Step 3: Redirect Based on Role
                 if (userData.role === "participant") {
                     window.location.href = "participant.html";
                 } else if (userData.role === "organizer") {
