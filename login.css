@@ -146,19 +146,53 @@ p {
         object-fit: cover;
     }
 }
+/* Your existing styles */
+body {
+  background-color: #4B0082; /* Matches your purple background */
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  justify-content: space-around;
+  width: 80%;
+}
+
+.login-section, .welcome-section {
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.login-section {
+  background-color: #FF69B4; /* Pink background for login */
+}
+
+.login-section input, .login-section button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+}
+
+/* Language selector styles */
 #language-selector {
   position: relative;
   display: inline-block;
+  margin-bottom: 10px; /* Space from content below */
 }
 
 .lang-btn {
   background-color: #4CAF50;
   color: white;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .lang-btn:hover {
@@ -173,6 +207,7 @@ p {
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
   border-radius: 4px;
+  right: 0; /* Align dropdown to the right */
 }
 
 #language-selector:hover .lang-dropdown {
@@ -181,7 +216,7 @@ p {
 
 #language-select {
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   border: none;
   background-color: #fff;
   font-size: 14px;
