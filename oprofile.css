@@ -4,109 +4,121 @@ body {
     margin: 0;
     padding: 0;
     background: #f8f9fa;
-    color: white;
+    color: #333;
+    text-align: center;
 }
 
 /* Navigation Bar */
 nav {
+    background: linear-gradient(to left, #4c1c64, #9b70f7); /* Match the gradient from myevent.html */
+    padding: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(to left, #4c1c64, #9b70f7); 
-    padding: 15px 50px;
+    color: white;
 }
-
-.logo img {
-    max-width: 130px; 
-    height: auto;
+nav .logo img {
+    height: 90px;
 }
-
-.nav-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.nav-links {
-    display: flex;
+nav ul {
     list-style: none;
+    display: flex;
     padding: 0;
     margin: 0;
-    gap: 15px;
+}
+nav ul li {
+    margin: 0 15px;
+}
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.2em;
+}
+nav ul li a.active {
+    text-decoration: underline;
+}
+.logout-btn {
+    background: #ff4d4d; /* Red color for logout button */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background 0.3s;
+}
+.logout-btn:hover {
+    background: #cc0000; /* Darker red on hover */
 }
 
-.nav-links li a {
-    text-decoration: none;
+/* Header */
+header {
+    text-align: center;
+    padding: 50px 20px;
+    background: linear-gradient(to left, #4c1c64, #9b70f7); /* Match the gradient */
     color: white;
-    font-size: 1.2em;
 }
 
 /* Profile Section */
-section {
-    padding: 40px;
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
     margin: 30px auto;
-    background: linear-gradient(to right, #4c1c64, #9b70f7); 
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    max-width: 700px;
+    max-width: 600px;
 }
 
 /* Profile Card */
 .profile-card {
-    padding: 30px;
-    background: linear-gradient(to left, #5881d8, #acd8fc);
-    background: url('i12.jpeg');
-    border: 2px solid white;
+    background: white;
+    padding: 20px;
     border-radius: 10px;
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
-    display: inline-block;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
+    width: 100%;
     max-width: 400px;
 }
-
-.profile-pic {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    margin-bottom: 15px;
-    border: 4px solid #ffcc00;
-}
-
-h2 {
-    color: #ffcc00;
-    font-size: 2em;
-    margin-bottom: 5px;
-}
-
-h3 {
-    color: #007bff;
-    margin: 10px 0;
-    font-size: 1.3em;
-}
-
-/* Buttons */
-.manage-btn {
-    background: #ffcc00;
-    color: #4c1c64;
-    padding: 12px 20px;
-    font-size: 1em;
+.edit-profile {
+    background: #007bff;
+    color: white;
     border: none;
-    border-radius: 8px;
+    padding: 10px;
+    margin-top: 10px;
     cursor: pointer;
-    transition: 0.3s;
-    font-weight: bold;
+    border-radius: 5px;
+    font-size: 1em;
+}
+.edit-profile:hover {
+    background: #0056b3;
 }
 
-.manage-btn:hover {
-    background: #e6b800;
-    transform: scale(1.05);
+/* Stats Section */
+.stats {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    width: 100%;
+    max-width: 400px;
+}
+.stats p {
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+.stats span {
+    font-weight: bold;
+    color: #007bff;
 }
 
 /* Footer */
 footer {
     text-align: center;
     padding: 15px;
-    background: #4c1c64;
+    background: #4c1c64; /* Match the footer color from myevent.html */
     color: white;
+    position: relative;
+    bottom: 0;
+    width: 100%;
 }
