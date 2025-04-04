@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Organizer Profile</title>
-    <link rel="stylesheet" href="oprofile.css">
+    <title>Organizer Profile | Sports Hive</title>
+    <link rel="stylesheet" href="profile.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <nav>
@@ -14,123 +15,118 @@
         <ul>
             <li><a href="organizer.html">Home</a></li>
             <li><a href="createevent.html">Create Event</a></li>
-            <li><a href="myevent.html">My Events</a></li>
-            <li><a href="reg.html">Registrations</a></li>
+            <li><a href="myevent.html">Manage Events</a></li>
+            <li><a href="reg.html">View Registrations</a></li>
+            <li><a href="oprofile.html" class="active">Profile</a></li>
         </ul>
+        <!-- Logout Button -->
+        <button id="logout-btn" class="logout-btn">Logout</button>
     </nav>
-
+    <header>
+        <div class="header-content">
+            <h1>Your Organizer Profile</h1>
+            <p>Manage your account and track your event statistics.</p>
+        </div>
+    </header>
     <section id="profile">
-        <h2>Organizer Profile</h2>
-        <div class="profile-card">
-            <img id="profile-pic" src="prof.jpg" alt="Profile Picture" class="profile-pic">
-            <input type="file" id="profile-pic-upload" accept="image/*">
-            <h3 id="profile-name">Loading...</h3>
-            <p id="profile-email">Email: Loading...</p>
-            <p id="profile-events">Events Organized: 0</p>
-            <p id="profile-participants">Total Participants: 0</p>
-            <button class="manage-btn">Manage Events</button>
+        <div class="profile-container">
+            <div class="profile-card">
+                <h2 id="organizer-name">Loading...</h2>
+                <p>Email: <span id="organizer-email">Loading...</span></p>
+                <button class="edit-profile">Edit Profile</button>
+            </div>
+            <div class="stats">
+                <h2>Statistics</h2>
+                <p>Events Created: <span id="events-created">0</span></p>
+                <p>Total Registrations: <span id="total-registrations">0</span></p>
+            </div>
         </div>
     </section>
-
     <footer>
-        <p>&copy; 2025 Sports Hive</p>
+        <p>© 2025 Sports Hive | All Rights Reserved</p>
     </footer>
 
     <script>
-        // Initialize Supabase
-const { createClient } = supabase;
-const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialize Supabase client
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Fetch logged-in user's profile
-async function fetchUserProfile() {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
-    if (!user) {
-        alert("You need to log in first.");
-        window.location.href = "login.html";  // Redirect to login if not logged in
-        return;
-    }
+        document.addEventListener("DOMContentLoaded", async function () {
+            // Fetch the logged-in user
+            const { data: userData, error: userError } = await supabase.auth.getSession();
+            if (userError || !userData.session || !userData.session.user) {
+                console.error("User not authenticated. Redirecting to login.");
+                window.location.href = "login.html";
+                return;
+            }
 
-    const userId = user.id;
+            const userEmail = userData.session.user.email;
+            const userId = userData.session.user.id;
 
-    // Fetch user details
-    let { data: userData, error: profileError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
+            // Fetch organizer details from the "users" table
+            const { data: organizerData, error: organizerError } = await supabase
+                .from("users")
+                .select("fullname")
+                .eq("email", userEmail)
+                .single();
 
-    if (profileError) {
-        console.error("Error fetching user profile:", profileError.message);
-        return;
-    }
+            if (organizerError || !organizerData) {
+                console.error("Error fetching organizer details:", organizerError);
+                document.getElementById("organizer-name").textContent = "Organizer";
+                document.getElementById("organizer-email").textContent = userEmail || "Unknown";
+            } else {
+                document.getElementById("organizer-name").textContent = organizerData.fullname;
+                document.getElementById("organizer-email").textContent = userEmail;
+            }
 
-    // Fetch number of events organized
-    let { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select('id, total_registrations')
-        .eq('organizer_id', userId);
+            // Fetch the number of events created by the organizer
+            const { data: eventsData, error: eventsError } = await supabase
+                .from("events")
+                .select("id")
+                .eq("organizer_id", userId);
 
-    if (eventsError) {
-        console.error("Error fetching events:", eventsError.message);
-        return;
-    }
+            if (eventsError) {
+                console.error("Error fetching events:", eventsError);
+                document.getElementById("events-created").textContent = "0";
+            } else {
+                const eventsCount = eventsData.length;
+                document.getElementById("events-created").textContent = eventsCount;
 
-    const eventsOrganized = eventsData.length;
-    const totalParticipants = eventsData.reduce((sum, event) => sum + (event.total_registrations || 0), 0);
+                // Fetch the total number of registrations for the organizer's events
+                if (eventsCount > 0) {
+                    const eventIds = eventsData.map(event => event.id);
+                    const { data: registrationsData, error: registrationsError } = await supabase
+                        .from("registrations")
+                        .select("id")
+                        .in("event_id", eventIds);
 
-    // Update UI
-    document.getElementById("profile-name").innerText = userData.fullname;
-    document.getElementById("profile-email").innerText = "Email: " + userData.email;
-    document.getElementById("profile-events").innerText = "Events Organized: " + eventsOrganized;
-    document.getElementById("profile-participants").innerText = "Total Participants: " + totalParticipants;
+                    if (registrationsError) {
+                        console.error("Error fetching registrations:", registrationsError);
+                        document.getElementById("total-registrations").textContent = "0";
+                    } else {
+                        document.getElementById("total-registrations").textContent = registrationsData.length;
+                    }
+                } else {
+                    document.getElementById("total-registrations").textContent = "0";
+                }
+            }
+        });
 
-    // Load profile picture if exists
-    if (userData.profile_picture) {
-        document.getElementById("profile-pic").src = userData.profile_picture;
-    }
-}
+        // Logout function
+        async function logout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error("Error logging out:", error);
+                alert("Failed to log out. Please try again.");
+            } else {
+                console.log("User logged out successfully");
+                window.location.href = "index.html"; // Redirect to login page after logout
+            }
+        }
 
-// Function to upload profile picture
-async function uploadProfilePicture(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const { data, error } = await supabase
-        .storage
-        .from('profile_pictures')
-        .upload(`profile_${Date.now()}.jpg`, file, { cacheControl: '3600', upsert: false });
-
-    if (error) {
-        console.error("Error uploading profile picture:", error.message);
-        return;
-    }
-
-    const profilePicUrl = `${SUPABASE_URL}/storage/v1/object/public/profile_pictures/${data.path}`;
-
-    // Update user's profile picture URL in the database
-    const { error: updateError } = await supabase
-        .from('users')
-        .update({ profile_picture: profilePicUrl })
-        .eq('id', supabase.auth.user().id);
-
-    if (updateError) {
-        console.error("Error updating profile picture:", updateError.message);
-        return;
-    }
-
-    // Update UI
-    document.getElementById("profile-pic").src = profilePicUrl;
-}
-
-// Attach event listener for file upload
-document.getElementById("profile-pic-upload").addEventListener("change", uploadProfilePicture);
-
-// Fetch profile on page load
-document.addEventListener("DOMContentLoaded", fetchUserProfile);
-
+        // Attach logout function to button
+        document.getElementById("logout-btn").addEventListener("click", logout);
     </script>
 </body>
 </html>
