@@ -30,51 +30,32 @@
     <section id="leaderboard">
         <h2>Top Participants</h2>
         <table class="leaderboard-table">
-            <tr>
-                <th>Rank</th>
-                <th>Name</th>
-                <th>Points</th>
-            </tr>
-            <tr class="table-row row-1">
-                <td><div class="rank-number top-rank">1</div></td>
-                <td>Alice Johnson</td>
-                <td>1500</td>
-            </tr>
-            <tr class="table-row row-2">
-                <td><div class="rank-number second-rank">2</div></td>
-                <td>Bob Smith</td>
-                <td>1400</td>
-            </tr>
-            <tr class="table-row row-3">
-                <td><div class="rank-number third-rank">3</div></td>
-                <td>Charlie Lee</td>
-                <td>1300</td>
-            </tr>
-            <tr class="table-row user-row">
-                <td><div class="rank-number user-rank">4</div></td>
-                <td>You (David Kim)</td>
-                <td>1200</td>
-            </tr>
-            <tr class="table-row">
-                <td><div class="rank-number">5</div></td>
-                <td>Emily Davis</td>
-                <td>1100</td>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                <!-- Leaderboard rows will be dynamically inserted here -->
+            </tbody>
         </table>
     </section>
     
     <section id="badges">
-        <h2>Earned Badges</h2>
-        <div class="badges-container">
-            <div class="badge-card">🏆<p>Top Performer</p></div>
-            <div class="badge-card">🎯<p>Precision Master</p></div>
-            <div class="badge-card">🔥<p>Streak Holder</p></div>
-            <div class="badge-card">🏅<p>Participation Star</p></div>
+        <h2>Your Earned Badges</h2>
+        <div class="badges-container" id="badges-container">
+            <!-- Badges will be dynamically inserted here -->
         </div>
     </section>
     
     <footer>
-        <p>&copy; 2025 Sports Hive | All Rights Reserved</p>
+        <p>© 2025 Sports Hive | All Rights Reserved</p>
     </footer>
+
+    <!-- Include Supabase client and our custom JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="leaderboard.js"></script>
 </body>
 </html>
