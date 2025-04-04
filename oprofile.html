@@ -19,29 +19,21 @@
             <li><a href="reg.html">View Registrations</a></li>
             <li><a href="oprofile.html" class="active">Profile</a></li>
         </ul>
-        <!-- Logout Button -->
         <button id="logout-btn" class="logout-btn">Logout</button>
     </nav>
-    <header>
-        <div class="header-content">
-            <h1>Your Organizer Profile</h1>
-            <p>Manage your account and track your event statistics.</p>
-        </div>
-    </header>
+
     <section id="profile">
-        <div class="profile-container">
-            <div class="profile-card">
-                <h2 id="organizer-name">Loading...</h2>
-                <p>Email: <span id="organizer-email">Loading...</span></p>
-                <button class="edit-profile">Edit Profile</button>
-            </div>
-            <div class="stats">
-                <h2>Statistics</h2>
-                <p>Events Created: <span id="events-created">0</span></p>
-                <p>Total Registrations: <span id="total-registrations">0</span></p>
-            </div>
+        <h2>Organizer Profile</h2>
+        <div class="profile-card">
+            <img id="profile-pic" src="images/prof.jpg" alt="Profile Picture" class="profile-pic">
+            <h3 id="profile-name">Loading...</h3>
+            <p id="profile-email">Email: Loading...</p>
+            <p id="profile-events">Events Organized: 0</p>
+            <p id="profile-participants">Total Participants: 0</p>
+            <button class="manage-btn">Manage Events</button>
         </div>
     </section>
+
     <footer>
         <p>© 2025 Sports Hive | All Rights Reserved</p>
     </footer>
@@ -52,11 +44,12 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document.addEventListener("DOMContentLoaded", async function () {
+        async function fetchUserProfile() {
             // Fetch the logged-in user
             const { data: userData, error: userError } = await supabase.auth.getSession();
             if (userError || !userData.session || !userData.session.user) {
                 console.error("User not authenticated. Redirecting to login.");
+                alert("You need to log in first.");
                 window.location.href = "login.html";
                 return;
             }
@@ -73,11 +66,11 @@
 
             if (organizerError || !organizerData) {
                 console.error("Error fetching organizer details:", organizerError);
-                document.getElementById("organizer-name").textContent = "Organizer";
-                document.getElementById("organizer-email").textContent = userEmail || "Unknown";
+                document.getElementById("profile-name").textContent = "Organizer";
+                document.getElementById("profile-email").textContent = "Email: " + (userEmail || "Unknown");
             } else {
-                document.getElementById("organizer-name").textContent = organizerData.fullname;
-                document.getElementById("organizer-email").textContent = userEmail;
+                document.getElementById("profile-name").textContent = organizerData.fullname;
+                document.getElementById("profile-email").textContent = "Email: " + userEmail;
             }
 
             // Fetch the number of events created by the organizer
@@ -88,30 +81,30 @@
 
             if (eventsError) {
                 console.error("Error fetching events:", eventsError);
-                document.getElementById("events-created").textContent = "0";
+                document.getElementById("profile-events").textContent = "Events Organized: 0";
             } else {
                 const eventsCount = eventsData.length;
-                document.getElementById("events-created").textContent = eventsCount;
+                document.getElementById("profile-events").textContent = "Events Organized: " + eventsCount;
 
                 // Fetch the total number of registrations for the organizer's events
                 if (eventsCount > 0) {
                     const eventIds = eventsData.map(event => event.id);
                     const { data: registrationsData, error: registrationsError } = await supabase
-                        .from("registrations")
+                        .from("register") // Correct table name (not "register")
                         .select("id")
                         .in("event_id", eventIds);
 
                     if (registrationsError) {
                         console.error("Error fetching registrations:", registrationsError);
-                        document.getElementById("total-registrations").textContent = "0";
+                        document.getElementById("profile-participants").textContent = "Total Participants: 0";
                     } else {
-                        document.getElementById("total-registrations").textContent = registrationsData.length;
+                        document.getElementById("profile-participants").textContent = "Total Participants: " + registrationsData.length;
                     }
                 } else {
-                    document.getElementById("total-registrations").textContent = "0";
+                    document.getElementById("profile-participants").textContent = "Total Participants: 0";
                 }
             }
-        });
+        }
 
         // Logout function
         async function logout() {
@@ -125,8 +118,14 @@
             }
         }
 
-        // Attach logout function to button
+        // Attach event listeners
         document.getElementById("logout-btn").addEventListener("click", logout);
+        document.getElementById("manage-btn").addEventListener("click", () => {
+            window.location.href = "myevent.html"; // Redirect to Manage Events page
+        });
+
+        // Fetch profile on page load
+        document.addEventListener("DOMContentLoaded", fetchUserProfile);
     </script>
 </body>
 </html>
