@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Organizer Profile | Sports Hive</title>
-    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="oprofile.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -30,7 +30,8 @@
             <p id="profile-email">Email: Loading...</p>
             <p id="profile-events">Events Organized: 0</p>
             <p id="profile-participants">Total Participants: 0</p>
-            <button class="manage-btn">Manage Events</button>
+            <button id="manage-btn" class="manage-btn">Manage Events</button>
+            <p id="error-message" style="color: red; display: none;"></p> <!-- Error message display -->
         </div>
     </section>
 
@@ -44,84 +45,117 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Function to display error messages
+        function showError(message) {
+            const errorElement = document.getElementById("error-message");
+            errorElement.textContent = message;
+            errorElement.style.display = "block";
+        }
+
         async function fetchUserProfile() {
-            // Fetch the logged-in user
-            const { data: userData, error: userError } = await supabase.auth.getSession();
-            if (userError || !userData.session || !userData.session.user) {
-                console.error("User not authenticated. Redirecting to login.");
-                alert("You need to log in first.");
-                window.location.href = "login.html";
-                return;
-            }
+            try {
+                // Step 1: Fetch the logged-in user session
+                console.log("Fetching user session...");
+                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError) {
+                    console.error("Session error:", sessionError.message);
+                    throw new Error("Failed to fetch user session: " + sessionError.message);
+                }
 
-            const userEmail = userData.session.user.email;
-            const userId = userData.session.user.id;
+                if (!sessionData.session || !sessionData.session.user) {
+                    console.error("No active session found. Redirecting to login.");
+                    alert("You need to log in first.");
+                    window.location.href = "login.html";
+                    return;
+                }
 
-            // Fetch organizer details from the "users" table
-            const { data: organizerData, error: organizerError } = await supabase
-                .from("users")
-                .select("fullname")
-                .eq("email", userEmail)
-                .single();
+                const userEmail = sessionData.session.user.email;
+                const userId = sessionData.session.user.id;
+                console.log("Logged-in user:", { email: userEmail, id: userId });
 
-            if (organizerError || !organizerData) {
-                console.error("Error fetching organizer details:", organizerError);
-                document.getElementById("profile-name").textContent = "Organizer";
+                // Step 2: Fetch organizer details from the "users" table
+                console.log("Fetching organizer details from users table...");
+                const { data: organizerData, error: organizerError } = await supabase
+                    .from("users")
+                    .select("fullname")
+                    .eq("email", userEmail)
+                    .single();
+
+                if (organizerError || !organizerData) {
+                    console.error("Error fetching organizer details:", organizerError?.message || "No data found");
+                    throw new Error("Failed to fetch organizer details: " + (organizerError?.message || "No data found"));
+                }
+
+                console.log("Organizer data:", organizerData);
+                document.getElementById("profile-name").textContent = organizerData.fullname || "Organizer";
                 document.getElementById("profile-email").textContent = "Email: " + (userEmail || "Unknown");
-            } else {
-                document.getElementById("profile-name").textContent = organizerData.fullname;
-                document.getElementById("profile-email").textContent = "Email: " + userEmail;
-            }
 
-            // Fetch the number of events created by the organizer
-            const { data: eventsData, error: eventsError } = await supabase
-                .from("events")
-                .select("id")
-                .eq("organizer_id", userId);
+                // Step 3: Fetch the number of events created by the organizer
+                console.log("Fetching events for organizer_id:", userId);
+                const { data: eventsData, error: eventsError } = await supabase
+                    .from("events")
+                    .select("id")
+                    .eq("organizer_id", userId);
 
-            if (eventsError) {
-                console.error("Error fetching events:", eventsError);
-                document.getElementById("profile-events").textContent = "Events Organized: 0";
-            } else {
+                if (eventsError) {
+                    console.error("Error fetching events:", eventsError.message);
+                    throw new Error("Failed to fetch events: " + eventsError.message);
+                }
+
                 const eventsCount = eventsData.length;
+                console.log("Events found:", eventsCount);
                 document.getElementById("profile-events").textContent = "Events Organized: " + eventsCount;
 
-                // Fetch the total number of registrations for the organizer's events
+                // Step 4: Fetch the total number of registrations for the organizer's events
+                let totalRegistrations = 0;
                 if (eventsCount > 0) {
                     const eventIds = eventsData.map(event => event.id);
+                    console.log("Fetching registrations for event IDs:", eventIds);
+
                     const { data: registrationsData, error: registrationsError } = await supabase
-                        .from("register") // Correct table name (not "register")
+                        .from("register")
                         .select("id")
                         .in("event_id", eventIds);
 
                     if (registrationsError) {
-                        console.error("Error fetching registrations:", registrationsError);
-                        document.getElementById("profile-participants").textContent = "Total Participants: 0";
-                    } else {
-                        document.getElementById("profile-participants").textContent = "Total Participants: " + registrationsData.length;
+                        console.error("Error fetching registrations:", registrationsError.message);
+                        throw new Error("Failed to fetch registrations: " + registrationsError.message);
                     }
+
+                    totalRegistrations = registrationsData.length;
+                    console.log("Registrations found:", totalRegistrations);
                 } else {
-                    document.getElementById("profile-participants").textContent = "Total Participants: 0";
+                    console.log("No events found, skipping registrations query.");
                 }
+
+                document.getElementById("profile-participants").textContent = "Total Participants: " + totalRegistrations;
+
+            } catch (error) {
+                console.error("Error in fetchUserProfile:", error.message);
+                showError(error.message);
             }
         }
 
         // Logout function
         async function logout() {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.error("Error logging out:", error);
-                alert("Failed to log out. Please try again.");
-            } else {
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error("Error logging out:", error.message);
+                    throw new Error("Failed to log out: " + error.message);
+                }
                 console.log("User logged out successfully");
-                window.location.href = "index.html"; // Redirect to login page after logout
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error(error.message);
+                alert(error.message);
             }
         }
 
         // Attach event listeners
         document.getElementById("logout-btn").addEventListener("click", logout);
         document.getElementById("manage-btn").addEventListener("click", () => {
-            window.location.href = "myevent.html"; // Redirect to Manage Events page
+            window.location.href = "myevent.html";
         });
 
         // Fetch profile on page load
