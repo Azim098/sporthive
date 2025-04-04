@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile | Sports Hive</title>
-    <link rel="stylesheet" href="profile.css">  
+    <title>Organizer Profile | Sports Hive</title>
+    <link rel="stylesheet" href="profile.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <nav>
@@ -12,47 +13,120 @@
             <img src="logo.png" alt="Sports Hive Logo">
         </div>
         <ul>
-            <li><a href="participant.html">Home</a></li>
-            <li><a href="findevents.html">Find Events</a></li>
-            <li><a href="adaptive.html">Adaptive Arena</a></li>
-            <li><a href="leaderboard.html">Leaderboard</a></li>
-            <li><a href="profile.html" class="active">Profile</a></li>
+            <li><a href="organizer.html">Home</a></li>
+            <li><a href="createevent.html">Create Event</a></li>
+            <li><a href="myevent.html">Manage Events</a></li>
+            <li><a href="reg.html">View Registrations</a></li>
+            <li><a href="oprofile.html" class="active">Profile</a></li>
         </ul>
+        <!-- Logout Button -->
+        <button id="logout-btn" class="logout-btn">Logout</button>
     </nav>
     <header>
         <div class="header-content">
-            <h1>Your Profile</h1>
-            <p>Manage your account, track participation, and view achievements.</p>
+            <h1>Your Organizer Profile</h1>
+            <p>Manage your account and track your event statistics.</p>
         </div>
     </header>
     <section id="profile">
         <div class="profile-container">
             <div class="profile-card">
-                <img src="images/profile-pic.png" alt="User Profile Picture">
-                <h2>John Doe</h2>
-                <p>Email: johndoe@example.com</p>
-                <p>Joined: January 2024</p>
+                <h2 id="organizer-name">Loading...</h2>
+                <p>Email: <span id="organizer-email">Loading...</span></p>
                 <button class="edit-profile">Edit Profile</button>
             </div>
             <div class="stats">
                 <h2>Statistics</h2>
-                <p>Events Participated: <span>15</span></p>
-                <p>Points Earned: <span>2200</span></p>
-                <p>Badges Collected: <span>5</span></p>
+                <p>Events Created: <span id="events-created">0</span></p>
+                <p>Total Registrations: <span id="total-registrations">0</span></p>
             </div>
         </div>
     </section>
-    <section id="badges">
-        <h2>Your Achievements</h2>
-        <div class="badges-container">
-            <div class="badge-card">🏆<p>Top Performer</p></div>
-            <div class="badge-card">🎯<p>Precision Master</p></div>
-            <div class="badge-card">🔥<p>Streak Holder</p></div>
-            <div class="badge-card">🏅<p>Participation Star</p></div>
-        </div>
-    </section>
     <footer>
-        <p>&copy; 2025 Sports Hive | All Rights Reserved</p>
+        <p>© 2025 Sports Hive | All Rights Reserved</p>
     </footer>
+
+    <script>
+        // Initialize Supabase client
+        const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            // Fetch the logged-in user
+            const { data: userData, error: userError } = await supabase.auth.getSession();
+            if (userError || !userData.session || !userData.session.user) {
+                console.error("User not authenticated. Redirecting to login.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const userEmail = userData.session.user.email;
+            const userId = userData.session.user.id;
+
+            // Fetch organizer details from the "users" table
+            const { data: organizerData, error: organizerError } = await supabase
+                .from("users")
+                .select("fullname")
+                .eq("email", userEmail)
+                .single();
+
+            if (organizerError || !organizerData) {
+                console.error("Error fetching organizer details:", organizerError);
+                document.getElementById("organizer-name").textContent = "Organizer";
+                document.getElementById("organizer-email").textContent = userEmail || "Unknown";
+            } else {
+                document.getElementById("organizer-name").textContent = organizerData.fullname;
+                document.getElementById("organizer-email").textContent = userEmail;
+            }
+
+            // Fetch the number of events created by the organizer
+            const { data: eventsData, error: eventsError } = await supabase
+                .from("events")
+                .select("id")
+                .eq("organizer_id", userId);
+
+            if (eventsError) {
+                console.error("Error fetching events:", eventsError);
+                document.getElementById("events-created").textContent = "0";
+            } else {
+                const eventsCount = eventsData.length;
+                document.getElementById("events-created").textContent = eventsCount;
+
+                // Fetch the total number of registrations for the organizer's events
+                if (eventsCount > 0) {
+                    const eventIds = eventsData.map(event => event.id);
+                    const { data: registrationsData, error: registrationsError } = await supabase
+                        .from("registrations")
+                        .select("id")
+                        .in("event_id", eventIds);
+
+                    if (registrationsError) {
+                        console.error("Error fetching registrations:", registrationsError);
+                        document.getElementById("total-registrations").textContent = "0";
+                    } else {
+                        document.getElementById("total-registrations").textContent = registrationsData.length;
+                    }
+                } else {
+                    document.getElementById("total-registrations").textContent = "0";
+                }
+            }
+        });
+
+        // Logout function
+        async function logout() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error("Error logging out:", error);
+                alert("Failed to log out. Please try again.");
+            } else {
+                console.log("User logged out successfully");
+                window.location.href = "index.html"; // Redirect to login page after logout
+            }
+        }
+
+        // Attach logout function to button
+        document.getElementById("logout-btn").addEventListener("click", logout);
+    </script>
 </body>
 </html>
