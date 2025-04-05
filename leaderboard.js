@@ -31,6 +31,7 @@ const rankBadges = {
 };
 
 async function handleStatusUpdate(payload) {
+    console.log('Subscription triggered with payload:', payload);
     console.log('Status update detected:', { old: payload.old, new: payload.new });
 
     const { old: oldRecord, new: newRecord } = payload;
@@ -77,7 +78,7 @@ async function handleStatusUpdate(payload) {
         } else {
             const { error, data } = await supabase
                 .from('leaderboard')
-                .insert({ user_id: userId, name: userName, points: newPoints })
+                .insert({ user_id: userId, name: userName, points: newPoints, rank: 0 }) // Include rank to match schema
                 .select();
             if (error) console.error('Error inserting new leaderboard entry:', error.message);
             else console.log('New leaderboard entry created:', data);
