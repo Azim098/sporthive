@@ -1,5 +1,5 @@
 // Initialize Supabase client with provided URL and anon key
-const supabase = Supabase.createClient(
+const supabase = window.supabase.createClient(
     'https://idydtkpvhedgyoexkiox.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY'
 );
@@ -16,13 +16,14 @@ async function getLoggedInUser() {
     return user.id;
 }
 
-// Badge titles and icons for different events (customize based on your events)
-const badgeData = {
-    'Marathon 2025': { title: 'Marathon Master', icon: '🏃‍♂️' },
-    'Swimming Gala': { title: 'Aquatic Ace', icon: '🏊‍♀️' },
-    'Basketball Tournament': { title: 'Hoop Hero', icon: '🏀' },
-    'Cycling Race': { title: 'Cycle Star', icon: '🚴‍♂️' },
-    // Add more events and badges as needed
+// Badge titles and icons based on rank
+const rankBadges = {
+    1: { title: 'Gold Champion', icon: '🥇' },
+    2: { title: 'Silver Star', icon: '🥈' },
+    3: { title: 'Bronze Hero', icon: '🥉' },
+    4: { title: 'Top Contender', icon: '🏅' },
+    5: { title: 'Rising Star', icon: '🌟' },
+    default: { title: 'Participant', icon: '🎉' }
 };
 
 // Function to update points and assign badges when status changes to "Accepted"
@@ -32,28 +33,13 @@ async function handleStatusUpdate(payload) {
     // Check if status changed from "Pending" to "Accepted"
     if (oldRecord.status === 'Pending' && newRecord.status === 'Accepted') {
         const participantId = newRecord.participant_id;
-        const eventId = newRecord.event_id;
+        const userId = participantId; // Assuming participant_id is the user_id from users table
 
-        // Fetch the event name to determine the badge
-        const { data: event, error: eventError } = await supabase
-            .from('events')
-            .select('name')
-            .eq('id', eventId)
-            .single();
-
-        if (eventError) {
-            console.error('Error fetching event:', eventError);
-            return;
-        }
-
-        const eventName = event.name;
-        const badgeInfo = badgeData[eventName] || { title: 'Event Participant', icon: '🎉' }; // Fallback badge
-
-        // Fetch the user ID from the participant (assuming participant_id in register table is the user ID)
+        // Fetch user details
         const { data: user, error: userError } = await supabase
             .from('users')
             .select('id, fullname')
-            .eq('id', participantId)
+            .eq('id', userId)
             .single();
 
         if (userError) {
@@ -61,7 +47,6 @@ async function handleStatusUpdate(payload) {
             return;
         }
 
-        const userId = user.id;
         const userName = user.fullname;
 
         // Update points in the leaderboard
@@ -71,12 +56,7 @@ async function handleStatusUpdate(payload) {
             .eq('user_id', userId)
             .single();
 
-        if (leaderboardError && leaderboardError.code !== 'PGRST116') { // PGRST116 means no rows found
-            console.error('Error fetching leaderboard entry:', leaderboardError);
-            return;
-        }
-
-        let newPoints = 50; // Default points for first event
+        let newPoints = 50; // Points awarded for accepted registration
         if (leaderboardEntry) {
             newPoints = leaderboardEntry.points + 50;
             await supabase
@@ -88,44 +68,6 @@ async function handleStatusUpdate(payload) {
                 .from('leaderboard')
                 .insert({ user_id: userId, name: userName, points: newPoints });
         }
-
-        // Assign a badge to the user
-        const { data: badge, error: badgeError } = await supabase
-            .from('badges')
-            .select('id')
-            .eq('name', badgeInfo.title)
-            .single();
-
-        let badgeId;
-        if (badge) {
-            badgeId = badge.id;
-        } else {
-            const { data: newBadge, error: newBadgeError } = await supabase
-                .from('badges')
-                .insert({
-                    name: badgeInfo.title,
-                    description: `Earned for participating in ${eventName}`,
-                    icon_url: badgeInfo.icon,
-                    created_at: new Date().toISOString()
-                })
-                .select('id')
-                .single();
-
-            if (newBadgeError) {
-                console.error('Error creating badge:', newBadgeError);
-                return;
-            }
-            badgeId = newBadge.id;
-        }
-
-        // Link the badge to the user
-        await supabase
-            .from('user_badges')
-            .insert({
-                user_id: userId,
-                badge_id: badgeId,
-                awarded_at: new Date().toISOString()
-            });
 
         // Refresh the leaderboard and badges
         await updateLeaderboard();
@@ -171,9 +113,14 @@ async function updateLeaderboard() {
         const pointsCell = document.createElement('td');
         pointsCell.textContent = entry.points;
 
+        const badgeCell = document.createElement('td');
+        const badge = rankBadges[index + 1] || rankBadges.default;
+        badgeCell.innerHTML = `${badge.icon} ${badge.title}`;
+
         row.appendChild(rankCell);
         row.appendChild(nameCell);
         row.appendChild(pointsCell);
+        row.appendChild(badgeCell);
         leaderboardBody.appendChild(row);
     });
 }
@@ -221,5 +168,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         console.error('User must be logged in to view the leaderboard and badges.');
         // Optionally, redirect to a login page
+        // window.location.href = 'login.html';
     }
 });
