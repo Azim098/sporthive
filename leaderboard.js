@@ -1,18 +1,15 @@
-// Initialize Supabase client with provided URL and anon key
+// Initialize Supabase client
 const supabase = window.supabase.createClient(
     'https://idydtkpvhedgyoexkiox.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY'
 );
 
-// Fetch the logged-in user's ID using Supabase Auth
 let loggedInUserId = null;
 async function getLoggedInUser() {
     try {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error || !user) {
             console.error('Error fetching user or user not logged in:', error?.message || 'No user session');
-            // Optionally redirect to login if no user
-            // window.location.href = 'login.html';
             return null;
         }
         loggedInUserId = user.id;
@@ -24,7 +21,6 @@ async function getLoggedInUser() {
     }
 }
 
-// Badge titles and icons based on rank
 const rankBadges = {
     1: { title: 'Gold Champion', icon: '🥇' },
     2: { title: 'Silver Star', icon: '🥈' },
@@ -34,18 +30,15 @@ const rankBadges = {
     default: { title: 'Participant', icon: '🎉' }
 };
 
-// Function to update points and assign badges when status changes to "Accepted"
 async function handleStatusUpdate(payload) {
+    console.log('Status update detected:', { old: payload.old, new: payload.new });
+
     const { old: oldRecord, new: newRecord } = payload;
-
-    console.log('Status update detected:', { oldRecord, newRecord });
-
-    // Check if status changed from "Pending" to "Accepted"
     if (oldRecord.status === 'Pending' && newRecord.status === 'Accepted') {
+        console.log('Status changed to Accepted, processing participant:', newRecord.participant_id);
         const participantId = newRecord.participant_id;
-        const userId = participantId; // Assuming participant_id matches user_id
+        const userId = participantId;
 
-        // Fetch user details
         const { data: user, error: userError } = await supabase
             .from('users')
             .select('id, fullname')
@@ -56,11 +49,10 @@ async function handleStatusUpdate(payload) {
             console.error('Error fetching user:', userError.message);
             return;
         }
+        console.log('User found:', user);
 
         const userName = user.fullname;
-        console.log('User found:', { userId, userName });
 
-        // Update points in the leaderboard
         const { data: leaderboardEntry, error: leaderboardError } = await supabase
             .from('leaderboard')
             .select('points')
@@ -71,8 +63,9 @@ async function handleStatusUpdate(payload) {
             console.error('Error fetching leaderboard entry:', leaderboardError.message);
             return;
         }
+        console.log('Leaderboard entry:', leaderboardEntry);
 
-        let newPoints = 50; // Points awarded for accepted registration
+        let newPoints = 50;
         if (leaderboardEntry) {
             newPoints = leaderboardEntry.points + 50;
             const { error } = await supabase
@@ -80,20 +73,23 @@ async function handleStatusUpdate(payload) {
                 .update({ points: newPoints })
                 .eq('user_id', userId);
             if (error) console.error('Error updating points:', error.message);
+            else console.log('Points updated to:', newPoints);
         } else {
-            const { error } = await supabase
+            const { error, data } = await supabase
                 .from('leaderboard')
-                .insert({ user_id: userId, name: userName, points: newPoints });
+                .insert({ user_id: userId, name: userName, points: newPoints })
+                .select();
             if (error) console.error('Error inserting new leaderboard entry:', error.message);
+            else console.log('New leaderboard entry created:', data);
         }
 
-        // Refresh the leaderboard and badges
         await updateLeaderboard();
         await displayUserBadges();
+    } else {
+        console.log('Status change condition not met:', { oldRecord, newRecord });
     }
 }
 
-// Function to update the leaderboard display
 async function updateLeaderboard() {
     try {
         const { data: leaderboardData, error } = await supabase
@@ -114,7 +110,7 @@ async function updateLeaderboard() {
             return;
         }
 
-        leaderboardBody.innerHTML = ''; // Clear existing rows
+        leaderboardBody.innerHTML = '';
 
         if (!leaderboardData || leaderboardData.length === 0) {
             leaderboardBody.innerHTML = '<tr><td colspan="4">No participants yet.</td></tr>';
@@ -125,9 +121,7 @@ async function updateLeaderboard() {
         leaderboardData.forEach((entry, index) => {
             const row = document.createElement('tr');
             row.className = 'table-row';
-            if (entry.user_id === loggedInUserId) {
-                row.classList.add('user-row');
-            }
+            if (entry.user_id === loggedInUserId) row.classList.add('user-row');
 
             const rankCell = document.createElement('td');
             const rankDiv = document.createElement('div');
@@ -160,7 +154,6 @@ async function updateLeaderboard() {
     }
 }
 
-// Function to display the logged-in user's badges
 async function displayUserBadges() {
     if (!loggedInUserId) {
         console.error('No logged-in user ID available');
@@ -186,7 +179,7 @@ async function displayUserBadges() {
             return;
         }
 
-        badgesContainer.innerHTML = ''; // Clear existing badges
+        badgesContainer.innerHTML = '';
 
         if (!userBadges || userBadges.length === 0) {
             badgesContainer.innerHTML = '<p>No badges earned yet.</p>';
@@ -205,13 +198,14 @@ async function displayUserBadges() {
     }
 }
 
-// Subscribe to changes in the register table
 supabase
     .channel('register-changes')
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'register' }, handleStatusUpdate)
-    .subscribe();
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'register' }, (payload) => {
+        console.log('Subscription triggered with payload:', payload);
+        handleStatusUpdate(payload);
+    })
+    .subscribe((status) => console.log('Subscription status:', status));
 
-// Initial load of leaderboard and badges
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM loaded, starting initialization');
     const userId = await getLoggedInUser();
