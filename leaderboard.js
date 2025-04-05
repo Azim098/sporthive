@@ -78,7 +78,7 @@ async function handleStatusUpdate(payload) {
         } else {
             const { error, data } = await supabase
                 .from('leaderboard')
-                .insert({ user_id: userId, name: userName, points: newPoints, rank: 0 }) // Include rank to match schema
+                .insert({ user_id: userId, name: userName, points: newPoints, rank: 0 })
                 .select();
             if (error) console.error('Error inserting new leaderboard entry:', error.message);
             else console.log('New leaderboard entry created:', data);
@@ -122,43 +122,6 @@ async function updateLeaderboard() {
         for (const [index, entry] of leaderboardData.entries()) {
             const rank = index + 1;
             const badge = rankBadges[rank] || rankBadges.default;
-
-            // Check if the badge is already assigned
-            const { data: existingBadge, error: existingBadgeError } = await supabase
-                .from('user_badges')
-                .select('badge_id')
-                .eq('user_id', entry.user_id)
-                .eq('badge_id', (await supabase.from('badges').select('id').eq('name', badge.title).single()).data?.id)
-                .maybeSingle();
-
-            if (!existingBadge && !existingBadgeError) {
-                const { data: badgeData, error: badgeError } = await supabase
-                    .from('badges')
-                    .select('id')
-                    .eq('name', badge.title)
-                    .single();
-                if (badgeError || !badgeData) {
-                    const { data: newBadge, error: newBadgeError } = await supabase
-                        .from('badges')
-                        .insert({ name: badge.title, icon_url: badge.icon, created_at: new Date().toISOString() })
-                        .select()
-                        .single();
-                    if (newBadgeError) console.error('Error creating badge:', newBadgeError);
-                    else {
-                        await supabase.from('user_badges').insert({
-                            user_id: entry.user_id,
-                            badge_id: newBadge.id,
-                            awarded_at: new Date().toISOString()
-                        });
-                    }
-                } else {
-                    await supabase.from('user_badges').insert({
-                        user_id: entry.user_id,
-                        badge_id: badgeData.id,
-                        awarded_at: new Date().toISOString()
-                    }, { onConflict: ['user_id', 'badge_id'], ignoreDuplicates: true });
-                }
-            }
 
             const row = document.createElement('tr');
             row.className = 'table-row';
