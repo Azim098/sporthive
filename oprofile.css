@@ -77,11 +77,6 @@ nav ul li a:hover {
     transform: translateY(-2px);
 }
 
-nav ul li a.active {
-    background: rgba(255, 255, 255, 0.3);
-    border-bottom: 3px solid white;
-}
-
 .logout-btn {
     background: #ff4d4d;
     color: white;
