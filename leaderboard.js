@@ -118,7 +118,38 @@ async function updateLeaderboard() {
             return;
         }
 
-        leaderboardData.forEach((entry, index) => {
+        leaderboardData.forEach(async (entry, index) => {
+            const rank = index + 1;
+            const badge = rankBadges[rank] || rankBadges.default;
+            const { error: badgeError } = await supabase
+                .from('badges')
+                .select('id')
+                .eq('name', badge.title)
+                .single()
+                .then(async ({ data: badgeData, error }) => {
+                    if (error || !badgeData) {
+                        const { data: newBadge, error: newBadgeError } = await supabase
+                            .from('badges')
+                            .insert({ name: badge.title, icon_url: badge.icon, created_at: new Date().toISOString() })
+                            .select()
+                            .single();
+                        if (newBadgeError) console.error('Error creating badge:', newBadgeError);
+                        else {
+                            await supabase.from('user_badges').insert({
+                                user_id: entry.user_id,
+                                badge_id: newBadge.id,
+                                awarded_at: new Date().toISOString()
+                            });
+                        }
+                    } else {
+                        await supabase.from('user_badges').insert({
+                            user_id: entry.user_id,
+                            badge_id: badgeData.id,
+                            awarded_at: new Date().toISOString()
+                        }, { onConflict: ['user_id', 'badge_id'], ignoreDuplicates: true });
+                    }
+                });
+
             const row = document.createElement('tr');
             row.className = 'table-row';
             if (entry.user_id === loggedInUserId) row.classList.add('user-row');
@@ -130,7 +161,7 @@ async function updateLeaderboard() {
             if (index === 1) rankDiv.classList.add('second-rank');
             if (index === 2) rankDiv.classList.add('third-rank');
             if (entry.user_id === loggedInUserId) rankDiv.classList.add('user-rank');
-            rankDiv.textContent = index + 1;
+            rankDiv.textContent = rank;
             rankCell.appendChild(rankDiv);
 
             const nameCell = document.createElement('td');
@@ -140,7 +171,6 @@ async function updateLeaderboard() {
             pointsCell.textContent = entry.points;
 
             const badgeCell = document.createElement('td');
-            const badge = rankBadges[index + 1] || rankBadges.default;
             badgeCell.innerHTML = `${badge.icon} ${badge.title}`;
 
             row.appendChild(rankCell);
