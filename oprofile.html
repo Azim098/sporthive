@@ -146,7 +146,7 @@
                 console.log("Fetching events for organizer_id:", userId);
                 const { data: eventsData, error: eventsError } = await supabase
                     .from("events")
-                    .select("id")
+                    .select("id, total_volunteers, total_registrations")
                     .eq("organizer_id", userId);
 
                 if (eventsError) {
@@ -158,32 +158,16 @@
                 console.log("Events found:", eventsCount);
                 document.getElementById("profile-events").textContent = eventsCount;
 
-                // Step 4: Fetch the total number of registrations for the organizer's events
+                // Step 4: Calculate totals from events data
                 let totalRegistrations = 0;
                 let totalVolunteers = 0;
                 if (eventsCount > 0) {
-                    const eventIds = eventsData.map(event => event.id);
-                    console.log("Fetching registrations for event IDs:", eventIds);
-
-                    // Fetch all registrations
-                    const { data: registrationsData, error: registrationsError } = await supabase
-                        .from("registrations")
-                        .select("id, role")
-                        .in("event_id", eventIds);
-
-                    if (registrationsError) {
-                        console.error("Error fetching registrations:", registrationsError.message);
-                        throw new Error("Failed to fetch registrations: " + registrationsError.message);
-                    }
-
-                    totalRegistrations = registrationsData.length;
-                    console.log("Total registrations found:", totalRegistrations);
-
-                    // Filter for volunteers (assuming role = 'volunteer')
-                    totalVolunteers = registrationsData.filter(reg => reg.role === 'volunteer').length;
-                    console.log("Total volunteers found:", totalVolunteers);
+                    totalRegistrations = eventsData.reduce((sum, event) => sum + (event.total_registrations || 0), 0);
+                    totalVolunteers = eventsData.reduce((sum, event) => sum + (event.total_volunteers || 0), 0);
+                    console.log("Total registrations from events:", totalRegistrations);
+                    console.log("Total volunteers from events:", totalVolunteers);
                 } else {
-                    console.log("No events found, skipping registrations query.");
+                    console.log("No events found, setting totals to 0.");
                 }
 
                 document.getElementById("profile-participants").textContent = totalRegistrations;
