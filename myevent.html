@@ -26,7 +26,7 @@
     </section>
 
     <!-- Edit Event Modal -->
-    <div id="edit-modal" class="modal">
+    <div id="edit-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close" onclick="closeEditModal()">×</span>
             <h3>Edit Event</h3>
@@ -56,15 +56,6 @@
         const SUPABASE_URL = "https://idydtkpvhedgyoexkiox.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Ensure modal starts hidden on page load
-        document.addEventListener("DOMContentLoaded", function() {
-            const modal = document.getElementById("edit-modal");
-            if (modal) {
-                modal.style.display = "none"; // Explicitly set to hidden
-                console.log("Modal initialized with display: none");
-            }
-        });
 
         // Get the authenticated user
         async function getUser() {
