@@ -24,7 +24,7 @@ main {
 
 /* Navigation Bar */
 nav {
-    background: linear-gradient(to right, #4c1c64, #9b70f7);
+    background: linear-gradient(to left, #4c1c64, #9b70f7);
     padding: 15px 30px;
     display: flex;
     justify-content: space-between;
@@ -121,17 +121,7 @@ section#profile h2 {
     position: relative;
     padding-bottom: 10px;
 }
-section#profile:before {
-    content: '';
-    position: absolute;
-    top: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 15px;
-    background: linear-gradient(to right, #4c1c64, #9b70f7);
-    border-radius: 8px 8px 0 0;
-}
+
 section#profile h2:after {
     content: '';
     position: absolute;
