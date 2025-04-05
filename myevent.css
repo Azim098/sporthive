@@ -9,23 +9,32 @@ body {
 
 /* Navigation Bar */
 nav {
+    background: linear-gradient(to left, #4c1c64, #9b70f7);
+    padding: 15px 35px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(to left, #4c1c64, #9b70f7); 
     color: white;
-    padding: 15px 50px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-.logo img {
-    max-width: 130px; 
-    height: auto;
+nav .logo img {
+    height: 80px;
+    transition: transform 0.3s;
+}
+
+nav .logo img:hover {
+    transform: scale(1.05);
 }
 
 nav ul {
     list-style: none;
     display: flex;
     padding: 0;
+    margin: 0;
 }
 
 nav ul li {
@@ -33,9 +42,24 @@ nav ul li {
 }
 
 nav ul li a {
-    text-decoration: none;
     color: white;
-    font-size: 1.2em;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+nav ul li a i {
+    margin-right: 5px;
+}
+
+nav ul li a:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 /* Section Styles */
@@ -167,4 +191,25 @@ footer {
     padding: 15px;
     background: #4c1c64;
     color: white;
+}
+/* Responsive Design */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column;
+        padding: 15px;
+    }
+    
+    nav .logo {
+        margin-bottom: 15px;
+    }
+    
+    nav ul {
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    nav ul li {
+        margin: 5px 10px;
+    }
 }
