@@ -19,6 +19,7 @@ body {
 main {
     flex: 1;
     padding: 20px;
+    background: linear-gradient(135deg, #f6f0ff, #e6d4ff);
 }
 
 /* Navigation Bar */
@@ -120,7 +121,17 @@ section#profile h2 {
     position: relative;
     padding-bottom: 10px;
 }
-
+section#profile:before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 15px;
+    background: linear-gradient(to right, #4c1c64, #9b70f7);
+    border-radius: 8px 8px 0 0;
+}
 section#profile h2:after {
     content: '';
     position: absolute;
