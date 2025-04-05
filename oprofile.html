@@ -146,7 +146,7 @@
                 console.log("Fetching events for organizer_id:", userId);
                 const { data: eventsData, error: eventsError } = await supabase
                     .from("events")
-                    .select("id, total_volunteers, total_registrations")
+                    .select("id")
                     .eq("organizer_id", userId);
 
                 if (eventsError) {
@@ -158,14 +158,40 @@
                 console.log("Events found:", eventsCount);
                 document.getElementById("profile-events").textContent = eventsCount;
 
-                // Step 4: Calculate totals from events data
+                // Step 4: Fetch the total number of registrations and volunteers for the organizer's events
                 let totalRegistrations = 0;
                 let totalVolunteers = 0;
                 if (eventsCount > 0) {
-                    totalRegistrations = eventsData.reduce((sum, event) => sum + (event.total_registrations || 0), 0);
-                    totalVolunteers = eventsData.reduce((sum, event) => sum + (event.total_volunteers || 0), 0);
-                    console.log("Total registrations from events:", totalRegistrations);
-                    console.log("Total volunteers from events:", totalVolunteers);
+                    const eventIds = eventsData.map(event => event.id);
+                    console.log("Fetching registrations for event IDs:", eventIds);
+
+                    // Fetch all participant registrations
+                    const { data: registrationsData, error: registrationsError } = await supabase
+                        .from("register") // Using 'register' table as per schema
+                        .select("id")
+                        .in("event_id", eventIds);
+
+                    if (registrationsError) {
+                        console.error("Error fetching registrations:", registrationsError.message);
+                        throw new Error("Failed to fetch registrations: " + registrationsError.message);
+                    }
+
+                    totalRegistrations = registrationsData.length;
+                    console.log("Total registrations found:", totalRegistrations);
+
+                    // Fetch all volunteer registrations
+                    const { data: volunteersData, error: volunteersError } = await supabase
+                        .from("volunteers") // Using 'volunteers' table as per schema
+                        .select("id")
+                        .in("event_id", eventIds);
+
+                    if (volunteersError) {
+                        console.error("Error fetching volunteers:", volunteersError.message);
+                        throw new Error("Failed to fetch volunteers: " + volunteersError.message);
+                    }
+
+                    totalVolunteers = volunteersData.length;
+                    console.log("Total volunteers found:", totalVolunteers);
                 } else {
                     console.log("No events found, setting totals to 0.");
                 }
