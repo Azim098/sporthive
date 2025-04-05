@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Organizer Profile | Sports Hive</title>
-    <link rel="stylesheet" href="oprofile.css">
+    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -13,30 +14,86 @@
             <img src="logo.png" alt="Sports Hive Logo">
         </div>
         <ul>
-            <li><a href="organizer.html">Home</a></li>
-            <li><a href="createevent.html">Create Event</a></li>
-            <li><a href="myevent.html">Manage Events</a></li>
-            <li><a href="reg.html">View Registrations</a></li>
-            <li><a href="oprofile.html" class="active">Profile</a></li>
+            <li><a href="organizer.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="createevent.html"><i class="fas fa-plus-circle"></i> Create Event</a></li>
+            <li><a href="myevent.html"><i class="fas fa-calendar-check"></i> Manage Events</a></li>
+            <li><a href="reg.html"><i class="fas fa-clipboard-list"></i> View Registrations</a></li>
+            <li><a href="oprofile.html" class="active"><i class="fas fa-user-circle"></i> Profile</a></li>
         </ul>
-        <button id="logout-btn" class="logout-btn">Logout</button>
+        <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </nav>
 
-    <section id="profile">
-        <h2>Organizer Profile</h2>
-        <div class="profile-card">
-            <img id="profile-pic" src="images/prof.jpg" alt="Profile Picture" class="profile-pic">
-            <h3 id="profile-name">Loading...</h3>
-            <p id="profile-email">Email: Loading...</p>
-            <p id="profile-events">Events Organized: 0</p>
-            <p id="profile-participants">Total Participants: 0</p>
-            <button id="manage-btn" class="manage-btn">Manage Events</button>
-            <p id="error-message" style="color: red; display: none;"></p> <!-- Error message display -->
-        </div>
-    </section>
+    <main>
+        <section id="profile">
+            <h2>Organizer Profile</h2>
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="profile-pic-container">
+                        <img id="profile-pic" src="images/prof.jpg" alt="Profile Picture" class="profile-pic">
+                        <div class="edit-pic">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    </div>
+                    <h3 id="profile-name">Loading...</h3>
+                    <p id="profile-email">Email: Loading...</p>
+                </div>
+                
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h4>Events Organized</h4>
+                        <p id="profile-events">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <h4>Total Participants</h4>
+                        <p id="profile-participants">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-hands-helping"></i>
+                        <h4>Volunteers</h4>
+                        <p id="profile-volunteers">0</p>
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <button class="action-btn primary"><i class="fas fa-edit"></i> Edit Profile</button>
+                    <button class="action-btn secondary"><i class="fas fa-key"></i> Change Password</button>
+                </div>
+                
+                <p id="error-message" style="color: red; display: none;"></p>
+            </div>
+        </section>
+    </main>
 
     <footer>
-        <p>© 2025 Sports Hive | All Rights Reserved</p>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img src="logo.png" alt="Sports Hive Logo" class="footer-logo-img">
+                <p>Connecting sports enthusiasts since 2024</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h4>Follow Us</h4>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Sports Hive | All Rights Reserved</p>
+        </div>
     </footer>
 
     <script>
@@ -104,17 +161,19 @@
 
                 const eventsCount = eventsData.length;
                 console.log("Events found:", eventsCount);
-                document.getElementById("profile-events").textContent = "Events Organized: " + eventsCount;
+                document.getElementById("profile-events").textContent = eventsCount;
 
                 // Step 4: Fetch the total number of registrations for the organizer's events
                 let totalRegistrations = 0;
+                let totalVolunteers = 0;
                 if (eventsCount > 0) {
                     const eventIds = eventsData.map(event => event.id);
                     console.log("Fetching registrations for event IDs:", eventIds);
 
+                    // Fetch all registrations
                     const { data: registrationsData, error: registrationsError } = await supabase
-                        .from("register")
-                        .select("id")
+                        .from("registrations")
+                        .select("id, role")
                         .in("event_id", eventIds);
 
                     if (registrationsError) {
@@ -123,12 +182,17 @@
                     }
 
                     totalRegistrations = registrationsData.length;
-                    console.log("Registrations found:", totalRegistrations);
+                    console.log("Total registrations found:", totalRegistrations);
+
+                    // Filter for volunteers (assuming role = 'volunteer')
+                    totalVolunteers = registrationsData.filter(reg => reg.role === 'volunteer').length;
+                    console.log("Total volunteers found:", totalVolunteers);
                 } else {
                     console.log("No events found, skipping registrations query.");
                 }
 
-                document.getElementById("profile-participants").textContent = "Total Participants: " + totalRegistrations;
+                document.getElementById("profile-participants").textContent = totalRegistrations;
+                document.getElementById("profile-volunteers").textContent = totalVolunteers;
 
             } catch (error) {
                 console.error("Error in fetchUserProfile:", error.message);
@@ -154,9 +218,6 @@
 
         // Attach event listeners
         document.getElementById("logout-btn").addEventListener("click", logout);
-        document.getElementById("manage-btn").addEventListener("click", () => {
-            window.location.href = "myevent.html";
-        });
 
         // Fetch profile on page load
         document.addEventListener("DOMContentLoaded", fetchUserProfile);
