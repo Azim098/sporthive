@@ -149,15 +149,17 @@ async function updateLeaderboard(userId) {
 
             newPoints = pointsToAdd;
             const newId = crypto.randomUUID();
+            const leaderboardEntry = {
+                id: newId,
+                name: userData.fullname,
+                points: Number(newPoints), // Explicitly ensure integer
+                rank: "Unranked",
+                user_id: userId
+            };
+            console.log("Inserting leaderboard entry:", leaderboardEntry); // Debug payload
             const { data, error } = await supabaseClient
                 .from("leaderboard")
-                .insert({ 
-                    id: newId,
-                    name: userData.fullname,
-                    points: Number(newPoints), // Ensure integer
-                    rank: "Unranked",
-                    user_id: userId
-                })
+                .insert(leaderboardEntry)
                 .select();
             if (error) throw new Error("Error inserting into leaderboard: " + error.message);
             console.log("Inserted new leaderboard entry:", data);
@@ -202,13 +204,15 @@ async function awardBadge(userId, points) {
 
         // Award badge if points >= 50 and user doesn’t have it yet
         if (!existingBadge && points >= 50) {
+            const badgeEntry = {
+                id: crypto.randomUUID(),
+                user_id: userId,
+                badge_id: badge.id
+            };
+            console.log("Inserting user_badges entry:", badgeEntry); // Debug payload
             const { data, error } = await supabaseClient
                 .from("user_badges")
-                .insert({
-                    id: crypto.randomUUID(),
-                    user_id: userId,
-                    badge_id: badge.id
-                })
+                .insert(badgeEntry)
                 .select();
             if (error) throw new Error("Error inserting into user_badges: " + error.message);
             console.log(`Badge ${badge.name} awarded to user ${userId} with ${points} points:`, data);
