@@ -147,6 +147,95 @@ document.addEventListener("DOMContentLoaded", async function () {
             container.appendChild(eventCard);
         });
     }
+
+    // Fetch pending volunteering events from volunteers table with event details
+    const { data: pendingVolunteerData, error: pendingVolunteerError } = await supabase
+        .from("volunteers")
+        .select(`
+            id,
+            event_id,
+            events!volunteers_event_id_fkey (
+                name,
+                description,
+                date,
+                location,
+                organizer_id,
+                users!events_organizer_id_fkey (fullname)
+            )
+        `)
+        .eq("participant_id", userId)
+        .eq("status", "Pending");
+
+    if (pendingVolunteerError) {
+        console.error("Error fetching pending volunteering events:", pendingVolunteerError);
+        // Fallback to manual join if nested query fails
+        if (pendingVolunteerError.code === 'PGRST200') {
+            console.log("Nested join failed for volunteering, attempting manual join...");
+            const { data: manualVolunteerData, error: manualVolunteerError } = await supabase
+                .from("volunteers")
+                .select(`
+                    id,
+                    event_id,
+                    events!volunteers_event_id_fkey (
+                        name,
+                        description,
+                        date,
+                        location,
+                        organizer_id
+                    )
+                `)
+                .eq("participant_id", userId)
+                .eq("status", "Pending");
+
+            if (manualVolunteerError) {
+                console.error("Error with manual join for volunteering:", manualVolunteerError);
+                document.getElementById("pending-volunteer-events-container").innerHTML = "<p>Error loading pending volunteering events.</p>";
+            } else if (!manualVolunteerData || manualVolunteerData.length === 0) {
+                document.getElementById("pending-volunteer-events-container").innerHTML = "<p>No pending volunteering events.</p>";
+            } else {
+                const container = document.getElementById("pending-volunteer-events-container");
+                container.innerHTML = "";
+                for (const event of manualVolunteerData) {
+                    const { data: organizerData, error: organizerError } = await supabase
+                        .from("users")
+                        .select("fullname")
+                        .eq("id", event.events.organizer_id)
+                        .single();
+                    const organizerName = organizerError || !organizerData ? "Unknown" : organizerData.fullname;
+
+                    const eventCard = document.createElement("div");
+                    eventCard.className = "event-card";
+                    eventCard.innerHTML = `
+                        <h3>${event.events.name}</h3>
+                        <p><strong>Description:</strong> ${event.events.description || "N/A"}</p>
+                        <p><strong>Date:</strong> ${event.events.date || "N/A"}</p>
+                        <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
+                        <p><strong>Organizer:</strong> ${organizerName}</p>
+                    `;
+                    container.appendChild(eventCard);
+                }
+            }
+        } else {
+            document.getElementById("pending-volunteer-events-container").innerHTML = "<p>Error loading pending volunteering events.</p>";
+        }
+    } else if (!pendingVolunteerData || pendingVolunteerData.length === 0) {
+        document.getElementById("pending-volunteer-events-container").innerHTML = "<p>No pending volunteering events.</p>";
+    } else {
+        const container = document.getElementById("pending-volunteer-events-container");
+        container.innerHTML = "";
+        pendingVolunteerData.forEach(event => {
+            const eventCard = document.createElement("div");
+            eventCard.className = "event-card";
+            eventCard.innerHTML = `
+                <h3>${event.events.name}</h3>
+                <p><strong>Description:</strong> ${event.events.description || "N/A"}</p>
+                <p><strong>Date:</strong> ${event.events.date || "N/A"}</p>
+                <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
+                <p><strong>Organizer:</strong> ${event.events.users?.fullname || "Unknown"}</p>
+            `;
+            container.appendChild(eventCard);
+        });
+    }
 });
 
 // Logout function
