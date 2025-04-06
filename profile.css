@@ -6,6 +6,9 @@ body {
     background: #f8f9fa;
     color: #333;
     text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Navigation Bar */
@@ -36,6 +39,18 @@ nav ul li a {
 }
 nav ul li a.active {
     text-decoration: underline;
+}
+.logout-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+.logout-btn:hover {
+    background: #c82333;
 }
 
 /* Header */
@@ -106,22 +121,33 @@ header {
     color: #007bff;
 }
 
-/* Badges Section */
-.badges-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
-    justify-content: center;
-    max-width: 400px;
-    margin: 20px auto;
+/* Pending Events Section */
+#pending-events {
+    margin: 30px auto;
+    max-width: 800px;
 }
-.badge-card {
+#pending-events h2 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+.events-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.event-card {
     background: white;
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    font-size: 1.2em;
+    text-align: left;
+}
+.event-card h3 {
+    margin: 0 0 10px;
+    color: #007bff;
+}
+.event-card p {
+    margin: 5px 0;
 }
 
 /* Footer */
@@ -130,7 +156,5 @@ footer {
     padding: 15px;
     background: #007bff;
     color: white;
-    position: relative;
-    bottom: 0;
-    width: 100%;
+    margin-top: auto;
 }
