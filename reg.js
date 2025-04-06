@@ -1,3 +1,4 @@
+// reg.js
 // Initialize Supabase
 const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
@@ -93,8 +94,9 @@ async function approveRegistration(id, participantId, tableId) {
             .select();
 
         if (error) throw new Error("Error approving registration: " + error.message);
+        console.log(`Registration approved in ${table}:`, data);
 
-        // Update leaderboard
+        // Update leaderboard and badges for the participant
         await updateLeaderboard(participantId);
 
         // Refresh the table
@@ -122,19 +124,26 @@ async function updateLeaderboard(userId) {
         let newPoints;
 
         if (leaderboardData) {
+            // User already exists, update points
             newPoints = leaderboardData.points + pointsToAdd;
-            await supabaseClient
+            const { data, error } = await supabaseClient
                 .from("leaderboard")
                 .update({ points: newPoints })
-                .eq("user_id", userId);
+                .eq("user_id", userId)
+                .select();
+            if (error) throw new Error("Error updating leaderboard: " + error.message);
+            console.log("Updated leaderboard entry:", data);
         } else {
-            const { data: userData } = await supabaseClient
+            // First event approval, insert new entry
+            const { data: userData, error: userError } = await supabaseClient
                 .from("users")
                 .select("fullname")
                 .eq("id", userId)
                 .single();
+            if (userError) throw new Error("Error fetching user data: " + userError.message);
+
             newPoints = pointsToAdd;
-            await supabaseClient
+            const { data, error } = await supabaseClient
                 .from("leaderboard")
                 .insert({ 
                     id: crypto.randomUUID(),
@@ -142,10 +151,13 @@ async function updateLeaderboard(userId) {
                     points: newPoints,
                     rank: "Unranked", // Will be updated later
                     user_id: userId 
-                });
+                })
+                .select();
+            if (error) throw new Error("Error inserting into leaderboard: " + error.message);
+            console.log("Inserted new leaderboard entry:", data);
         }
 
-        // Check and award badge if points reach 50 or more
+        // Award badge if points reach or exceed 50
         if (newPoints >= 50) {
             await awardBadge(userId);
         }
@@ -162,7 +174,7 @@ async function updateLeaderboard(userId) {
 // Award badge
 async function awardBadge(userId) {
     try {
-        // Fetch a badge (assuming there's at least one badge in the badges table)
+        // Fetch the first available badge
         const { data: badge, error: badgeError } = await supabaseClient
             .from("badges")
             .select("*")
@@ -183,14 +195,18 @@ async function awardBadge(userId) {
         if (existingError && existingError.code !== "PGRST116") throw new Error("Error checking existing badge: " + existingError.message);
 
         if (!existingBadge) {
-            await supabaseClient
+            const { data, error } = await supabaseClient
                 .from("user_badges")
                 .insert({
                     id: crypto.randomUUID(),
                     user_id: userId,
                     badge_id: badge.id
-                });
-            console.log(`Badge ${badge.name} awarded to user ${userId}`);
+                })
+                .select();
+            if (error) throw new Error("Error inserting into user_badges: " + error.message);
+            console.log(`Badge ${badge.name} awarded to user ${userId}:`, data);
+        } else {
+            console.log(`User ${userId} already has badge ${badge.name}`);
         }
 
     } catch (error) {
@@ -211,7 +227,7 @@ async function updateLeaderboardRanks() {
 
         const updates = leaderboard.map((entry, index) => ({
             id: entry.id,
-            rank: `${index + 1}` // Simple ranking based on points
+            rank: `${index + 1}`
         }));
 
         await Promise.all(updates.map(update => 
@@ -219,9 +235,14 @@ async function updateLeaderboardRanks() {
                 .from("leaderboard")
                 .update({ rank: update.rank })
                 .eq("id", update.id)
+                .select()
+                .then(({ data, error }) => {
+                    if (error) throw error;
+                    console.log(`Updated rank for ${update.id}:`, data);
+                })
         ));
 
-        console.log("Leaderboard ranks updated");
+        console.log("Leaderboard ranks updated successfully");
     } catch (error) {
         console.error("Rank Update Error:", error.message);
         throw error;
