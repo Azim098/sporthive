@@ -141,6 +141,11 @@ header {
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: left;
+    width: 100%; /* Ensure full width within container */
+    max-width: 700px; /* Consistent maximum width */
+    height: 250px; /* Fixed height for uniformity */
+    overflow-y: auto; /* Scroll if content exceeds height */
+    margin: 0 auto; /* Center the card */
 }
 .event-card h3 {
     margin: 0 0 10px;
