@@ -305,7 +305,30 @@ section h2::after {
     font-weight: bold;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
+/* Keep most of the original CSS, only showing changes */
+.leaderboard-table th, .leaderboard-table td {
+    padding: 18px;
+    text-align: center;
+    position: relative;
+}
 
+.leaderboard-table tr.table-row td:first-child {
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    border-left: 1px solid var(--glass-border);
+}
+
+.leaderboard-table tr.table-row td:last-child {
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+    border-right: 1px solid var(--glass-border);
+}
+
+/* Update colspan for empty/no-data rows */
+#leaderboard-body td[colspan="3"] {
+    text-align: center;
+    padding: 20px;
+}
 footer {
     background: rgba(16, 18, 27, 0.4);
     backdrop-filter: blur(20px);
