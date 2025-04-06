@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         .select(`
             id,
             event_id,
-            events (
+            events!register_event_id_fkey (
                 name,
                 description,
                 date,
@@ -79,7 +79,56 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (pendingError) {
         console.error("Error fetching pending events:", pendingError);
-        document.getElementById("pending-events-container").innerHTML = "<p>Error loading pending events.</p>";
+        // Fallback to manual join if nested query fails
+        if (pendingError.code === 'PGRST200') {
+            console.log("Nested join failed, attempting manual join...");
+            const { data: manualPendingData, error: manualPendingError } = await supabase
+                .from("register")
+                .select(`
+                    id,
+                    event_id,
+                    events!register_event_id_fkey (
+                        name,
+                        description,
+                        date,
+                        location,
+                        organizer_id
+                    )
+                `)
+                .eq("participant_id", userId)
+                .eq("status", "Pending");
+
+            if (manualPendingError) {
+                console.error("Error with manual join:", manualPendingError);
+                document.getElementById("pending-events-container").innerHTML = "<p>Error loading pending events.</p>";
+            } else if (!manualPendingData || manualPendingData.length === 0) {
+                document.getElementById("pending-events-container").innerHTML = "<p>No pending events.</p>";
+            } else {
+                const container = document.getElementById("pending-events-container");
+                container.innerHTML = "";
+                for (const event of manualPendingData) {
+                    const { data: organizerData, error: organizerError } = await supabase
+                        .from("users")
+                        .select("fullname")
+                        .eq("id", event.events.organizer_id)
+                        .single();
+                    const organizerName = organizerError || !organizerData ? "Unknown" : organizerData.fullname;
+
+                    const eventCard = document.createElement("div");
+                    eventCard.className = "event-card";
+                    eventCard.innerHTML = `
+                        <h3>${event.events.name}</h3>
+                        <p><strong>Description:</strong> ${event.events.description || "N/A"}</p>
+                        <p><strong>Date:</strong> ${event.events.date || "N/A"}</p>
+                        <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
+                        <p><strong>Organizer:</strong> ${organizerName}</p>
+                    `;
+                    container.appendChild(eventCard);
+                }
+            }
+        } else {
+            document.getElementById("pending-events-container").innerHTML = "<p>Error loading pending events.</p>";
+        }
     } else if (!pendingData || pendingData.length === 0) {
         document.getElementById("pending-events-container").innerHTML = "<p>No pending events.</p>";
     } else {
@@ -93,7 +142,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <p><strong>Description:</strong> ${event.events.description || "N/A"}</p>
                 <p><strong>Date:</strong> ${event.events.date || "N/A"}</p>
                 <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
-                <p><strong>Organizer:</strong> ${event.events.users.fullname || "Unknown"}</p>
+                <p><strong>Organizer:</strong> ${event.events.users?.fullname || "Unknown"}</p>
             `;
             container.appendChild(eventCard);
         });
@@ -108,7 +157,7 @@ async function logout() {
         alert("Failed to log out. Please try again.");
     } else {
         console.log("User logged out successfully");
-        window.location.href = "index.html"; // Redirect to home/login page after logout
+        window.location.href = "index.html";
     }
 }
 
