@@ -5,6 +5,7 @@ const supabase = window.supabase.createClient(
 );
 
 let loggedInUserId = null;
+
 async function getLoggedInUser() {
     try {
         const { data: { user }, error } = await supabase.auth.getUser();
@@ -30,69 +31,56 @@ const rankBadges = {
     default: { title: 'Participant', icon: '🎉' }
 };
 
-async function handleStatusUpdate(payload) {
-    console.log('Subscription triggered with payload:', payload);
-    console.log('Status update detected:', { old: payload.old, new: payload.new });
-
-    const { old: oldRecord, new: newRecord } = payload;
-    if (oldRecord.status === 'Pending' && newRecord.status === 'Accepted') {
-        console.log('Status changed to Accepted, processing participant:', newRecord.participant_id);
-        const participantId = newRecord.participant_id;
-        const userId = participantId;
-
-        const { data: user, error: userError } = await supabase
-            .from('users')
-            .select('id, fullname')
-            .eq('id', userId)
-            .single();
-
-        if (userError) {
-            console.error('Error fetching user:', userError.message);
-            return;
-        }
-        console.log('User found:', user);
-
-        const userName = user.fullname;
-
-        const { data: leaderboardEntry, error: leaderboardError } = await supabase
-            .from('leaderboard')
-            .select('points')
-            .eq('user_id', userId)
-            .single();
-
-        if (leaderboardError && leaderboardError.code !== 'PGRST116') {
-            console.error('Error fetching leaderboard entry:', leaderboardError.message);
-            return;
-        }
-        console.log('Leaderboard entry:', leaderboardEntry);
-
-        let newPoints = 50;
-        if (leaderboardEntry) {
-            newPoints = leaderboardEntry.points + 50;
-            const { error } = await supabase
-                .from('leaderboard')
-                .update({ points: newPoints })
-                .eq('user_id', userId);
-            if (error) console.error('Error updating points:', error.message);
-            else console.log('Points updated to:', newPoints);
-        } else {
-            const { error, data } = await supabase
-                .from('leaderboard')
-                .insert({ user_id: userId, name: userName, points: newPoints, rank: 0 })
-                .select();
-            if (error) console.error('Error inserting new leaderboard entry:', error.message);
-            else console.log('New leaderboard entry created:', data);
-        }
-
-        await updateLeaderboard();
-        await displayUserBadges();
-    } else {
-        console.log('Status change condition not met:', { oldRecord, newRecord });
-    }
-}
-
 async function updateLeaderboard() {
     try {
+        // Fetch accepted registrations and join with users and leaderboard
+        const { data: registrations, error: regError } = await supabase
+            .from('register')
+            .select(`
+                participant_id,
+                event_id,
+                status,
+                users(fullname),
+                leaderboard(points, user_id)
+            `)
+            .eq('status', 'Accepted')
+            .leftJoin('users', 'register.participant_id = users.id')
+            .leftJoin('leaderboard', 'register.participant_id = leaderboard.user_id');
+
+        if (regError) {
+            console.error('Error fetching registrations:', regError.message);
+            return;
+        }
+
+        // Aggregate points for each participant
+        const participantPoints = {};
+        registrations.forEach(reg => {
+            const userId = reg.participant_id;
+            if (!participantPoints[userId]) {
+                participantPoints[userId] = {
+                    name: reg.users.fullname,
+                    points: reg.leaderboard?.points || 0,
+                    user_id: userId
+                };
+            }
+            // Award 50 points for each accepted registration
+            participantPoints[userId].points += 50;
+        });
+
+        // Update leaderboard with aggregated points
+        const leaderboardEntries = Object.values(participantPoints);
+        for (const entry of leaderboardEntries) {
+            const { data, error } = await supabase
+                .from('leaderboard')
+                .upsert(
+                    { user_id: entry.user_id, name: entry.name, points: entry.points, rank: 0 },
+                    { onConflict: 'user_id' }
+                )
+                .select();
+            if (error) console.error('Error updating leaderboard:', error.message);
+        }
+
+        // Fetch updated leaderboard data
         const { data: leaderboardData, error } = await supabase
             .from('leaderboard')
             .select('name, points, user_id')
@@ -102,8 +90,6 @@ async function updateLeaderboard() {
             console.error('Error fetching leaderboard data:', error.message);
             return;
         }
-
-        console.log('Leaderboard data fetched:', leaderboardData);
 
         const leaderboardBody = document.getElementById('leaderboard-body');
         if (!leaderboardBody) {
@@ -119,7 +105,7 @@ async function updateLeaderboard() {
             return;
         }
 
-        for (const [index, entry] of leaderboardData.entries()) {
+        leaderboardData.forEach((entry, index) => {
             const rank = index + 1;
             const badge = rankBadges[rank] || rankBadges.default;
 
@@ -151,7 +137,7 @@ async function updateLeaderboard() {
             row.appendChild(pointsCell);
             row.appendChild(badgeCell);
             leaderboardBody.appendChild(row);
-        }
+        });
     } catch (error) {
         console.error('Unexpected error in updateLeaderboard:', error.message);
     }
@@ -174,8 +160,6 @@ async function displayUserBadges() {
             return;
         }
 
-        console.log('User badges fetched:', userBadges);
-
         const badgesContainer = document.getElementById('badges-container');
         if (!badgesContainer) {
             console.error('Badges container element not found');
@@ -193,7 +177,7 @@ async function displayUserBadges() {
         userBadges.forEach(badge => {
             const badgeCard = document.createElement('div');
             badgeCard.className = 'badge-card';
-            badgeCard.innerHTML = `${badge.badges.icon_url}<p>${badge.badges.name}</p>`;
+            badgeCard.innerHTML = `<img src="${badge.badges.icon_url}" alt="${badge.badges.name}"><p>${badge.badges.name}</p>`;
             badgesContainer.appendChild(badgeCard);
         });
     } catch (error) {
@@ -201,12 +185,18 @@ async function displayUserBadges() {
     }
 }
 
+async function handleStatusUpdate(payload) {
+    const { old: oldRecord, new: newRecord } = payload;
+    if (oldRecord.status === 'Pending' && newRecord.status === 'Accepted') {
+        console.log('Status changed to Accepted, processing participant:', newRecord.participant_id);
+        await updateLeaderboard();
+        await displayUserBadges();
+    }
+}
+
 supabase
     .channel('register-changes')
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'register' }, (payload) => {
-        console.log('Subscription triggered with payload:', payload);
-        handleStatusUpdate(payload);
-    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'register' }, handleStatusUpdate)
     .subscribe((status) => console.log('Subscription status:', status));
 
 document.addEventListener('DOMContentLoaded', async () => {
