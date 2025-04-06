@@ -168,7 +168,7 @@ section h2::after {
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid var(--glass-border);
-    color: white;
+    color: black;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 }
