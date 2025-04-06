@@ -72,7 +72,7 @@ nav ul li a.active {
 
 header {
     text-align: center;
-    padding: 100px 20px;
+    padding: 10px 20px;
     position: relative;
     overflow: hidden;
     color: white;
@@ -244,6 +244,76 @@ form {
     flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
+}
+/* Add these to your existing adaptive.css, replacing the .event-card section */
+
+/* Event Card Styling */
+.event-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 20px;
+    width: 300px;
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    color: white;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.event-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.5em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.event-card p {
+    margin: 5px 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    font-size: 0.9em;
+}
+
+.event-card .button-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.event-card .register-button,
+.event-card .volunteer-button {
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.event-card .register-button:hover,
+.event-card .volunteer-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.event-card .register-button.registered,
+.event-card .volunteer-button.volunteered {
+    background: linear-gradient(90deg, rgba(65, 105, 225, 0.3), rgba(123, 104, 238, 0.3));
+}
+
+.event-card .unique-code,
+.event-card .volunteer-code {
+    margin-top: 10px;
+    font-weight: bold;
+    color: var(--primary-light);
 }
 
 footer {
