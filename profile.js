@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 name,
                 description,
                 date,
+                time,
                 location,
                 organizer_id,
                 users!events_organizer_id_fkey (fullname)
@@ -91,6 +92,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         name,
                         description,
                         date,
+                        time,
                         location,
                         organizer_id
                     )
@@ -120,6 +122,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         <h3>${event.events.name}</h3>
                         <p><strong>Description:</strong> ${event.events.description || "N/A"}</p>
                         <p><strong>Date:</strong> ${event.events.date || "N/A"}</p>
+                        <p><strong>Time:</strong> ${event.events.time || "N/A"}</p>
                         <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
                         <p><strong>Organizer:</strong> ${organizerName}</p>
                     `;
@@ -141,6 +144,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <h3>${event.events.name}</h3>
                 <p><strong>Description:</strong> ${event.events.description || "N/A"}</p>
                 <p><strong>Date:</strong> ${event.events.date || "N/A"}</p>
+                <p><strong>Time:</strong> ${event.events.time || "N/A"}</p>
                 <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
                 <p><strong>Organizer:</strong> ${event.events.users?.fullname || "Unknown"}</p>
             `;
@@ -158,6 +162,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 name,
                 description,
                 date,
+                time,
                 location,
                 organizer_id,
                 users!events_organizer_id_fkey (fullname)
@@ -180,6 +185,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         name,
                         description,
                         date,
+                        time,
                         location,
                         organizer_id
                     )
@@ -209,6 +215,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         <h3>${event.events.name}</h3>
                         <p><strong>Description:</strong> ${event.events.description || "N/A"}</p>
                         <p><strong>Date:</strong> ${event.events.date || "N/A"}</p>
+                        <p><strong>Time:</strong> ${event.events.time || "N/A"}</p>
                         <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
                         <p><strong>Organizer:</strong> ${organizerName}</p>
                     `;
@@ -230,6 +237,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <h3>${event.events.name}</h3>
                 <p><strong>Description:</strong> ${event.events.description || "N/A"}</p>
                 <p><strong>Date:</strong> ${event.events.date || "N/A"}</p>
+                <p><strong>Time:</strong> ${event.events.time || "N/A"}</p>
                 <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
                 <p><strong>Organizer:</strong> ${event.events.users?.fullname || "Unknown"}</p>
             `;
