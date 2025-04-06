@@ -4,6 +4,11 @@ const supabaseUrl = "https://idydtkpvhedgyoexkiox.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkeWR0a3B2aGVkZ3lvZXhraW94Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDI3MzQsImV4cCI6MjA1NzYxODczNH0.52Qb21bBXalYvNPGBoH9xZJUjKs7fjTsESvx2-XCTaY";
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+// Check authentication state
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    console.log("Auth state changed:", event, session ? session.user.id : "No user");
+});
+
 // Function to fetch and display registrations
 async function fetchOrganizerRegistrations() {
     try {
@@ -143,14 +148,15 @@ async function updateLeaderboard(userId) {
             if (userError) throw new Error("Error fetching user data: " + userError.message);
 
             newPoints = pointsToAdd;
+            const newId = crypto.randomUUID();
             const { data, error } = await supabaseClient
                 .from("leaderboard")
                 .insert({ 
-                    id: crypto.randomUUID(),
+                    id: newId,
                     name: userData.fullname,
-                    points: newPoints,
-                    rank: "Unranked", // Will be updated later
-                    user_id: userId 
+                    points: Number(newPoints), // Ensure integer
+                    rank: "Unranked",
+                    user_id: userId
                 })
                 .select();
             if (error) throw new Error("Error inserting into leaderboard: " + error.message);
@@ -159,7 +165,7 @@ async function updateLeaderboard(userId) {
 
         // Award badge if points reach or exceed 50
         if (newPoints >= 50) {
-            await awardBadge(userId);
+            await awardBadge(userId, newPoints);
         }
 
         // Update ranks
@@ -171,8 +177,8 @@ async function updateLeaderboard(userId) {
     }
 }
 
-// Award badge
-async function awardBadge(userId) {
+// Award badge and insert into user_badges
+async function awardBadge(userId, points) {
     try {
         // Fetch the first available badge
         const { data: badge, error: badgeError } = await supabaseClient
@@ -194,7 +200,8 @@ async function awardBadge(userId) {
 
         if (existingError && existingError.code !== "PGRST116") throw new Error("Error checking existing badge: " + existingError.message);
 
-        if (!existingBadge) {
+        // Award badge if points >= 50 and user doesn’t have it yet
+        if (!existingBadge && points >= 50) {
             const { data, error } = await supabaseClient
                 .from("user_badges")
                 .insert({
@@ -204,9 +211,11 @@ async function awardBadge(userId) {
                 })
                 .select();
             if (error) throw new Error("Error inserting into user_badges: " + error.message);
-            console.log(`Badge ${badge.name} awarded to user ${userId}:`, data);
-        } else {
+            console.log(`Badge ${badge.name} awarded to user ${userId} with ${points} points:`, data);
+        } else if (existingBadge) {
             console.log(`User ${userId} already has badge ${badge.name}`);
+        } else {
+            console.log(`User ${userId} has ${points} points, not enough for badge ${badge.name}`);
         }
 
     } catch (error) {
