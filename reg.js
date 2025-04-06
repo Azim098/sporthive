@@ -152,11 +152,11 @@ async function updateLeaderboard(userId) {
             const leaderboardEntry = {
                 id: newId,
                 name: userData.fullname,
-                points: Number(newPoints), // Explicitly ensure integer
+                points: Number(newPoints),
                 rank: "Unranked",
                 user_id: userId
             };
-            console.log("Inserting leaderboard entry:", leaderboardEntry); // Debug payload
+            console.log("Inserting leaderboard entry:", leaderboardEntry);
             const { data, error } = await supabaseClient
                 .from("leaderboard")
                 .insert(leaderboardEntry)
@@ -209,7 +209,7 @@ async function awardBadge(userId, points) {
                 user_id: userId,
                 badge_id: badge.id
             };
-            console.log("Inserting user_badges entry:", badgeEntry); // Debug payload
+            console.log("Inserting user_badges entry:", badgeEntry);
             const { data, error } = await supabaseClient
                 .from("user_badges")
                 .insert(badgeEntry)
