@@ -74,7 +74,7 @@ nav ul li a:hover {
 
 /* Glass Effect Form Container */
 .form-container {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.9); /* Increased opacity from 0.15 to 0.9 for better visibility */
     border-radius: 12px;
     padding: 30px;
     max-width: 500px;
@@ -82,36 +82,48 @@ nav ul li a:hover {
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     text-align: center;
-    color: #ffffff; /* Changed to white for contrast on glass background */
+    color: #4c1c64; /* Changed to dark purple for contrast on less transparent bg */
 }
 
 .form-container h2 {
     font-size: 2em;
     margin-bottom: 20px;
-    color: #ffffff; /* White for consistency and readability */
+    color: #4c1c64; /* Changed to dark purple for consistency */
 }
 
 /* Input Fields */
 .input-group {
     text-align: left;
     margin-bottom: 15px;
+    display: flex; /* Added for checkbox alignment */
+    align-items: center; /* Vertically center items */
+    justify-content: space-between; /* Space between label and checkbox */
 }
 
 .input-group label {
-    display: block;
+    display: inline-block; /* Changed to inline-block for checkbox alignment */
     font-weight: bold;
-    margin-bottom: 5px;
-    color: #ffffff; /* Changed to white for visibility on glass bg */
+    margin-bottom: 0; /* Removed bottom margin for inline alignment */
+    color: #4c1c64; /* Changed to dark purple for visibility on less transparent bg */
+    margin-right: 10px; /* Added spacing between label and input/checkbox */
 }
 
 input, textarea {
     width: 100%;
     padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(155, 112, 247, 0.5); /* Changed border to light purple for theme */
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff; /* Changed to white for readability */
+    background: rgba(255, 255, 255, 0.95); /* Increased opacity for better visibility */
+    color: #4c1c64; /* Changed to dark purple for readability */
     font-size: 1.3em;
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+input[type="checkbox"] {
+    width: auto; /* Override width for checkboxes */
+    margin: 0; /* Remove default margins */
+    padding: 0; /* Remove padding */
+    vertical-align: middle; /* Align with text */
 }
 
 input::placeholder, textarea::placeholder {
@@ -122,13 +134,13 @@ input::placeholder, textarea::placeholder {
 select {
     width: 100%;
     padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(155, 112, 247, 0.5); /* Changed border to light purple */
     border-radius: 8px;
-    background: rgba(76, 28, 100, 0.8); /* Darker purple from nav for theme */
-    color: #ffffff; /* White text for contrast */
+    background: rgba(255, 255, 255, 0.95); /* Increased opacity for better visibility */
+    color: #4c1c64; /* Changed to dark purple for contrast */
     font-size: 1.3em;
-    appearance: none; /* Remove default dropdown arrow */
-    background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Custom white arrow */
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%234c1c64" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Changed arrow color to dark purple */
     background-repeat: no-repeat;
     background-position: right 12px center;
 }
