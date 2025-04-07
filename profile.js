@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         .from("register")
         .select(`
             id,
+            unique_code,
             event_id,
             events!register_event_id_fkey (
                 name,
@@ -87,6 +88,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 .from("register")
                 .select(`
                     id,
+                    unique_code,
                     event_id,
                     events!register_event_id_fkey (
                         name,
@@ -125,6 +127,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         <p><strong>Time:</strong> ${event.events.time || "N/A"}</p>
                         <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
                         <p><strong>Organizer:</strong> ${organizerName}</p>
+                        <p><strong>Unique Code:</strong> ${event.unique_code || "N/A"}</p>
                     `;
                     container.appendChild(eventCard);
                 }
@@ -147,6 +150,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <p><strong>Time:</strong> ${event.events.time || "N/A"}</p>
                 <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
                 <p><strong>Organizer:</strong> ${event.events.users?.fullname || "Unknown"}</p>
+                <p><strong>Unique Code:</strong> ${event.unique_code || "N/A"}</p>
             `;
             container.appendChild(eventCard);
         });
@@ -157,6 +161,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         .from("volunteers")
         .select(`
             id,
+            unique_code,
             event_id,
             events!volunteers_event_id_fkey (
                 name,
@@ -180,6 +185,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 .from("volunteers")
                 .select(`
                     id,
+                    unique_code,
                     event_id,
                     events!volunteers_event_id_fkey (
                         name,
@@ -218,6 +224,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         <p><strong>Time:</strong> ${event.events.time || "N/A"}</p>
                         <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
                         <p><strong>Organizer:</strong> ${organizerName}</p>
+                        <p><strong>Unique Code:</strong> ${event.unique_code || "N/A"}</p>
                     `;
                     container.appendChild(eventCard);
                 }
@@ -240,6 +247,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <p><strong>Time:</strong> ${event.events.time || "N/A"}</p>
                 <p><strong>Location:</strong> ${event.events.location || "N/A"}</p>
                 <p><strong>Organizer:</strong> ${event.events.users?.fullname || "Unknown"}</p>
+                <p><strong>Unique Code:</strong> ${event.unique_code || "N/A"}</p>
             `;
             container.appendChild(eventCard);
         });
