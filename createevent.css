@@ -95,17 +95,27 @@ nav ul li a:hover {
 .input-group {
     text-align: left;
     margin-bottom: 15px;
-    display: flex; /* Added for checkbox alignment */
-    align-items: center; /* Vertically center items */
-    justify-content: space-between; /* Space between label and checkbox */
+}
+
+/* Target input-group containing checkboxes */
+.input-group:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center; /* Vertically center label and checkbox */
+    justify-content: flex-start; /* Align items to the left */
 }
 
 .input-group label {
-    display: inline-block; /* Changed to inline-block for checkbox alignment */
+    display: block; /* Default to block for non-checkbox inputs */
     font-weight: bold;
-    margin-bottom: 0; /* Removed bottom margin for inline alignment */
+    margin-bottom: 5px; /* Space below label for inputs underneath */
     color: #4c1c64; /* Changed to dark purple for visibility on less transparent bg */
-    margin-right: 10px; /* Added spacing between label and input/checkbox */
+}
+
+/* Target labels within input-group containing checkboxes */
+.input-group:has(input[type="checkbox"]) label {
+    display: inline-block; /* Inline-block for checkboxes to stay on same line */
+    margin-bottom: 0; /* Remove bottom margin for checkboxes */
+    margin-right: 5px; /* Very close spacing between label and checkbox */
 }
 
 input, textarea {
